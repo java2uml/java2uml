@@ -9,7 +9,7 @@ import java.util.zip.ZipEntry;
 
 /**
  * http://forum.vingrad.ru/articles/topic-157979.html
- *
+ * <p/>
  * Reworked by Igor Akimov on 07.12.2014.
  */
 public class UMLClassLoader extends ClassLoader {
@@ -236,15 +236,15 @@ public class UMLClassLoader extends ClassLoader {
      * Загружает список имен классов, имеющихся в папке path.
      * Имена классов дополняются префиксом относительно исходной папки.
      *
-     * @param path Имя папки
+     * @param path        Имя папки
      * @param classPrefix Префикс для имени класса.
-     * @param classNames Список, в который добавляются найденные имена классов.
+     * @param classNames  Список, в который добавляются найденные имена классов.
      *
      * @return Список имен классов.
      */
     private List<String> classList(String path, String classPrefix, List<String> classNames) {
         // Расширение файлов классов.
-        final String CLASS_EXTENSION =  ".class";
+        final String CLASS_EXTENSION = ".class";
 
         File dir = new File(path);
 

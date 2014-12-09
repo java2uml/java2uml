@@ -3,7 +3,6 @@ package com.github.java2uml;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Set;
 
 public class Main {
@@ -28,29 +27,11 @@ public class Main {
 
         Set<Class> classes = ecl.loadClasses(path);
 
-        for (Class c: classes) {
-            System.out.println("Класс: " + c.getName());
+        //todo убрать вывод в консоль после тестирования
+        System.out.println("Классы загружены, передаем на обработку.");
+        System.out.println("----------------------------------------");
 
-            System.out.println("Конструкторы:");
-            constructors = c.getConstructors();
-            for (Constructor constructor : constructors) {
-                System.out.println(
-                        constructor.getName() + " modifiers " + constructor.getModifiers() + " parameters types " + constructor.getParameterTypes());
-            }
-
-            System.out.println("Методы:");
-            methods = c.getDeclaredMethods();
-            for (Method method : methods) {
-                System.out.println(
-                        method.getName() + " return " + method.getReturnType() + " modifiers " + method.getModifiers() + " parameters types " + method
-                                .getParameterTypes());
-            }
-
-            System.out.println("Поля:");
-            fields = c.getDeclaredFields();
-            for (Field field : fields) {
-                System.out.println(field.getName() + " " + field.getType());
-            }
-        }
+        String diagram = DataExtractor.extract(classes);
+        DataExtractor.generate(diagram);
     }
 }
