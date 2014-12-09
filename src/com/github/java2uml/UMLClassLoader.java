@@ -3,9 +3,7 @@ package com.github.java2uml;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -210,8 +208,8 @@ public class UMLClassLoader extends ClassLoader {
      *
      * @return Массив загруженных классов.
      */
-    public List<Class> loadClasses(String path) throws ClassNotFoundException {
-        List<Class> classes = new ArrayList<Class>();
+    public Set<Class> loadClasses(String path) throws ClassNotFoundException {
+        Set<Class> classes = new HashSet<Class>();
         List<String> classNames = new ArrayList<String>();
 
         // Добавляем путь к списку CLASSPATH, если такой в списке отсутствует.

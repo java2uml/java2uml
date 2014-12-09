@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Set;
 
 public class Main {
     static String[] args;
@@ -25,28 +26,31 @@ public class Main {
 
         UMLClassLoader ecl = new UMLClassLoader();
 
-        List<Class> classes = ecl.loadClasses(path);
+        Set<Class> classes = ecl.loadClasses(path);
 
-        Class c = classes.get(0);
+        for (Class c: classes) {
+            System.out.println("Класс: " + c.getName());
 
-        System.out.println("Класс: " + c.getName());
+            System.out.println("Конструкторы:");
+            constructors = c.getConstructors();
+            for (Constructor constructor : constructors) {
+                System.out.println(
+                        constructor.getName() + " modifiers " + constructor.getModifiers() + " parameters types " + constructor.getParameterTypes());
+            }
 
-        System.out.println("Конструкторы:");
-        constructors = c.getConstructors();
-        for (Constructor constructor: constructors) {
-            System.out.println(constructor.getName() + " modifiers " + constructor.getModifiers() + " parameters types " + constructor.getParameterTypes());
-        }
+            System.out.println("Методы:");
+            methods = c.getDeclaredMethods();
+            for (Method method : methods) {
+                System.out.println(
+                        method.getName() + " return " + method.getReturnType() + " modifiers " + method.getModifiers() + " parameters types " + method
+                                .getParameterTypes());
+            }
 
-        System.out.println("Методы:");
-        methods = c.getMethods();
-        for (Method method: methods) {
-            System.out.println(method.getName() + " return " + method.getReturnType() + " modifiers " + method.getModifiers() + " parameters types " + method.getParameterTypes());
-        }
-
-        System.out.println("Поля:");
-        fields = c.getFields();
-        for (Field field: fields) {
-            System.out.println(field.getName() + " " + field.getType());
+            System.out.println("Поля:");
+            fields = c.getDeclaredFields();
+            for (Field field : fields) {
+                System.out.println(field.getName() + " " + field.getType());
+            }
         }
     }
 }
