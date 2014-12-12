@@ -36,9 +36,9 @@ public class CreateUmlCode {
     public static void init(String path) throws Exception {
         String absolutePath = path;
         File folder = new File(absolutePath);
+        files = new ArrayList<File>();
         createArrayFiles(folder);
         source = new StringBuilder();
-
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
         for (File fileName : files) {
@@ -46,7 +46,7 @@ public class CreateUmlCode {
         }
         source.append("@enduml\n");
 
-        // Запись в файл UML в папку umlTemplates
+        // Запись в файл UML в папку uml_templates
         write(source.toString());
     }
 
@@ -171,15 +171,16 @@ public class CreateUmlCode {
     }
 
     private static void createArrayFiles(File path) {
-        files = new ArrayList<File>();
         File[] folder = path.listFiles();
 
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory())
                 createArrayFiles(folder[i]);
-            else if (folder[i].toString().toLowerCase().endsWith(".java"))
+            else if (folder[i].toString().toLowerCase().endsWith(".java")) {
                 files.add(folder[i]);
+            }
         }
+
     }
 
     public static void write(String text) {
