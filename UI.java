@@ -1,4 +1,4 @@
-import apple.laf.JRSUIConstants;
+package com.github.java2uml;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -8,14 +8,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
-/**
- * Created by mac on 16.12.14.
- */
 public class UI {
     JFrame mainFrame;
 
     JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons;
-    JButton browse, generatePlantUML, scanDir;
+    JButton browse;
+
+    public JButton getGeneratePlantUML() {
+        return generatePlantUML;
+    }
+
+    public void setGeneratePlantUML(JButton generatePlantUML) {
+        this.generatePlantUML = generatePlantUML;
+    }
+
+    JButton generatePlantUML;
     JComboBox setDirectionOfDiagram;
     JTextField path;
     JTextArea generatedCode;
@@ -43,7 +50,7 @@ public class UI {
         panelForGeneratedCode = new JPanel();
         browse = new JButton("Choose dir");
         generatePlantUML = new JButton("Generate");
-        scanDir = new JButton("Load files");
+
         setDirectionOfDiagram = new JComboBox();
         generatedCode = new JTextArea();
         path = new JTextField();
@@ -61,7 +68,7 @@ public class UI {
         setDirectionOfDiagram.addItem(HORIZONTAL_DIRECTION);
 
         panelForButtons.add(browse);
-        panelForButtons.add(scanDir);
+
         panelForButtons.add(setDirectionOfDiagram);
         panelForButtons.add(generatePlantUML);
         panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
@@ -92,14 +99,17 @@ public class UI {
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        progressBar.setStringPainted(true);
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+
         return mainFrame;
     }
 
-    public void addOnClickListeners(){
 
-    }
 
     public File addActionListenerToChooseFile(){
+        progressBar.setValue(0);
         browse.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -107,6 +117,7 @@ public class UI {
                 if (resultOfChoice == JFileChooser.APPROVE_OPTION){
                     chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
                     path.setText(chosenDirectory.toString());
+                    Main.setPath(chosenDirectory.toString());
 
                 }
             }
@@ -114,5 +125,20 @@ public class UI {
 
         return chosenDirectory;
     }
+
+    public int increaseProgressBarForTwenty(){
+        int value = progressBar.getValue() + 20;
+        int maximum = progressBar.getMaximum();
+        if (value > maximum) value = maximum;
+        progressBar.setValue(value);
+
+        return value;
+    }
+
+    public void setProgressBarComplete(){
+        progressBar.setValue(100);
+    }
+
+
 
 }
