@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -37,12 +37,12 @@ public final class ArrayInitializerExpr extends Expression {
     }
 
     public ArrayInitializerExpr(List<Expression> values) {
-        this.values = values;
+       setValues(values);
     }
 
     public ArrayInitializerExpr(int beginLine, int beginColumn, int endLine, int endColumn, List<Expression> values) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.values = values;
+        setValues(values);
     }
 
     @Override
@@ -61,6 +61,6 @@ public final class ArrayInitializerExpr extends Expression {
 
     public void setValues(List<Expression> values) {
         this.values = values;
+		setAsParentNodeOf(this.values);
     }
-
 }

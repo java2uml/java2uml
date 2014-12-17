@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -37,15 +37,15 @@ import java.util.List;
  * <code>
  * <table>
  * <tr valign=baseline>
- * <td align=right>PackageDeclaration</td>
- * <td align=center>::=</td>
- * <td align=left>
- * ( {@link AnnotationExpr} )* "package" {@link NameExpr} ) ";"
- * </td>
+ *   <td align=right>PackageDeclaration</td>
+ *   <td align=center>::=</td>
+ *   <td align=left>
+ *       ( {@link AnnotationExpr} )* "package" {@link NameExpr} ) ";"
+ *   </td>
  * </tr>
- * </table>
+ * </table> 
  * </code>
- *
+ * 
  * @author Julio Vilmar Gesser
  */
 public final class PackageDeclaration extends Node {
@@ -58,18 +58,18 @@ public final class PackageDeclaration extends Node {
     }
 
     public PackageDeclaration(NameExpr name) {
-        this.name = name;
+        setName(name);
     }
 
     public PackageDeclaration(List<AnnotationExpr> annotations, NameExpr name) {
-        this.annotations = annotations;
-        this.name = name;
+        setAnnotations(annotations);
+        setName(name);
     }
 
     public PackageDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations, NameExpr name) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.annotations = annotations;
-        this.name = name;
+        setAnnotations(annotations);
+        setName(name);
     }
 
     @Override
@@ -85,7 +85,7 @@ public final class PackageDeclaration extends Node {
     /**
      * Retrieves the list of annotations declared before the package
      * declaration. Return <code>null</code> if there are no annotations.
-     *
+     * 
      * @return list of annotations or <code>null</code>
      */
     public List<AnnotationExpr> getAnnotations() {
@@ -94,7 +94,7 @@ public final class PackageDeclaration extends Node {
 
     /**
      * Return the name of the package.
-     *
+     * 
      * @return the name of the package
      */
     public NameExpr getName() {
@@ -102,19 +102,23 @@ public final class PackageDeclaration extends Node {
     }
 
     /**
-     * @param annotations the annotations to set
+     * @param annotations
+     *            the annotations to set
      */
     public void setAnnotations(List<AnnotationExpr> annotations) {
         this.annotations = annotations;
+        setAsParentNodeOf(this.annotations);
     }
 
     /**
      * Sets the name of this package declaration.
-     *
-     * @param name the name to set
+     * 
+     * @param name
+     *            the name to set
      */
     public void setName(NameExpr name) {
         this.name = name;
+        setAsParentNodeOf(this.name);
     }
 
 }

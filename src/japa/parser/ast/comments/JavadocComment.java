@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -19,29 +19,24 @@
 /*
  * Created on 23/05/2008
  */
-package japa.parser.ast;
+package japa.parser.ast.comments;
 
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
 
 /**
- * <p>
- * AST node that represent line comments.
- * </p>
- * Line comments are started with "//" and finish at the end of the line ("\n").
- *
  * @author Julio Vilmar Gesser
  */
-public final class LineComment extends Comment {
+public final class JavadocComment extends Comment {
 
-    public LineComment() {
+    public JavadocComment() {
     }
 
-    public LineComment(String content) {
+    public JavadocComment(String content) {
         super(content);
     }
 
-    public LineComment(int beginLine, int beginColumn, int endLine, int endColumn, String content) {
+    public JavadocComment(int beginLine, int beginColumn, int endLine, int endColumn, String content) {
         super(beginLine, beginColumn, endLine, endColumn, content);
     }
 

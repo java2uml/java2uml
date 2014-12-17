@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -36,12 +36,12 @@ public final class ClassExpr extends Expression {
     }
 
     public ClassExpr(Type type) {
-        this.type = type;
+       setType(type);
     }
 
     public ClassExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.type = type;
+        setType(type);
     }
 
     @Override
@@ -60,6 +60,6 @@ public final class ClassExpr extends Expression {
 
     public void setType(Type type) {
         this.type = type;
+		setAsParentNodeOf(this.type);
     }
-
 }

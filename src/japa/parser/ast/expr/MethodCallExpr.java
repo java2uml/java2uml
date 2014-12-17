@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -32,76 +32,85 @@ import java.util.List;
  */
 public final class MethodCallExpr extends Expression {
 
-    private Expression scope;
+	private Expression scope;
 
-    private List<Type> typeArgs;
+	private List<Type> typeArgs;
 
-    private String name;
+	private NameExpr name;
 
-    private List<Expression> args;
+	private List<Expression> args;
 
-    public MethodCallExpr() {
-    }
+	public MethodCallExpr() {
+	}
 
-    public MethodCallExpr(Expression scope, String name) {
-        this.scope = scope;
-        this.name = name;
-    }
+	public MethodCallExpr(final Expression scope, final String name) {
+		setScope(scope);
+		setName(name);
+	}
 
-    public MethodCallExpr(Expression scope, String name, List<Expression> args) {
-        this.scope = scope;
-        this.name = name;
-        this.args = args;
-    }
+	public MethodCallExpr(final Expression scope, final String name, final List<Expression> args) {
+		setScope(scope);
+		setName(name);
+		setArgs(args);
+	}
 
-    public MethodCallExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression scope, List<Type> typeArgs, String name, List<Expression> args) {
-        super(beginLine, beginColumn, endLine, endColumn);
-        this.scope = scope;
-        this.typeArgs = typeArgs;
-        this.name = name;
-        this.args = args;
-    }
+	public MethodCallExpr(final int beginLine, final int beginColumn, final int endLine, final int endColumn,
+			final Expression scope, final List<Type> typeArgs, final String name, final List<Expression> args) {
+		super(beginLine, beginColumn, endLine, endColumn);
+		setScope(scope);
+		setTypeArgs(typeArgs);
+		setName(name);
+		setArgs(args);
+	}
 
-    @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
+	@Override public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
 
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
+	@Override public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
 
-    public List<Expression> getArgs() {
-        return args;
-    }
+	public List<Expression> getArgs() {
+		return args;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name.getName();
+	}
 
-    public Expression getScope() {
-        return scope;
-    }
+	public NameExpr getNameExpr() {
+		return name;
+	}
 
-    public List<Type> getTypeArgs() {
-        return typeArgs;
-    }
+	public Expression getScope() {
+		return scope;
+	}
 
-    public void setArgs(List<Expression> args) {
-        this.args = args;
-    }
+	public List<Type> getTypeArgs() {
+		return typeArgs;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setArgs(final List<Expression> args) {
+		this.args = args;
+		setAsParentNodeOf(this.args);
+	}
 
-    public void setScope(Expression scope) {
-        this.scope = scope;
-    }
+	public void setName(final String name) {
+		this.name = new NameExpr(name);
+	}
 
-    public void setTypeArgs(List<Type> typeArgs) {
-        this.typeArgs = typeArgs;
-    }
+	public void setNameExpr(NameExpr name) {
+		this.name = name;
+	}
 
+	public void setScope(final Expression scope) {
+		this.scope = scope;
+		setAsParentNodeOf(this.scope);
+	}
+
+	public void setTypeArgs(final List<Type> typeArgs) {
+		this.typeArgs = typeArgs;
+		setAsParentNodeOf(this.typeArgs);
+	}
 }

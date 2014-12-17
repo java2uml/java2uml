@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,7 +21,10 @@
  */
 package japa.parser.ast.body;
 
+import japa.parser.ast.AccessSpecifier;
+import japa.parser.ast.DocumentableNode;
 import japa.parser.ast.TypeParameter;
+import japa.parser.ast.comments.JavadocComment;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.stmt.BlockStmt;
@@ -34,141 +37,237 @@ import java.util.List;
 /**
  * @author Julio Vilmar Gesser
  */
-public final class MethodDeclaration extends BodyDeclaration {
+public final class MethodDeclaration extends BodyDeclaration implements DocumentableNode, WithDeclaration {
 
-    private int modifiers;
+	private int modifiers;
 
-    private List<TypeParameter> typeParameters;
+	private List<TypeParameter> typeParameters;
 
-    private Type type;
+	private Type type;
 
-    private String name;
+	private NameExpr name;
 
-    private List<Parameter> parameters;
+	private List<Parameter> parameters;
 
-    private int arrayCount;
+	private int arrayCount;
 
-    private List<NameExpr> throws_;
+	private List<NameExpr> throws_;
 
-    private BlockStmt body;
+	private BlockStmt body;
 
-    public MethodDeclaration() {
-    }
+	public MethodDeclaration() {
+	}
 
-    public MethodDeclaration(int modifiers, Type type, String name) {
-        this.modifiers = modifiers;
-        this.type = type;
-        this.name = name;
-    }
+	public MethodDeclaration(final int modifiers, final Type type, final String name) {
+		setModifiers(modifiers);
+		setType(type);
+		setName(name);
+	}
 
-    public MethodDeclaration(int modifiers, Type type, String name, List<Parameter> parameters) {
-        this.modifiers = modifiers;
-        this.type = type;
-        this.name = name;
-        this.parameters = parameters;
-    }
+	public MethodDeclaration(final int modifiers, final Type type, final String name, final List<Parameter> parameters) {
+		setModifiers(modifiers);
+		setType(type);
+		setName(name);
+		setParameters(parameters);
+	}
 
-    public MethodDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, Type type, String name, List<Parameter> parameters, int arrayCount, List<NameExpr> throws_, BlockStmt block) {
-        super(annotations, javaDoc);
-        this.modifiers = modifiers;
-        this.typeParameters = typeParameters;
-        this.type = type;
-        this.name = name;
-        this.parameters = parameters;
-        this.arrayCount = arrayCount;
-        this.throws_ = throws_;
-        this.body = block;
-    }
+	public MethodDeclaration(final int modifiers, final List<AnnotationExpr> annotations,
+			final List<TypeParameter> typeParameters, final Type type, final String name,
+			final List<Parameter> parameters, final int arrayCount, final List<NameExpr> throws_, final BlockStmt block) {
+		super(annotations);
+		setModifiers(modifiers);
+		setTypeParameters(typeParameters);
+		setType(type);
+		setName(name);
+		setParameters(parameters);
+		setArrayCount(arrayCount);
+		setThrows(throws_);
+		setBody(block);
+	}
 
-    public MethodDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, Type type, String name, List<Parameter> parameters, int arrayCount, List<NameExpr> throws_, BlockStmt block) {
-        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
-        this.modifiers = modifiers;
-        this.typeParameters = typeParameters;
-        this.type = type;
-        this.name = name;
-        this.parameters = parameters;
-        this.arrayCount = arrayCount;
-        this.throws_ = throws_;
-        this.body = block;
-    }
+	public MethodDeclaration(final int beginLine, final int beginColumn, final int endLine, final int endColumn,
+			final int modifiers, final List<AnnotationExpr> annotations,
+			final List<TypeParameter> typeParameters, final Type type, final String name,
+			final List<Parameter> parameters, final int arrayCount, final List<NameExpr> throws_, final BlockStmt block) {
+		super(beginLine, beginColumn, endLine, endColumn, annotations);
+		setModifiers(modifiers);
+		setTypeParameters(typeParameters);
+		setType(type);
+		setName(name);
+		setParameters(parameters);
+		setArrayCount(arrayCount);
+		setThrows(throws_);
+		setBody(block);
+	}
 
-    @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
+	@Override public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
 
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
+	@Override public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
 
-    public int getArrayCount() {
-        return arrayCount;
-    }
+	public int getArrayCount() {
+		return arrayCount;
+	}
 
-    public BlockStmt getBody() {
-        return body;
-    }
+	// FIXME this is called "Block" in the constructor. Pick one.
+	public BlockStmt getBody() {
+		return body;
+	}
 
-    /**
-     * Return the modifiers of this member declaration.
-     *
-     * @return modifiers
-     * @see ModifierSet
-     */
-    public int getModifiers() {
-        return modifiers;
-    }
+	/**
+	 * Return the modifiers of this member declaration.
+	 * 
+	 * @see ModifierSet
+	 * @return modifiers
+	 */
+	public int getModifiers() {
+		return modifiers;
+	}
 
-    public String getName() {
+	public String getName() {
+		return name.getName();
+	}
+
+    public NameExpr getNameExpr() {
         return name;
     }
 
-    public List<Parameter> getParameters() {
-        return parameters;
-    }
+	public List<Parameter> getParameters() {
+		return parameters;
+	}
 
-    public List<NameExpr> getThrows() {
-        return throws_;
-    }
+	public List<NameExpr> getThrows() {
+		return throws_;
+	}
 
-    public Type getType() {
-        return type;
-    }
+	public Type getType() {
+		return type;
+	}
 
-    public List<TypeParameter> getTypeParameters() {
-        return typeParameters;
-    }
+	public List<TypeParameter> getTypeParameters() {
+		return typeParameters;
+	}
 
-    public void setArrayCount(int arrayCount) {
-        this.arrayCount = arrayCount;
-    }
+	public void setArrayCount(final int arrayCount) {
+		this.arrayCount = arrayCount;
+	}
 
-    public void setBody(BlockStmt body) {
-        this.body = body;
-    }
+	public void setBody(final BlockStmt body) {
+		this.body = body;
+		setAsParentNodeOf(this.body);
+	}
 
-    public void setModifiers(int modifiers) {
-        this.modifiers = modifiers;
-    }
+	public void setModifiers(final int modifiers) {
+		this.modifiers = modifiers;
+	}
 
-    public void setName(String name) {
+	public void setName(final String name) {
+		this.name = new NameExpr(name);
+	}
+
+    public void setNameExpr(final NameExpr name) {
         this.name = name;
     }
 
-    public void setParameters(List<Parameter> parameters) {
-        this.parameters = parameters;
+    @Override
+    public void setJavaDoc(JavadocComment javadocComment) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setThrows(List<NameExpr> throws_) {
-        this.throws_ = throws_;
+    public void setParameters(final List<Parameter> parameters) {
+		this.parameters = parameters;
+		setAsParentNodeOf(this.parameters);
+	}
+
+	public void setThrows(final List<NameExpr> throws_) {
+		this.throws_ = throws_;
+		setAsParentNodeOf(this.throws_);
+	}
+
+	public void setType(final Type type) {
+		this.type = type;
+		setAsParentNodeOf(this.type);
+	}
+
+	public void setTypeParameters(final List<TypeParameter> typeParameters) {
+		this.typeParameters = typeParameters;
+		setAsParentNodeOf(typeParameters);
+	}
+
+    @Override
+    public JavadocComment getJavaDoc() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    /**
+     * The declaration returned has this schema:
+     *
+     * [accessSpecifier] [static] [abstract] [final] [native]
+     * [synchronized] returnType methodName ([paramlist])
+     * [throws exceptionsList]
+     * @return
+     */
+    @Override
+    public String getDeclarationAsString() {
+        return getDeclarationAsString(true, true);
     }
 
-    public void setTypeParameters(List<TypeParameter> typeParameters) {
-        this.typeParameters = typeParameters;
+    @Override
+    public String getDeclarationAsString(boolean includingModifiers, boolean includingThrows) {
+        StringBuffer sb = new StringBuffer();
+        if (includingModifiers) {
+            AccessSpecifier accessSpecifier = ModifierSet.getAccessSpecifier(getModifiers());
+            sb.append(accessSpecifier.getCodeRepresenation());
+            sb.append(accessSpecifier == AccessSpecifier.DEFAULT ? "" : " ");
+            if (ModifierSet.isStatic(getModifiers())){
+                sb.append("static ");
+            }
+            if (ModifierSet.isAbstract(getModifiers())){
+                sb.append("abstract ");
+            }
+            if (ModifierSet.isFinal(getModifiers())){
+                sb.append("final ");
+            }
+            if (ModifierSet.isNative(getModifiers())){
+                sb.append("native ");
+            }
+            if (ModifierSet.isSynchronized(getModifiers())){
+                sb.append("synchronized ");
+            }
+        }
+        // TODO verify it does not print comments connected to the type
+        sb.append(getType().toStringWithoutComments());
+        sb.append(" ");
+        sb.append(getName());
+        sb.append("(");
+        boolean firstParam = true;
+        for (Parameter param : parameters)
+        {
+            if (firstParam) {
+                firstParam = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(param.toStringWithoutComments());
+        }
+        sb.append(")");
+        if (includingThrows) {
+            if (!this.getThrows().isEmpty()) {
+                sb.append(" throws ");
+                boolean firstThrow = true;
+                for (NameExpr thr : getThrows()) {
+                    if (firstThrow) {
+                        firstThrow = false;
+                    } else {
+                        sb.append(", ");
+                    }
+                    sb.append(thr.toStringWithoutComments());
+                }
+            }
+        }
+        return sb.toString();
     }
 }

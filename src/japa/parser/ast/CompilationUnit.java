@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -25,7 +25,8 @@ import japa.parser.ast.body.AnnotationDeclaration;
 import japa.parser.ast.body.ClassOrInterfaceDeclaration;
 import japa.parser.ast.body.EmptyTypeDeclaration;
 import japa.parser.ast.body.EnumDeclaration;
-import japa.parser.ast.body.JavadocComment;
+import japa.parser.ast.comments.Comment;
+import japa.parser.ast.comments.JavadocComment;
 import japa.parser.ast.body.TypeDeclaration;
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
@@ -41,17 +42,17 @@ import java.util.List;
  * <code>
  * <table>
  * <tr valign=baseline>
- * <td align=right>CompilationUnit</td>
- * <td align=center>::=</td>
- * <td align=left>
- * ( {@link PackageDeclaration} )?<br>
- * ( {@link ImportDeclaration} )*<br>
- * ( {@link TypeDeclaration} )*<br>
- * </td>
+ *   <td align=right>CompilationUnit</td>
+ *   <td align=center>::=</td>
+ *   <td align=left>
+ *   ( {@link PackageDeclaration} )?<br> 
+ *   ( {@link ImportDeclaration} )*<br>
+ *   ( {@link TypeDeclaration} )*<br>
+ *   </td>
  * </tr>
- * </table>
+ * </table> 
  * </code>
- *
+ * 
  * @author Julio Vilmar Gesser
  */
 public final class CompilationUnit extends Node {
@@ -62,24 +63,20 @@ public final class CompilationUnit extends Node {
 
     private List<TypeDeclaration> types;
 
-    private List<Comment> comments;
-
     public CompilationUnit() {
     }
 
-    public CompilationUnit(PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types, List<Comment> comments) {
-        this.pakage = pakage;
-        this.imports = imports;
-        this.types = types;
-        this.comments = comments;
+    public CompilationUnit(PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types) {
+        setPackage(pakage);
+        setImports(imports);
+        setTypes(types);
     }
 
-    public CompilationUnit(int beginLine, int beginColumn, int endLine, int endColumn, PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types, List<Comment> comments) {
+    public CompilationUnit(int beginLine, int beginColumn, int endLine, int endColumn, PackageDeclaration pakage, List<ImportDeclaration> imports, List<TypeDeclaration> types) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.pakage = pakage;
-        this.imports = imports;
-        this.types = types;
-        this.comments = comments;
+        setPackage(pakage);
+        setImports(imports);
+        setTypes(types);
     }
 
     @Override
@@ -97,21 +94,21 @@ public final class CompilationUnit extends Node {
      * Including javadocs, line comments and block comments of all types,
      * inner-classes and other members.<br>
      * If there is no comment, <code>null</code> is returned.
-     *
+     * 
      * @return list with all comments of this compilation unit or
-     * <code>null</code>
+     *         <code>null</code>
      * @see JavadocComment
-     * @see LineComment
-     * @see BlockComment
+     * @see japa.parser.ast.comments.LineComment
+     * @see japa.parser.ast.comments.BlockComment
      */
     public List<Comment> getComments() {
-        return comments;
+        return this.getAllContainedComments();
     }
 
     /**
      * Retrieves the list of imports declared in this compilation unit or
      * <code>null</code> if there is no import.
-     *
+     * 
      * @return the list of imports or <code>null</code> if there is no import
      */
     public List<ImportDeclaration> getImports() {
@@ -122,7 +119,7 @@ public final class CompilationUnit extends Node {
      * Retrieves the package declaration of this compilation unit.<br>
      * If this compilation unit has no package declaration (default package),
      * <code>null</code> is returned.
-     *
+     * 
      * @return the package declaration or <code>null</code>
      */
     public PackageDeclaration getPackage() {
@@ -132,7 +129,7 @@ public final class CompilationUnit extends Node {
     /**
      * Return the list of types declared in this compilation unit.<br>
      * If there is no types declared, <code>null</code> is returned.
-     *
+     * 
      * @return the list of types or <code>null</code> null if there is no type
      * @see AnnotationDeclaration
      * @see ClassOrInterfaceDeclaration
@@ -145,41 +142,46 @@ public final class CompilationUnit extends Node {
 
     /**
      * Sets the list of comments of this compilation unit.
-     *
-     * @param comments the list of comments
+     * 
+     * @param comments
+     *            the list of comments
      */
     public void setComments(List<Comment> comments) {
-        this.comments = comments;
+        throw new RuntimeException("Not implemented!");
     }
 
     /**
      * Sets the list of imports of this compilation unit. The list is initially
      * <code>null</code>.
-     *
-     * @param imports the list of imports
+     * 
+     * @param imports
+     *            the list of imports
      */
     public void setImports(List<ImportDeclaration> imports) {
         this.imports = imports;
+		setAsParentNodeOf(this.imports);
     }
 
     /**
      * Sets or clear the package declarations of this compilation unit.
-     *
-     * @param pakage the pakage declaration to set or <code>null</code> to default
-     *               package
+     * 
+     * @param pakage
+     *            the pakage declaration to set or <code>null</code> to default
+     *            package
      */
     public void setPackage(PackageDeclaration pakage) {
         this.pakage = pakage;
+		setAsParentNodeOf(this.pakage);
     }
 
     /**
      * Sets the list of types declared in this compilation unit.
-     *
-     * @param types the lis of types
+     * 
+     * @param types
+     *            the lis of types
      */
     public void setTypes(List<TypeDeclaration> types) {
         this.types = types;
+		setAsParentNodeOf(this.types);
     }
-
-
 }

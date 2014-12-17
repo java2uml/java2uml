@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -32,59 +32,67 @@ import java.util.List;
  */
 public final class FieldAccessExpr extends Expression {
 
-    private Expression scope;
+	private Expression scope;
 
-    private List<Type> typeArgs;
+	private List<Type> typeArgs;
 
-    private String field;
+	private NameExpr field;
 
-    public FieldAccessExpr() {
-    }
+	public FieldAccessExpr() {
+	}
 
-    public FieldAccessExpr(Expression scope, String field) {
-        this.scope = scope;
-        this.field = field;
-    }
+	public FieldAccessExpr(final Expression scope, final String field) {
+		setScope(scope);
+		setField(field);
+	}
 
-    public FieldAccessExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression scope, List<Type> typeArgs, String field) {
-        super(beginLine, beginColumn, endLine, endColumn);
-        this.scope = scope;
-        this.typeArgs = typeArgs;
-        this.field = field;
-    }
+	public FieldAccessExpr(final int beginLine, final int beginColumn, final int endLine, final int endColumn,
+			final Expression scope, final List<Type> typeArgs, final String field) {
+		super(beginLine, beginColumn, endLine, endColumn);
+		setScope(scope);
+		setTypeArgs(typeArgs);
+		setField(field);
+	}
 
-    @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
+	@Override public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
 
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
+	@Override public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
 
-    public String getField() {
-        return field;
-    }
+	public String getField() {
+		return field.getName();
+	}
 
-    public Expression getScope() {
-        return scope;
-    }
+	public NameExpr getFieldExpr() {
+		return field;
+	}
 
-    public List<Type> getTypeArgs() {
-        return typeArgs;
-    }
+	public Expression getScope() {
+		return scope;
+	}
 
-    public void setField(String field) {
-        this.field = field;
-    }
+	public List<Type> getTypeArgs() {
+		return typeArgs;
+	}
 
-    public void setScope(Expression scope) {
-        this.scope = scope;
-    }
+	public void setField(final String field) {
+		this.field = new NameExpr(field);
+	}
 
-    public void setTypeArgs(List<Type> typeArgs) {
-        this.typeArgs = typeArgs;
-    }
+	public void setFieldExpr(NameExpr field) {
+		this.field = field;
+	}
 
+	public void setScope(final Expression scope) {
+		this.scope = scope;
+		setAsParentNodeOf(this.scope);
+	}
+
+	public void setTypeArgs(final List<Type> typeArgs) {
+		this.typeArgs = typeArgs;
+		setAsParentNodeOf(this.typeArgs);
+	}
 }

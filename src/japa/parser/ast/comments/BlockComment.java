@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -19,7 +19,7 @@
 /*
  * Created on 23/05/2008
  */
-package japa.parser.ast;
+package japa.parser.ast.comments;
 
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
@@ -30,7 +30,7 @@ import japa.parser.ast.visitor.VoidVisitor;
  * </p>
  * Block comments can has multi lines and are delimited by "/&#42;" and
  * "&#42;/".
- *
+ * 
  * @author Julio Vilmar Gesser
  */
 public final class BlockComment extends Comment {

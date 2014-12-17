@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -44,33 +44,33 @@ public final class ArrayCreationExpr extends Expression {
     }
 
     public ArrayCreationExpr(Type type, int arrayCount, ArrayInitializerExpr initializer) {
-        this.type = type;
-        this.arrayCount = arrayCount;
-        this.initializer = initializer;
-        this.dimensions = null;
+        setType(type);
+        setArrayCount(arrayCount);
+        setInitializer(initializer);
+        setDimensions(null);
     }
 
     public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, int arrayCount, ArrayInitializerExpr initializer) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.type = type;
-        this.arrayCount = arrayCount;
-        this.initializer = initializer;
-        this.dimensions = null;
+        setType(type);
+        setArrayCount(arrayCount);
+        setInitializer(initializer);
+        setDimensions(null);
     }
 
     public ArrayCreationExpr(Type type, List<Expression> dimensions, int arrayCount) {
-        this.type = type;
-        this.arrayCount = arrayCount;
-        this.dimensions = dimensions;
-        this.initializer = null;
+        setType(type);
+        setArrayCount(arrayCount);
+        setDimensions(dimensions);
+        setInitializer(null);
     }
 
     public ArrayCreationExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, List<Expression> dimensions, int arrayCount) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.type = type;
-        this.arrayCount = arrayCount;
-        this.dimensions = dimensions;
-        this.initializer = null;
+        setType(type);
+        setArrayCount(arrayCount);
+        setDimensions(dimensions);
+        setInitializer(null);
     }
 
     @Override
@@ -105,14 +105,16 @@ public final class ArrayCreationExpr extends Expression {
 
     public void setDimensions(List<Expression> dimensions) {
         this.dimensions = dimensions;
+		setAsParentNodeOf(this.dimensions);
     }
 
     public void setInitializer(ArrayInitializerExpr initializer) {
         this.initializer = initializer;
+		setAsParentNodeOf(this.initializer);
     }
 
     public void setType(Type type) {
         this.type = type;
+		setAsParentNodeOf(this.type);
     }
-
 }

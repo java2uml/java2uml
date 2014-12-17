@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -29,88 +29,90 @@ import java.util.List;
 
 /**
  * <p>
- * This class represents the declaration of a genetics argument.
+ * This class represents the declaration of a generics argument.
  * </p>
  * The TypeParameter is constructed following the syntax:<br>
  * <code>
  * <table>
  * <tr valign=baseline>
- * <td align=right>TypeParameter</td>
- * <td align=center>::=</td>
- * <td align=left>
- * &lt;IDENTIFIER&gt; ( "extends" {@link ClassOrInterfaceType} ( "&" {@link ClassOrInterfaceType} )* )?
- * </td>
+ *   <td align=right>TypeParameter</td>
+ *   <td align=center>::=</td>
+ *   <td align=left>
+ *       &lt;IDENTIFIER&gt; ( "extends" {@link ClassOrInterfaceType} ( "&" {@link ClassOrInterfaceType} )* )?
+ *   </td>
  * </tr>
- * </table>
+ * </table> 
  * </code>
- *
+ * 
  * @author Julio Vilmar Gesser
  */
 public final class TypeParameter extends Node {
 
-    private String name;
+	private String name;
 
-    private List<ClassOrInterfaceType> typeBound;
+	private List<ClassOrInterfaceType> typeBound;
 
-    public TypeParameter() {
-    }
+	public TypeParameter() {
+	}
 
-    public TypeParameter(String name, List<ClassOrInterfaceType> typeBound) {
-        this.name = name;
-        this.typeBound = typeBound;
-    }
+	public TypeParameter(final String name, final List<ClassOrInterfaceType> typeBound) {
+		setName(name);
+		setTypeBound(typeBound);
+	}
 
-    public TypeParameter(int beginLine, int beginColumn, int endLine, int endColumn, String name, List<ClassOrInterfaceType> typeBound) {
-        super(beginLine, beginColumn, endLine, endColumn);
-        this.name = name;
-        this.typeBound = typeBound;
-    }
+	public TypeParameter(final int beginLine, final int beginColumn, final int endLine, final int endColumn,
+			final String name, final List<ClassOrInterfaceType> typeBound) {
+		super(beginLine, beginColumn, endLine, endColumn);
+		setName(name);
+		setTypeBound(typeBound);
+	}
 
-    @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
+	@Override public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
 
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
+	@Override public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
 
-    /**
-     * Return the name of the paramenter.
-     *
-     * @return the name of the paramenter
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 * Return the name of the paramenter.
+	 * 
+	 * @return the name of the paramenter
+	 */
+	public String getName() {
+		return name;
+	}
 
-    /**
-     * Return the list of {@link ClassOrInterfaceType} that this parameter
-     * extends. Return <code>null</code> null if there are no type.
-     *
-     * @return list of types that this paramente extends or <code>null</code>
-     */
-    public List<ClassOrInterfaceType> getTypeBound() {
-        return typeBound;
-    }
+	/**
+	 * Return the list of {@link ClassOrInterfaceType} that this parameter
+	 * extends. Return <code>null</code> null if there are no type.
+	 * 
+	 * @return list of types that this paramente extends or <code>null</code>
+	 */
+	public List<ClassOrInterfaceType> getTypeBound() {
+		return typeBound;
+	}
 
-    /**
-     * Sets the name of this type parameter.
-     *
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+	/**
+	 * Sets the name of this type parameter.
+	 * 
+	 * @param name
+	 *            the name to set
+	 */
+	public void setName(final String name) {
+		this.name = name;
+	}
 
-    /**
-     * Sets the list o types.
-     *
-     * @param typeBound the typeBound to set
-     */
-    public void setTypeBound(List<ClassOrInterfaceType> typeBound) {
-        this.typeBound = typeBound;
-    }
+	/**
+	 * Sets the list o types.
+	 * 
+	 * @param typeBound
+	 *            the typeBound to set
+	 */
+	public void setTypeBound(final List<ClassOrInterfaceType> typeBound) {
+		this.typeBound = typeBound;
+		setAsParentNodeOf(typeBound);
+	}
 
 }

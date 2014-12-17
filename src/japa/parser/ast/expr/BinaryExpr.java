@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -61,16 +61,16 @@ public final class BinaryExpr extends Expression {
     }
 
     public BinaryExpr(Expression left, Expression right, Operator op) {
-        this.left = left;
-        this.right = right;
-        this.op = op;
+    	setLeft(left);
+    	setRight(right);
+    	setOperator(op);
     }
 
     public BinaryExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression left, Expression right, Operator op) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.left = left;
-        this.right = right;
-        this.op = op;
+    	setLeft(left);
+    	setRight(right);
+    	setOperator(op);
     }
 
     @Override
@@ -97,6 +97,7 @@ public final class BinaryExpr extends Expression {
 
     public void setLeft(Expression left) {
         this.left = left;
+		setAsParentNodeOf(this.left);
     }
 
     public void setOperator(Operator op) {
@@ -105,6 +106,6 @@ public final class BinaryExpr extends Expression {
 
     public void setRight(Expression right) {
         this.right = right;
+		setAsParentNodeOf(this.right);
     }
-
 }

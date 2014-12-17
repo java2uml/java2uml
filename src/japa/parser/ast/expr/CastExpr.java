@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -38,14 +38,14 @@ public final class CastExpr extends Expression {
     }
 
     public CastExpr(Type type, Expression expr) {
-        this.type = type;
-        this.expr = expr;
+    	setType(type);
+    	setExpr(expr);
     }
 
     public CastExpr(int beginLine, int beginColumn, int endLine, int endColumn, Type type, Expression expr) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.type = type;
-        this.expr = expr;
+        setType(type);
+    	setExpr(expr);
     }
 
     @Override
@@ -68,10 +68,11 @@ public final class CastExpr extends Expression {
 
     public void setExpr(Expression expr) {
         this.expr = expr;
+		setAsParentNodeOf(this.expr);
     }
 
     public void setType(Type type) {
         this.type = type;
+		setAsParentNodeOf(this.type);
     }
-
 }

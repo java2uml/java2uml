@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -24,45 +24,37 @@ package japa.parser.ast.body;
 import japa.parser.ast.Node;
 import japa.parser.ast.expr.AnnotationExpr;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Julio Vilmar Gesser
  */
-public abstract class BodyDeclaration extends Node {
-
-    private JavadocComment javaDoc;
+public abstract class BodyDeclaration extends Node implements AnnotableNode {
 
     private List<AnnotationExpr> annotations;
 
     public BodyDeclaration() {
     }
 
-    public BodyDeclaration(List<AnnotationExpr> annotations, JavadocComment javaDoc) {
-        this.javaDoc = javaDoc;
-        this.annotations = annotations;
+    public BodyDeclaration(List<AnnotationExpr> annotations) {
+    	setAnnotations(annotations);
     }
 
-    public BodyDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations, JavadocComment javaDoc) {
+    public BodyDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.javaDoc = javaDoc;
-        this.annotations = annotations;
-    }
-
-    public final JavadocComment getJavaDoc() {
-        return javaDoc;
+    	setAnnotations(annotations);
     }
 
     public final List<AnnotationExpr> getAnnotations() {
+        if (annotations==null){
+            annotations = new ArrayList<AnnotationExpr>();
+        }
         return annotations;
-    }
-
-    public final void setJavaDoc(JavadocComment javaDoc) {
-        this.javaDoc = javaDoc;
     }
 
     public final void setAnnotations(List<AnnotationExpr> annotations) {
         this.annotations = annotations;
+		setAsParentNodeOf(this.annotations);
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -38,13 +38,13 @@ public final class VariableDeclaratorId extends Node {
     }
 
     public VariableDeclaratorId(String name) {
-        this.name = name;
+       setName(name);
     }
 
     public VariableDeclaratorId(int beginLine, int beginColumn, int endLine, int endColumn, String name, int arrayCount) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.name = name;
-        this.arrayCount = arrayCount;
+        setName(name);
+        setArrayCount(arrayCount);
     }
 
     @Override

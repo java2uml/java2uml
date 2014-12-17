@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,7 +21,9 @@
  */
 package japa.parser.ast.body;
 
+import japa.parser.ast.DocumentableNode;
 import japa.parser.ast.TypeParameter;
+import japa.parser.ast.comments.JavadocComment;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.visitor.GenericVisitor;
@@ -32,79 +34,98 @@ import java.util.List;
 /**
  * @author Julio Vilmar Gesser
  */
-public final class ClassOrInterfaceDeclaration extends TypeDeclaration {
+public final class ClassOrInterfaceDeclaration extends TypeDeclaration implements DocumentableNode {
 
-    private boolean interface_;
+	private boolean interface_;
 
-    private List<TypeParameter> typeParameters;
+	private List<TypeParameter> typeParameters;
 
-    private List<ClassOrInterfaceType> extendsList;
+	// Can contain more than one item if this is an interface
+	private List<ClassOrInterfaceType> extendsList;
 
-    private List<ClassOrInterfaceType> implementsList;
+	private List<ClassOrInterfaceType> implementsList;
 
-    public ClassOrInterfaceDeclaration() {
-    }
+	public ClassOrInterfaceDeclaration() {
+	}
 
-    public ClassOrInterfaceDeclaration(int modifiers, boolean isInterface, String name) {
-        super(modifiers, name);
-        this.interface_ = isInterface;
-    }
+	public ClassOrInterfaceDeclaration(final int modifiers, final boolean isInterface, final String name) {
+		super(modifiers, name);
+		setInterface(isInterface);
+	}
 
-    public ClassOrInterfaceDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, boolean isInterface, String name, List<TypeParameter> typeParameters, List<ClassOrInterfaceType> extendsList, List<ClassOrInterfaceType> implementsList, List<BodyDeclaration> members) {
-        super(annotations, javaDoc, modifiers, name, members);
-        this.interface_ = isInterface;
-        this.typeParameters = typeParameters;
-        this.extendsList = extendsList;
-        this.implementsList = implementsList;
-    }
+	public ClassOrInterfaceDeclaration(final int modifiers,
+			final List<AnnotationExpr> annotations, final boolean isInterface, final String name,
+			final List<TypeParameter> typeParameters, final List<ClassOrInterfaceType> extendsList,
+			final List<ClassOrInterfaceType> implementsList, final List<BodyDeclaration> members) {
+		super(annotations, modifiers, name, members);
+		setInterface(isInterface);
+		setTypeParameters(typeParameters);
+		setExtends(extendsList);
+		setImplements(implementsList);
+	}
 
-    public ClassOrInterfaceDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, boolean isInterface, String name, List<TypeParameter> typeParameters, List<ClassOrInterfaceType> extendsList, List<ClassOrInterfaceType> implementsList, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc, modifiers, name, members);
-        this.interface_ = isInterface;
-        this.typeParameters = typeParameters;
-        this.extendsList = extendsList;
-        this.implementsList = implementsList;
-    }
+	public ClassOrInterfaceDeclaration(final int beginLine, final int beginColumn, final int endLine,
+			final int endColumn, final int modifiers,
+			final List<AnnotationExpr> annotations, final boolean isInterface, final String name,
+			final List<TypeParameter> typeParameters, final List<ClassOrInterfaceType> extendsList,
+			final List<ClassOrInterfaceType> implementsList, final List<BodyDeclaration> members) {
+		super(beginLine, beginColumn, endLine, endColumn, annotations, modifiers, name, members);
+		setInterface(isInterface);
+		setTypeParameters(typeParameters);
+		setExtends(extendsList);
+		setImplements(implementsList);
+	}
+
+	@Override public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
+
+	@Override public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
+
+	public List<ClassOrInterfaceType> getExtends() {
+		return extendsList;
+	}
+
+	public List<ClassOrInterfaceType> getImplements() {
+		return implementsList;
+	}
+
+	public List<TypeParameter> getTypeParameters() {
+		return typeParameters;
+	}
 
     @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
-
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
-
-    public List<ClassOrInterfaceType> getExtends() {
-        return extendsList;
-    }
-
-    public List<ClassOrInterfaceType> getImplements() {
-        return implementsList;
-    }
-
-    public List<TypeParameter> getTypeParameters() {
-        return typeParameters;
+    public void setJavaDoc(JavadocComment javadocComment) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public boolean isInterface() {
-        return interface_;
-    }
+		return interface_;
+	}
 
-    public void setExtends(List<ClassOrInterfaceType> extendsList) {
-        this.extendsList = extendsList;
-    }
+	public void setExtends(final List<ClassOrInterfaceType> extendsList) {
+		this.extendsList = extendsList;
+		setAsParentNodeOf(this.extendsList);
+	}
 
-    public void setImplements(List<ClassOrInterfaceType> implementsList) {
-        this.implementsList = implementsList;
-    }
+	public void setImplements(final List<ClassOrInterfaceType> implementsList) {
+		this.implementsList = implementsList;
+		setAsParentNodeOf(this.implementsList);
+	}
 
-    public void setInterface(boolean interface_) {
-        this.interface_ = interface_;
-    }
+	public void setInterface(final boolean interface_) {
+		this.interface_ = interface_;
+	}
 
-    public void setTypeParameters(List<TypeParameter> typeParameters) {
-        this.typeParameters = typeParameters;
+	public void setTypeParameters(final List<TypeParameter> typeParameters) {
+		this.typeParameters = typeParameters;
+		setAsParentNodeOf(this.typeParameters);
+	}
+
+    @Override
+    public JavadocComment getJavaDoc() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

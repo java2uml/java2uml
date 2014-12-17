@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -23,6 +23,7 @@ package japa.parser.ast.stmt;
 
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
+import japa.parser.ast.expr.VariableDeclarationExpr;
 
 import java.util.List;
 
@@ -30,60 +31,78 @@ import java.util.List;
  * @author Julio Vilmar Gesser
  */
 public final class TryStmt extends Statement {
+	
+	private List<VariableDeclarationExpr> resources;
 
-    private BlockStmt tryBlock;
+	private BlockStmt tryBlock;
 
-    private List<CatchClause> catchs;
+	private List<CatchClause> catchs;
 
-    private BlockStmt finallyBlock;
+	private BlockStmt finallyBlock;
 
-    public TryStmt() {
-    }
+	public TryStmt() {
+	}
 
-    public TryStmt(BlockStmt tryBlock, List<CatchClause> catchs, BlockStmt finallyBlock) {
-        this.tryBlock = tryBlock;
-        this.catchs = catchs;
-        this.finallyBlock = finallyBlock;
-    }
+	public TryStmt(final BlockStmt tryBlock, final List<CatchClause> catchs,
+			final BlockStmt finallyBlock) {
+		setTryBlock(tryBlock);
+		setCatchs(catchs);
+		setFinallyBlock(finallyBlock);
+	}
 
-    public TryStmt(int beginLine, int beginColumn, int endLine, int endColumn, BlockStmt tryBlock, List<CatchClause> catchs, BlockStmt finallyBlock) {
-        super(beginLine, beginColumn, endLine, endColumn);
-        this.tryBlock = tryBlock;
-        this.catchs = catchs;
-        this.finallyBlock = finallyBlock;
-    }
+	public TryStmt(final int beginLine, final int beginColumn,
+			final int endLine, final int endColumn, List<VariableDeclarationExpr> resources,
+			final BlockStmt tryBlock, final List<CatchClause> catchs, final BlockStmt finallyBlock) {
+		super(beginLine, beginColumn, endLine, endColumn);
+		setResources(resources);
+		setTryBlock(tryBlock);
+		setCatchs(catchs);
+		setFinallyBlock(finallyBlock);
+	}
 
-    @Override
-    public <R, A> R accept(GenericVisitor<R, A> v, A arg) {
-        return v.visit(this, arg);
-    }
+	@Override
+	public <R, A> R accept(final GenericVisitor<R, A> v, final A arg) {
+		return v.visit(this, arg);
+	}
 
-    @Override
-    public <A> void accept(VoidVisitor<A> v, A arg) {
-        v.visit(this, arg);
-    }
+	@Override
+	public <A> void accept(final VoidVisitor<A> v, final A arg) {
+		v.visit(this, arg);
+	}
 
-    public List<CatchClause> getCatchs() {
-        return catchs;
-    }
+	public List<CatchClause> getCatchs() {
+		return catchs;
+	}
 
-    public BlockStmt getFinallyBlock() {
-        return finallyBlock;
-    }
+	public BlockStmt getFinallyBlock() {
+		return finallyBlock;
+	}
 
-    public BlockStmt getTryBlock() {
-        return tryBlock;
-    }
+	public BlockStmt getTryBlock() {
+		return tryBlock;
+	}
+	
+	public List<VariableDeclarationExpr> getResources() {
+		return resources;
+	}
 
-    public void setCatchs(List<CatchClause> catchs) {
-        this.catchs = catchs;
-    }
+	public void setCatchs(final List<CatchClause> catchs) {
+		this.catchs = catchs;
+		setAsParentNodeOf(this.catchs);
+	}
 
-    public void setFinallyBlock(BlockStmt finallyBlock) {
-        this.finallyBlock = finallyBlock;
-    }
+	public void setFinallyBlock(final BlockStmt finallyBlock) {
+		this.finallyBlock = finallyBlock;
+		setAsParentNodeOf(this.finallyBlock);
+	}
 
-    public void setTryBlock(BlockStmt tryBlock) {
-        this.tryBlock = tryBlock;
-    }
+	public void setTryBlock(final BlockStmt tryBlock) {
+		this.tryBlock = tryBlock;
+		setAsParentNodeOf(this.tryBlock);
+	}
+	
+	public void setResources(List<VariableDeclarationExpr> resources) {
+		this.resources = resources;
+		setAsParentNodeOf(this.resources);
+	}
 }

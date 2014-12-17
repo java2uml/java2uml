@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,6 +21,8 @@
  */
 package japa.parser.ast.body;
 
+import japa.parser.ast.DocumentableNode;
+import japa.parser.ast.comments.JavadocComment;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.expr.Expression;
 import japa.parser.ast.visitor.GenericVisitor;
@@ -31,7 +33,7 @@ import java.util.List;
 /**
  * @author Julio Vilmar Gesser
  */
-public final class EnumConstantDeclaration extends BodyDeclaration {
+public final class EnumConstantDeclaration extends BodyDeclaration implements DocumentableNode{
 
     private String name;
 
@@ -43,21 +45,21 @@ public final class EnumConstantDeclaration extends BodyDeclaration {
     }
 
     public EnumConstantDeclaration(String name) {
-        this.name = name;
+        setName(name);
     }
 
-    public EnumConstantDeclaration(JavadocComment javaDoc, List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
-        super(annotations, javaDoc);
-        this.name = name;
-        this.args = args;
-        this.classBody = classBody;
+    public EnumConstantDeclaration(List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
+        super(annotations);
+        setName(name);
+        setArgs(args);
+        setClassBody(classBody);
     }
 
-    public EnumConstantDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
-        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
-        this.name = name;
-        this.args = args;
-        this.classBody = classBody;
+    public EnumConstantDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations, String name, List<Expression> args, List<BodyDeclaration> classBody) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations);
+        setName(name);
+        setArgs(args);
+        setClassBody(classBody);
     }
 
     @Override
@@ -84,13 +86,25 @@ public final class EnumConstantDeclaration extends BodyDeclaration {
 
     public void setArgs(List<Expression> args) {
         this.args = args;
+		setAsParentNodeOf(this.args);
     }
 
     public void setClassBody(List<BodyDeclaration> classBody) {
         this.classBody = classBody;
+		setAsParentNodeOf(this.classBody);
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public void setJavaDoc(JavadocComment javadocComment) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public JavadocComment getJavaDoc() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

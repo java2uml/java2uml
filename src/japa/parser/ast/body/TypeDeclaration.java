@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -22,6 +22,7 @@
 package japa.parser.ast.body;
 
 import japa.parser.ast.expr.AnnotationExpr;
+import japa.parser.ast.expr.NameExpr;
 
 import java.util.List;
 
@@ -30,61 +31,75 @@ import java.util.List;
  */
 public abstract class TypeDeclaration extends BodyDeclaration {
 
-    private String name;
+	private NameExpr name;
 
-    private int modifiers;
+	private int modifiers;
 
-    private List<BodyDeclaration> members;
+	private List<BodyDeclaration> members;
 
-    public TypeDeclaration() {
+	public TypeDeclaration() {
+	}
+
+	public TypeDeclaration(int modifiers, String name) {
+		setName(name);
+		setModifiers(modifiers);
+	}
+
+	public TypeDeclaration(List<AnnotationExpr> annotations,
+			int modifiers, String name,
+			List<BodyDeclaration> members) {
+		super(annotations);
+		setName(name);
+		setModifiers(modifiers);
+		setMembers(members);
+	}
+
+	public TypeDeclaration(int beginLine, int beginColumn, int endLine,
+			int endColumn, List<AnnotationExpr> annotations,
+			int modifiers, String name,
+			List<BodyDeclaration> members) {
+		super(beginLine, beginColumn, endLine, endColumn, annotations);
+		setName(name);
+		setModifiers(modifiers);
+		setMembers(members);
+	}
+
+	public final List<BodyDeclaration> getMembers() {
+		return members;
+	}
+
+	/**
+	 * Return the modifiers of this type declaration.
+	 * 
+	 * @see ModifierSet
+	 * @return modifiers
+	 */
+	public final int getModifiers() {
+		return modifiers;
+	}
+
+	public final String getName() {
+		return name.getName();
+	}
+
+	public void setMembers(List<BodyDeclaration> members) {
+		this.members = members;
+		setAsParentNodeOf(this.members);
+	}
+
+	public final void setModifiers(int modifiers) {
+		this.modifiers = modifiers;
+	}
+
+	public final void setName(String name) {
+		this.name = new NameExpr(name);
+	}
+
+    public final void setNameExpr(NameExpr nameExpr) {
+      this.name = nameExpr;
     }
 
-    public TypeDeclaration(int modifiers, String name) {
-        this.name = name;
-        this.modifiers = modifiers;
-    }
-
-    public TypeDeclaration(List<AnnotationExpr> annotations, JavadocComment javaDoc, int modifiers, String name, List<BodyDeclaration> members) {
-        super(annotations, javaDoc);
-        this.name = name;
-        this.modifiers = modifiers;
-        this.members = members;
-    }
-
-    public TypeDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, List<AnnotationExpr> annotations, JavadocComment javaDoc, int modifiers, String name, List<BodyDeclaration> members) {
-        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
-        this.name = name;
-        this.modifiers = modifiers;
-        this.members = members;
-    }
-
-    public final List<BodyDeclaration> getMembers() {
-        return members;
-    }
-
-    /**
-     * Return the modifiers of this type declaration.
-     *
-     * @return modifiers
-     * @see ModifierSet
-     */
-    public final int getModifiers() {
-        return modifiers;
-    }
-
-    public final String getName() {
-        return name;
-    }
-
-    public void setMembers(List<BodyDeclaration> members) {
-        this.members = members;
-    }
-
-    public final void setModifiers(int modifiers) {
-        this.modifiers = modifiers;
-    }
-
-    public final void setName(String name) {
-        this.name = name;
+    public final NameExpr getNameExpr() {
+      return name;
     }
 }

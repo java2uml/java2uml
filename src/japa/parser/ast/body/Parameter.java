@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,7 +21,6 @@
  */
 package japa.parser.ast.body;
 
-import japa.parser.ast.Node;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.GenericVisitor;
@@ -32,39 +31,28 @@ import java.util.List;
 /**
  * @author Julio Vilmar Gesser
  */
-public final class Parameter extends Node {
-
-    private int modifiers;
-
-    private List<AnnotationExpr> annotations;
-
+public final class Parameter extends BaseParameter {
     private Type type;
 
     private boolean isVarArgs;
-
-    private VariableDeclaratorId id;
 
     public Parameter() {
     }
 
     public Parameter(Type type, VariableDeclaratorId id) {
-        this.type = type;
-        this.id = id;
+    	super(id);
+        setType(type);
     }
 
     public Parameter(int modifiers, Type type, VariableDeclaratorId id) {
-        this.modifiers = modifiers;
-        this.type = type;
-        this.id = id;
+    	super(modifiers, id);
+        setType(type);
     }
 
     public Parameter(int beginLine, int beginColumn, int endLine, int endColumn, int modifiers, List<AnnotationExpr> annotations, Type type, boolean isVarArgs, VariableDeclaratorId id) {
-        super(beginLine, beginColumn, endLine, endColumn);
-        this.modifiers = modifiers;
-        this.annotations = annotations;
-        this.type = type;
-        this.isVarArgs = isVarArgs;
-        this.id = id;
+        super(beginLine, beginColumn, endLine, endColumn, modifiers, annotations, id);
+        setType(type);
+        setVarArgs(isVarArgs);
     }
 
     @Override
@@ -77,24 +65,6 @@ public final class Parameter extends Node {
         v.visit(this, arg);
     }
 
-    public List<AnnotationExpr> getAnnotations() {
-        return annotations;
-    }
-
-    public VariableDeclaratorId getId() {
-        return id;
-    }
-
-    /**
-     * Return the modifiers of this parameter declaration.
-     *
-     * @return modifiers
-     * @see ModifierSet
-     */
-    public int getModifiers() {
-        return modifiers;
-    }
-
     public Type getType() {
         return type;
     }
@@ -103,20 +73,9 @@ public final class Parameter extends Node {
         return isVarArgs;
     }
 
-    public void setAnnotations(List<AnnotationExpr> annotations) {
-        this.annotations = annotations;
-    }
-
-    public void setId(VariableDeclaratorId id) {
-        this.id = id;
-    }
-
-    public void setModifiers(int modifiers) {
-        this.modifiers = modifiers;
-    }
-
     public void setType(Type type) {
         this.type = type;
+		setAsParentNodeOf(this.type);
     }
 
     public void setVarArgs(boolean isVarArgs) {

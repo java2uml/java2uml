@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -54,16 +54,16 @@ public final class AssignExpr extends Expression {
     }
 
     public AssignExpr(Expression target, Expression value, Operator op) {
-        this.target = target;
-        this.value = value;
-        this.op = op;
+        setTarget(target);
+        setValue(value);
+        setOperator(op);
     }
 
     public AssignExpr(int beginLine, int beginColumn, int endLine, int endColumn, Expression target, Expression value, Operator op) {
         super(beginLine, beginColumn, endLine, endColumn);
-        this.target = target;
-        this.value = value;
-        this.op = op;
+        setTarget(target);
+        setValue(value);
+        setOperator(op);
     }
 
     @Override
@@ -94,10 +94,11 @@ public final class AssignExpr extends Expression {
 
     public void setTarget(Expression target) {
         this.target = target;
+		setAsParentNodeOf(this.target);
     }
 
     public void setValue(Expression value) {
         this.value = value;
+		setAsParentNodeOf(this.value);
     }
-
 }

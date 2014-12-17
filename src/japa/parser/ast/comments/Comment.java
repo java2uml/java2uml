@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -19,21 +19,22 @@
 /*
  * Created on 23/05/2008
  */
-package japa.parser.ast;
+package japa.parser.ast.comments;
 
-import japa.parser.ast.body.JavadocComment;
+import japa.parser.ast.Node;
 
 /**
  * Abstract class for all AST nodes that represent comments.
- *
- * @author Julio Vilmar Gesser
+ * 
  * @see BlockComment
  * @see LineComment
  * @see JavadocComment
+ * @author Julio Vilmar Gesser
  */
 public abstract class Comment extends Node {
 
     private String content;
+    private Node commentedNode;
 
     public Comment() {
     }
@@ -49,7 +50,7 @@ public abstract class Comment extends Node {
 
     /**
      * Return the text of the comment.
-     *
+     * 
      * @return text of the comment
      */
     public final String getContent() {
@@ -58,10 +59,54 @@ public abstract class Comment extends Node {
 
     /**
      * Sets the text of the comment.
-     *
-     * @param content the text of the comment to set
+     * 
+     * @param content
+     *            the text of the comment to set
      */
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public boolean isLineComment()
+    {
+        return false;
+    }
+
+    public LineComment asLineComment()
+    {
+        if (isLineComment())
+        {
+            return (LineComment) this;
+        } else {
+            throw new UnsupportedOperationException("Not a line comment");
+        }
+    }
+
+    public Node getCommentedNode()
+    {
+        return this.commentedNode;
+    }
+
+    public void setCommentedNode(Node commentedNode)
+    {
+        if (commentedNode==null)
+        {
+            this.commentedNode = commentedNode;
+            return;
+        }
+        if (commentedNode==this)
+        {
+            throw new IllegalArgumentException();
+        }
+        if (commentedNode instanceof Comment)
+        {
+            throw new IllegalArgumentException();
+        }
+        this.commentedNode = commentedNode;
+    }
+
+    public boolean isOrphan()
+    {
+        return this.commentedNode == null;
     }
 }

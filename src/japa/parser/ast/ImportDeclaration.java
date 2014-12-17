@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -34,15 +34,15 @@ import japa.parser.ast.visitor.VoidVisitor;
  * <code>
  * <table>
  * <tr valign=baseline>
- * <td align=right>ImportDeclaration</td>
- * <td align=center>::=</td>
- * <td align=left>
- * "import" ( "static" )? {@link NameExpr} ( "." "*" )? ";"
- * </td>
+ *   <td align=right>ImportDeclaration</td>
+ *   <td align=center>::=</td>
+ *   <td align=left>
+ *       "import" ( "static" )? {@link NameExpr} ( "." "*" )? ";"
+ *   </td>
  * </tr>
- * </table>
+ * </table> 
  * </code>
- *
+ * 
  * @author Julio Vilmar Gesser
  */
 public final class ImportDeclaration extends Node {
@@ -81,7 +81,7 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Retrieves the name of the import.
-     *
+     * 
      * @return the name of the import
      */
     public NameExpr getName() {
@@ -90,9 +90,9 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Return if the import ends with "*".
-     *
+     * 
      * @return <code>true</code> if the import ends with "*", <code>false</code>
-     * otherwise
+     *         otherwise
      */
     public boolean isAsterisk() {
         return asterisk;
@@ -100,9 +100,9 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Return if the import is static.
-     *
+     * 
      * @return <code>true</code> if the import is static, <code>false</code>
-     * otherwise
+     *         otherwise
      */
     public boolean isStatic() {
         return static_;
@@ -110,8 +110,9 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Sets if this import is asterisk.
-     *
-     * @param asterisk <code>true</code> if this import is asterisk
+     * 
+     * @param asterisk
+     *            <code>true</code> if this import is asterisk
      */
     public void setAsterisk(boolean asterisk) {
         this.asterisk = asterisk;
@@ -119,8 +120,9 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Sets the name this import.
-     *
-     * @param name the name to set
+     * 
+     * @param name
+     *            the name to set
      */
     public void setName(NameExpr name) {
         this.name = name;
@@ -128,8 +130,9 @@ public final class ImportDeclaration extends Node {
 
     /**
      * Sets if this import is static.
-     *
-     * @param static_ <code>true</code> if this import is static
+     * 
+     * @param static_
+     *            <code>true</code> if this import is static
      */
     public void setStatic(boolean static_) {
         this.static_ = static_;

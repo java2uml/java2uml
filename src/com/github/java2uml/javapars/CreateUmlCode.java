@@ -7,6 +7,7 @@ import japa.parser.ast.CompilationUnit;
 
 import japa.parser.ast.body.*;
 
+import japa.parser.ast.expr.Expression;
 import japa.parser.ast.type.ClassOrInterfaceType;
 
 import japa.parser.ast.visitor.VoidVisitorAdapter;
@@ -53,7 +54,7 @@ public class CreateUmlCode {
     public static void getCU(File path) throws Exception {
         // creates an input stream for the file to be parsed
         FileInputStream in = new FileInputStream(path);
-
+//        JavaParser.setCacheParser(false);
         CompilationUnit cu;
         try {
             // parse the file
@@ -65,6 +66,11 @@ public class CreateUmlCode {
          *  Вызов визитора для классов и интерфейсов
          */
         new GetClassOrInterfaceDeclaration().visit(cu, null);
+
+        /**
+         *  Вызов визитора для ENUM
+         */
+        new GetEnumConstantDeclaration().visit(cu, null);
     }
 
     /**
@@ -89,7 +95,6 @@ public class CreateUmlCode {
                 source.append(" <|-- ");
                 source.append(n.getName() + "\n\n");
             }
-
             source.append(Modifier.toString(n.getModifiers() - 1));
             source.append(n.getModifiers() - 1 > 0 ? " " : "");
             if (n.isInterface())
@@ -108,6 +113,24 @@ public class CreateUmlCode {
                 // Вызов визитора для методов
                 new GetMethods().visit(n, arg);
                 source.append("}\n");
+            }
+        }
+
+    }
+
+    /**
+     * Visitor implementation for visiting EnumConstantDeclaration nodes.
+     */
+    private static class GetEnumConstantDeclaration extends VoidVisitorAdapter {
+
+        @Override
+        public void visit(EnumConstantDeclaration n, Object arg) {
+//            System.out.println(n.getName());
+
+            if(n.getClassBody() != null) {
+                for (BodyDeclaration var : n.getClassBody()) {
+                    System.out.println("getAnnotations- " + var.getAnnotations()+ "\n");
+                }
             }
         }
 
@@ -163,7 +186,7 @@ public class CreateUmlCode {
                 source.append(" -");
                 break;
             case Modifier.PROTECTED:
-                source.append(" ~");
+                source.append(" #");
                 break;
             default:
                 source.append(" +");

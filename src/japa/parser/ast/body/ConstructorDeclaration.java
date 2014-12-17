@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 J�lio Vilmar Gesser.
+ * Copyright (C) 2007 Júlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -21,25 +21,28 @@
  */
 package japa.parser.ast.body;
 
+import java.util.List;
+
+import japa.parser.ast.AccessSpecifier;
+import japa.parser.ast.DocumentableNode;
 import japa.parser.ast.TypeParameter;
+import japa.parser.ast.comments.JavadocComment;
 import japa.parser.ast.expr.AnnotationExpr;
 import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.stmt.BlockStmt;
 import japa.parser.ast.visitor.GenericVisitor;
 import japa.parser.ast.visitor.VoidVisitor;
 
-import java.util.List;
-
 /**
  * @author Julio Vilmar Gesser
  */
-public final class ConstructorDeclaration extends BodyDeclaration {
+public final class ConstructorDeclaration extends BodyDeclaration implements DocumentableNode, WithDeclaration {
 
     private int modifiers;
 
     private List<TypeParameter> typeParameters;
 
-    private String name;
+    private NameExpr name;
 
     private List<Parameter> parameters;
 
@@ -51,28 +54,28 @@ public final class ConstructorDeclaration extends BodyDeclaration {
     }
 
     public ConstructorDeclaration(int modifiers, String name) {
-        this.modifiers = modifiers;
-        this.name = name;
+        setModifiers(modifiers);
+        setName(name);
     }
 
-    public ConstructorDeclaration(JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<NameExpr> throws_, BlockStmt block) {
-        super(annotations, javaDoc);
-        this.modifiers = modifiers;
-        this.typeParameters = typeParameters;
-        this.name = name;
-        this.parameters = parameters;
-        this.throws_ = throws_;
-        this.block = block;
+    public ConstructorDeclaration(int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<NameExpr> throws_, BlockStmt block) {
+        super(annotations);
+        setModifiers(modifiers);
+        setTypeParameters(typeParameters);
+        setName(name);
+        setParameters(parameters);
+        setThrows(throws_);
+        setBlock(block);
     }
 
-    public ConstructorDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, JavadocComment javaDoc, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<NameExpr> throws_, BlockStmt block) {
-        super(beginLine, beginColumn, endLine, endColumn, annotations, javaDoc);
-        this.modifiers = modifiers;
-        this.typeParameters = typeParameters;
-        this.name = name;
-        this.parameters = parameters;
-        this.throws_ = throws_;
-        this.block = block;
+    public ConstructorDeclaration(int beginLine, int beginColumn, int endLine, int endColumn, int modifiers, List<AnnotationExpr> annotations, List<TypeParameter> typeParameters, String name, List<Parameter> parameters, List<NameExpr> throws_, BlockStmt block) {
+        super(beginLine, beginColumn, endLine, endColumn, annotations);
+        setModifiers(modifiers);
+        setTypeParameters(typeParameters);
+        setName(name);
+        setParameters(parameters);
+        setThrows(throws_);
+        setBlock(block);
     }
 
     @Override
@@ -91,16 +94,20 @@ public final class ConstructorDeclaration extends BodyDeclaration {
 
     /**
      * Return the modifiers of this member declaration.
-     *
-     * @return modifiers
+     * 
      * @see ModifierSet
+     * @return modifiers
      */
     public int getModifiers() {
         return modifiers;
     }
 
     public String getName() {
-        return name;
+        return name == null ? null : name.getName();
+    }
+
+    public NameExpr getNameExpr() {
+      return name;
     }
 
     public List<Parameter> getParameters() {
@@ -117,6 +124,7 @@ public final class ConstructorDeclaration extends BodyDeclaration {
 
     public void setBlock(BlockStmt block) {
         this.block = block;
+		setAsParentNodeOf(this.block);
     }
 
     public void setModifiers(int modifiers) {
@@ -124,18 +132,84 @@ public final class ConstructorDeclaration extends BodyDeclaration {
     }
 
     public void setName(String name) {
+        this.name = new NameExpr(name);
+    }
+
+    @Override
+    public void setJavaDoc(JavadocComment javadocComment) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void setNameExpr(NameExpr name) {
         this.name = name;
     }
 
     public void setParameters(List<Parameter> parameters) {
         this.parameters = parameters;
+		setAsParentNodeOf(this.parameters);
     }
 
     public void setThrows(List<NameExpr> throws_) {
         this.throws_ = throws_;
+		setAsParentNodeOf(this.throws_);
     }
 
     public void setTypeParameters(List<TypeParameter> typeParameters) {
         this.typeParameters = typeParameters;
+		setAsParentNodeOf(this.typeParameters);
+    }
+
+    @Override
+    public JavadocComment getJavaDoc() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    /**
+     * The declaration returned has this schema:
+     *
+     * [accessSpecifier] className ([paramlist])
+     * [throws exceptionsList]
+     */
+    @Override
+    public String getDeclarationAsString(boolean includingModifiers, boolean includingThrows) {
+        StringBuffer sb = new StringBuffer();
+        if (includingModifiers) {
+            AccessSpecifier accessSpecifier = ModifierSet.getAccessSpecifier(getModifiers());
+            sb.append(accessSpecifier.getCodeRepresenation());
+            sb.append(accessSpecifier == AccessSpecifier.DEFAULT ? "" : " ");
+        }
+        sb.append(getName());
+        sb.append("(");
+        boolean firstParam = true;
+        for (Parameter param : parameters)
+        {
+            if (firstParam) {
+                firstParam = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(param.toStringWithoutComments());
+        }
+        sb.append(")");
+        if (includingThrows) {
+            if (!this.getThrows().isEmpty()) {
+                sb.append(" throws ");
+                boolean firstThrow = true;
+                for (NameExpr thr : getThrows()) {
+                    if (firstThrow) {
+                        firstThrow = false;
+                    } else {
+                        sb.append(", ");
+                    }
+                    sb.append(thr.toStringWithoutComments());
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String getDeclarationAsString() {
+        return getDeclarationAsString(true, true);
     }
 }

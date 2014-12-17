@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Júlio Vilmar Gesser.
+ * Copyright (C) 2007 JÃºlio Vilmar Gesser.
  * 
  * This file is part of Java 1.5 parser and Abstract Syntax Tree.
  *
@@ -17,6 +17,8 @@
  * along with Java 1.5 parser and Abstract Syntax Tree.  If not, see <http://www.gnu.org/licenses/>.
  */
 package japa.parser.ast.body;
+
+import japa.parser.ast.AccessSpecifier;
 
 import java.lang.reflect.Modifier;
 
@@ -51,6 +53,18 @@ public final class ModifierSet {
 
     public static final int STRICTFP = Modifier.STRICT;
 
+    public static AccessSpecifier getAccessSpecifier(int modifiers) {
+        if (isPublic(modifiers)){
+            return AccessSpecifier.PUBLIC;
+        } else if (isProtected(modifiers)){
+            return AccessSpecifier.PROTECTED;
+        } else if (isPrivate(modifiers)){
+            return AccessSpecifier.PRIVATE;
+        } else {
+            return AccessSpecifier.DEFAULT;
+        }
+    }
+
     /**
      * Adds the given modifier.
      */
@@ -83,6 +97,15 @@ public final class ModifierSet {
     }
 
     /**
+     * Is the element accessible from within the package?
+     * It is the level of access which is applied if no modifiers are chosen,
+     * it is sometimes called "default".
+     */
+    public static boolean hasPackageLevelAccess(int modifiers) {
+        return !isPublic(modifiers) && !isProtected(modifiers) && !isPrivate(modifiers);
+    }
+
+    /*
      * A set of accessors that indicate whether the specified modifier is in the
      * set.
      */
