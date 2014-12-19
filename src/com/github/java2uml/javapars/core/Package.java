@@ -62,7 +62,6 @@ public class Package {
         public void visit(PackageDeclaration n, Object arg) {
                 pack = n;
         }
-
     }
 
     /**
@@ -71,9 +70,9 @@ public class Package {
     private class GetEnumDeclaration extends VoidVisitorAdapter {
         @Override
         public void visit(EnumDeclaration n, Object arg) {
+            
             enumDeclaration = n;
         }
-
     }
 
     public boolean nonePack(){

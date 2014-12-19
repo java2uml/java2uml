@@ -7,9 +7,11 @@ import com.github.java2uml.javapars.core.Package;
 
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
+import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
 
 import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
@@ -40,7 +42,7 @@ public class CreateUmlCode {
         List<Package> packages = data.getPackages();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
-        source.append("skinparam classAttributeIconSize 0\n");
+//        source.append("skinparam classAttributeIconSize 0\n");
         // Перебираем пакеты
         for (Package pack : packages) {
             if (!pack.nonePack()) {
@@ -66,19 +68,27 @@ public class CreateUmlCode {
         for (Clazz clazz : classes) {
             ClassOrInterfaceDeclaration n = clazz.getClazz();
             if(n != null) {
-                setAggregation(clazz.getCu().getImports(), n.getName());
                 if (n.getImplements() != null) {
                     source.append("\n");
                     for (ClassOrInterfaceType type : n.getImplements()) {
-                        // todo Если внутри пакета связь делаем короткую
+                        // Если внутри пакета связь делаем короткую
                         source.append(nameWithPath(clazz.getCu().getImports(), type.getName()));
-                        source.append(" <|.. ");
+                        // Если внутри пакета связь делаем короткую
+                        if(genericPackage(clazz.getCu().getImports(), clazz.getCu().getPackage()))
+                            source.append(" <|. ");
+                        else
+                           source.append(" <|.. ");
+                        
                         source.append(n.getName() + "\n");
                     }
                 }
                 if (n.getExtends() != null) {
                     for (ClassOrInterfaceType type : n.getExtends())
                         source.append("\n" + nameWithPath(clazz.getCu().getImports(), type.getName()));
+                    
+                    if(genericPackage(clazz.getCu().getImports(), clazz.getCu().getPackage()))
+                        source.append(" <|- ");
+                    else
                     source.append(" <|-- ");
                     source.append(n.getName() + "\n\n");
                 }
@@ -92,6 +102,7 @@ public class CreateUmlCode {
                 source.append(n.getName());
                 if (n.getMembers().size() > 0) {
                     source.append("{\n");
+
                     // Вытягиваем поля
                     if (clazz.getFields() != null)
                         setFields(clazz.getFields());
@@ -101,6 +112,7 @@ public class CreateUmlCode {
                     
                     // todo Вытягиваем константы и внутренние классы
                     source.append("}\n");
+                    setAggregation(clazz.getCu().getImports(), clazz.getCu().getPackage(), n.getName());
 
                 }
             }
@@ -110,7 +122,6 @@ public class CreateUmlCode {
     
     private void getEnums(EnumDeclaration n, CompilationUnit cu){
         if(n != null) {
-            setAggregation(cu.getImports(), n.getName());
             source.append("enum " + n.getName());
             source.append("{\n");
             if (n.getMembers().size() > 0) {
@@ -120,7 +131,37 @@ public class CreateUmlCode {
                     for(EnumConstantDeclaration constant : n.getEntries())
                         source.append(constant.getName() + "\n");
                 }
-                // todo Вытягиваем методы
+                // Вытягиваем поля и методы
+                if (n.getMembers().size() > 0) {
+                    // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
+                    // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
+                    new VoidVisitorAdapter(){
+                        @Override
+                        public void visit(FieldDeclaration n, Object arg) {
+                            source.append(".. Fields ..\n");
+                            setModifier(n.getModifiers());
+                            source.append(n.getType());
+                            for (VariableDeclarator var : n.getVariables()) {
+                                source.append(" " + var.getId() + "\n");
+                            }
+                        }
+                    }.visit(n, null);
+                    source.append(".. Methods ..\n");
+                    new VoidVisitorAdapter(){
+                        @Override
+                        public void visit(MethodDeclaration n, Object arg) {
+
+                            setModifier(n.getModifiers());
+                            if(n.getType() != null)
+                                source.append(n.getType() + " ");
+                            source.append(n.getName() + "(");
+                            if (n.getParameters() != null) {
+                                setParameters(n.getParameters());
+                            }
+                            source.append(")\n");
+                        }
+                    }.visit(n, null);
+                }
 
             }
             source.append("}\n");
@@ -162,15 +203,23 @@ public class CreateUmlCode {
         }
     }
 
-    private void setAggregation(List<ImportDeclaration> imports, String nameClass){
+    private void setAggregation(List<ImportDeclaration> imports, PackageDeclaration pack, String nameClass){
 
         if(imports != null && imports.size() > 0)
             for(ImportDeclaration imp : imports){
                 for (String cl : Clazz.getClasses())
                     if(imp.getName().toString().toLowerCase().endsWith(cl.toLowerCase())){
                         source.append(nameClass);
-                        source.append(" o-- ");
-                        source.append(imp.getName() + " : aggregation\n");
+//                        source.append(" \"" + imp.getName() + "\" ");
+                        // Если в одном пакете делаем связь короткой, для exception отдельная стрелка
+                        if(pack != null && imp.getName().toString().contains(pack.getName().toString()))
+                            source.append(" o- ");
+                        else if(imp.getName().toString().toLowerCase().contains("exception"))
+                            source.append(" ..> ");
+                        else
+                            source.append(" o-- ");
+//                        source.append(" \"" + nameClass + "\" ");
+                        source.append(imp.getName() + "\n");
                     }
             }
     }
@@ -206,6 +255,15 @@ public class CreateUmlCode {
                 break;
             case Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL:
                 source.append(" -{static}");
+                break;
+            case Modifier.PUBLIC | Modifier.FINAL:
+                source.append(" +");
+                break;
+            case Modifier.PROTECTED | Modifier.FINAL:
+                source.append(" #");
+                break;
+            case Modifier.PRIVATE | Modifier.FINAL:
+                source.append(" -");
                 break;
             case Modifier.ABSTRACT:
                 source.append(" {abstract}");
@@ -254,6 +312,14 @@ public class CreateUmlCode {
         }
         return path;
     }
- 
 
+    private boolean genericPackage(List<ImportDeclaration> imports, PackageDeclaration pack){
+        String connection = "";
+        if(imports != null && imports.size() > 0)
+            for(ImportDeclaration imp : imports){
+                if(imp.getName().toString().contains(pack.getName().toString()))
+                    return true;
+            }
+        return false;
+    }
 }
