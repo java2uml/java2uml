@@ -2,19 +2,17 @@
 package com.github.java2uml.javapars;
 
 
-import japa.parser.JavaParser;
-import japa.parser.ast.CompilationUnit;
+import com.github.java2uml.javapars.core.*;
+import com.github.java2uml.javapars.core.Package;
 
+import japa.parser.ast.CompilationUnit;
+import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.body.*;
 
-import japa.parser.ast.expr.Expression;
 import japa.parser.ast.type.ClassOrInterfaceType;
-
-import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,10 +20,11 @@ import java.util.List;
  */
 public class CreateUmlCode {
 
-    private static List<File> files;
+    private static SettingData data;
     private static StringBuilder source;
-    private static String fileUML;
-    public final static String UML_TEMPLATE = "uml_templates";
+    private String fileUML;
+    public final String UML_TEMPLATE = "uml_templates";
+
 
     public CreateUmlCode(String folder) throws Exception {
         // Генерирование названия файла UML
@@ -34,16 +33,28 @@ public class CreateUmlCode {
         init(folder);
     }
 
-    public static void init(String path) throws Exception {
-        String absolutePath = path;
-        File folder = new File(absolutePath);
-        files = new ArrayList<File>();
-        createArrayFiles(folder);
+    public void init(String path) throws Exception {
+        data = new SettingData(path);
         source = new StringBuilder();
+
+        List<Package> packages = data.getPackages();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
-        for (File fileName : files) {
-            getCU(fileName);
+        source.append("skinparam classAttributeIconSize 0\n");
+        // Перебираем пакеты
+        for (Package pack : packages) {
+            if (!pack.nonePack()) {
+                source.append("namespace ");
+                source.append(pack.getPack().getName() + " {\n");
+            }
+            // Вытягиваем классы
+            getClasses(pack.getClasses());
+            // Вытягиваем enum
+            getEnums(pack.getEnumDeclaration(), pack.getCu());
+            if (!pack.nonePack()) {
+                source.append("}\n");
+            }
+
         }
         source.append("@enduml\n");
 
@@ -51,169 +62,167 @@ public class CreateUmlCode {
         write(source.toString());
     }
 
-    public static void getCU(File path) throws Exception {
-        // creates an input stream for the file to be parsed
-        FileInputStream in = new FileInputStream(path);
-//        JavaParser.setCacheParser(false);
-        CompilationUnit cu;
-        try {
-            // parse the file
-            cu = JavaParser.parse(in);
-        } finally {
-            in.close();
-        }
-        /**
-         *  Вызов визитора для классов и интерфейсов
-         */
-        new GetClassOrInterfaceDeclaration().visit(cu, null);
-
-        /**
-         *  Вызов визитора для ENUM
-         */
-        new GetEnumConstantDeclaration().visit(cu, null);
-    }
-
-    /**
-     * Visitor implementation for visiting ClassOrInterfaceDeclaration nodes.
-     */
-    private static class GetClassOrInterfaceDeclaration extends VoidVisitorAdapter {
-
-        @Override
-        public void visit(ClassOrInterfaceDeclaration n, Object arg) {
-
-            if (n.getImplements() != null) {
-                source.append("\n");
-                for (ClassOrInterfaceType type : n.getImplements()) {
-                    source.append(type.getName());
+    private void getClasses(List<Clazz> classes) {
+        for (Clazz clazz : classes) {
+            ClassOrInterfaceDeclaration n = clazz.getClazz();
+            if(n != null) {
+                setAggregation(clazz.getCu().getImports(), n.getName());
+                if (n.getImplements() != null) {
+                    source.append("\n");
+                    for (ClassOrInterfaceType type : n.getImplements()) {
+                        // todo Если внутри пакета связь делаем короткую
+                        source.append(nameWithPath(clazz.getCu().getImports(), type.getName()));
+                        source.append(" <|.. ");
+                        source.append(n.getName() + "\n");
+                    }
+                }
+                if (n.getExtends() != null) {
+                    for (ClassOrInterfaceType type : n.getExtends())
+                        source.append("\n" + nameWithPath(clazz.getCu().getImports(), type.getName()));
                     source.append(" <|-- ");
-                    source.append(n.getName() + "\n");
+                    source.append(n.getName() + "\n\n");
+                }
+                source.append(Modifier.toString(n.getModifiers() - 1));
+                source.append(n.getModifiers() - 1 > 0 ? " " : "");
+                if (n.isInterface())
+                    source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+                else
+                    source.append("class ");
+                
+                source.append(n.getName());
+                if (n.getMembers().size() > 0) {
+                    source.append("{\n");
+                    // Вытягиваем поля
+                    if (clazz.getFields() != null)
+                        setFields(clazz.getFields());
+
+                    // Вытягиваем методы
+                    setMethods(clazz.getMethods());
+                    
+                    // todo Вытягиваем константы и внутренние классы
+                    source.append("}\n");
+
                 }
             }
-            if (n.getExtends() != null) {
-                for (ClassOrInterfaceType type : n.getExtends())
-                    source.append("\n" + type.getName());
-                source.append(" <|-- ");
-                source.append(n.getName() + "\n\n");
-            }
-            source.append(Modifier.toString(n.getModifiers() - 1));
-            source.append(n.getModifiers() - 1 > 0 ? " " : "");
-            if (n.isInterface())
-                source.append(Modifier.toString(Modifier.INTERFACE) + " ");
-            else
-                source.append("class ");
+        }
 
-            source.append(n.getName());
-
+    }
+    
+    private void getEnums(EnumDeclaration n, CompilationUnit cu){
+        if(n != null) {
+            setAggregation(cu.getImports(), n.getName());
+            source.append("enum " + n.getName());
+            source.append("{\n");
             if (n.getMembers().size() > 0) {
-                source.append("{\n");
+                
+                // Вытягиваем константы
+                if (n.getEntries() != null) {
+                    for(EnumConstantDeclaration constant : n.getEntries())
+                        source.append(constant.getName() + "\n");
+                }
+                // todo Вытягиваем методы
 
-                // Вызов визитора для полей
-                new GetFields().visit(n, arg);
-
-                // Вызов визитора для методов
-                new GetMethods().visit(n, arg);
-                source.append("}\n");
             }
+            source.append("}\n");
         }
-
     }
 
-    /**
-     * Visitor implementation for visiting EnumConstantDeclaration nodes.
-     */
-    private static class GetEnumConstantDeclaration extends VoidVisitorAdapter {
+    private void setFields(List<FieldDeclaration> fields) {
+        if(fields != null && fields.size() > 0)
+            for (FieldDeclaration n : fields) {
+                setModifier(n.getModifiers());
+                source.append(n.getType());
 
-        @Override
-        public void visit(EnumConstantDeclaration n, Object arg) {
-//            System.out.println(n.getName());
-
-            if(n.getClassBody() != null) {
-                for (BodyDeclaration var : n.getClassBody()) {
-                    System.out.println("getAnnotations- " + var.getAnnotations()+ "\n");
+                for (VariableDeclarator var : n.getVariables()) {
+                    source.append(" " + var.getId() + "\n");
                 }
             }
-        }
-
     }
 
-    /**
-     * Visitor implementation for visiting FieldDeclaration nodes.
-     */
-    private static class GetFields extends VoidVisitorAdapter {
 
-        @Override
-        public void visit(FieldDeclaration n, Object arg) {
-
-            setModifier(n.getModifiers());
-
-            source.append(n.getType());
-            for (VariableDeclarator var : n.getVariables()) {
-                source.append(" " + var.getId() + "\n");
+    public void setMethods(List<MethodDeclaration> methods) {
+        if(methods != null && methods.size() > 0) {
+            for(MethodDeclaration n : methods) {
+                setModifier(n.getModifiers());
+                if(n.getType() != null)
+                    source.append(n.getType() + " ");
+                source.append(n.getName() + "(");
+                if (n.getParameters() != null) {
+                    setParameters(n.getParameters());
+                }
+                    source.append(")\n");
             }
         }
-
     }
 
-    /**
-     * Visitor implementation for visiting MethodDeclaration nodes.
-     */
-    private static class GetMethods extends VoidVisitorAdapter {
-
-        @Override
-        public void visit(MethodDeclaration n, Object arg) {
-
-            setModifier(n.getModifiers());
-
-            source.append(n.getName() + "(");
-            if (n.getParameters() != null) {
-                setParameters(n.getParameters());
-            }
-            source.append(")\n");
+    private void setParameters(List<Parameter> parameters) {
+        for (Parameter parameter : parameters) {
+            source.append(parameter.getType() + " ");
+            source.append(parameter.getId());
         }
-
-        private void setParameters(List<Parameter> parameters) {
-            for (Parameter parameter : parameters) {
-                source.append(parameter.getType() + " ");
-                source.append(parameter.getId());
-            }
-        }
-
     }
 
-    private static void setModifier(int mod) {
+    private void setAggregation(List<ImportDeclaration> imports, String nameClass){
+
+        if(imports != null && imports.size() > 0)
+            for(ImportDeclaration imp : imports){
+                for (String cl : Clazz.getClasses())
+                    if(imp.getName().toString().toLowerCase().endsWith(cl.toLowerCase())){
+                        source.append(nameClass);
+                        source.append(" o-- ");
+                        source.append(imp.getName() + " : aggregation\n");
+                    }
+            }
+    }
+
+    private void setModifier(int mod) {
         switch (mod) {
+            case Modifier.PUBLIC:
+                source.append(" +");
+                break;
             case Modifier.PRIVATE:
                 source.append(" -");
                 break;
             case Modifier.PROTECTED:
                 source.append(" #");
                 break;
+            case Modifier.STATIC:
+                source.append(" {static}");
+                break;
+            case Modifier.PUBLIC | Modifier.STATIC:
+                source.append(" +{static}");
+                break;
+            case Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL:
+                source.append(" +{static}");
+                break;
+            case Modifier.PROTECTED | Modifier.STATIC:
+                source.append(" #{static}");
+                break;
+            case Modifier.PROTECTED | Modifier.STATIC | Modifier.FINAL:
+                source.append(" #{static}");
+                break;
+            case Modifier.PRIVATE | Modifier.STATIC:
+                source.append(" -{static}");
+                break;
+            case Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL:
+                source.append(" -{static}");
+                break;
+            case Modifier.ABSTRACT:
+                source.append(" {abstract}");
+                break;
             default:
-                source.append(" +");
+                source.append("");
         }
     }
 
-    private static void createArrayFiles(File path) {
-        File[] folder = path.listFiles();
-
-        for (int i = 0; i < folder.length; i++) {
-            if (folder[i].isDirectory())
-                createArrayFiles(folder[i]);
-            else if (folder[i].toString().toLowerCase().endsWith(".java")) {
-                files.add(folder[i]);
-            }
-        }
-
-    }
-
-    public static void write(String text) {
+    public void write(String text) {
         //Определяем файл
         File folder = new File(UML_TEMPLATE).getAbsoluteFile();
         File file = new File(UML_TEMPLATE + "/" + fileUML).getAbsoluteFile();
 
         try {
             //проверяем, что если папка не существует то создаем ее
-            if(!folder.exists()){
+            if (!folder.exists()) {
                 folder.mkdir();
             }
             //проверяем, что если файл не существует то создаем его
@@ -234,5 +243,17 @@ public class CreateUmlCode {
             throw new RuntimeException(e);
         }
     }
+    
+    private String nameWithPath(List<ImportDeclaration> imports, String nameClass){
+        String path = nameClass;
+        if(imports != null && imports.size() > 0)
+        for(ImportDeclaration imp : imports){
+
+            if(imp.getName().toString().toLowerCase().endsWith(nameClass.toLowerCase()))
+                path = "" + imp.getName();
+        }
+        return path;
+    }
+ 
 
 }
