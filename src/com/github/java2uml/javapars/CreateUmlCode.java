@@ -52,7 +52,7 @@ public class CreateUmlCode {
             // Вытягиваем классы
             getClasses(pack.getClasses());
             // Вытягиваем enum
-            getEnums(pack.getEnumDeclaration(), pack.getCu());
+            getEnums(pack.getCu());
             if (!pack.nonePack()) {
                 source.append("}\n");
             }
@@ -89,7 +89,7 @@ public class CreateUmlCode {
                     if(genericPackage(clazz.getCu().getImports(), clazz.getCu().getPackage()))
                         source.append(" <|- ");
                     else
-                    source.append(" <|-- ");
+                        source.append(" <|-- ");
                     source.append(n.getName() + "\n\n");
                 }
                 source.append(Modifier.toString(n.getModifiers() - 1));
@@ -109,63 +109,98 @@ public class CreateUmlCode {
 
                     // Вытягиваем методы
                     setMethods(clazz.getMethods());
-                    
-                    // todo Вытягиваем константы и внутренние классы
-                    source.append("}\n");
-                    setAggregation(clazz.getCu().getImports(), clazz.getCu().getPackage(), n.getName());
 
+                    source.append("}\n");
+                    // todo Вытягиваем внутренние классы
+
+                    // Добавляем связь внутренним enum
+                    setConnectWithInnerEnums(n, n.getName());
+                    
+                    setAggregation(clazz.getCu().getImports(), clazz.getCu().getPackage(), n.getName());
                 }
             }
         }
+    }
+    
+    private void setConnectWithInnerEnums(ClassOrInterfaceDeclaration n, final String className){
+        // Так как в ClassOrInterfaceDeclaration нет прямого метода разбиения этих данных,
+        // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(EnumDeclaration n, Object arg) {
+                source.append(className);
+                source.append(" *- ");
+                source.append(n.getName() + "\n");
+            }
+        }.visit(n, null);
+        
+    }
+
+    private void getEnums(CompilationUnit cu){
+        // Посещаем визитор EnumDeclaration
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(EnumDeclaration n, Object arg) {
+                if(n != null) {
+                    source.append("enum " + n.getName());
+                    source.append("{\n");
+                    if (n.getMembers().size() > 0) {
+
+                        // Вытягиваем константы
+                        if (n.getEntries() != null) {
+                            for(EnumConstantDeclaration constant : n.getEntries())
+                                source.append(constant.getName() + "\n");
+                        }
+                        // Вытягиваем поля и методы
+                        if (n.getMembers().size() > 0) {
+                            setEnumFields(n);
+                            setEnumMethods(n);
+                        }
+
+                    }
+                    source.append("}\n");
+                }
+            }
+        }.visit(cu, null);
 
     }
     
-    private void getEnums(EnumDeclaration n, CompilationUnit cu){
-        if(n != null) {
-            source.append("enum " + n.getName());
-            source.append("{\n");
-            if (n.getMembers().size() > 0) {
-                
-                // Вытягиваем константы
-                if (n.getEntries() != null) {
-                    for(EnumConstantDeclaration constant : n.getEntries())
-                        source.append(constant.getName() + "\n");
+    private void setEnumFields(EnumDeclaration n){
+        source.append(".. Fields ..\n");
+        // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
+        // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(FieldDeclaration n, Object arg) {
+                setModifier(n.getModifiers());
+                source.append(n.getType());
+                for (VariableDeclarator var : n.getVariables()) {
+                    source.append(" " + var.getId() + "\n");
                 }
-                // Вытягиваем поля и методы
-                if (n.getMembers().size() > 0) {
-                    // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
-                    // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
-                    new VoidVisitorAdapter(){
-                        @Override
-                        public void visit(FieldDeclaration n, Object arg) {
-                            source.append(".. Fields ..\n");
-                            setModifier(n.getModifiers());
-                            source.append(n.getType());
-                            for (VariableDeclarator var : n.getVariables()) {
-                                source.append(" " + var.getId() + "\n");
-                            }
-                        }
-                    }.visit(n, null);
-                    source.append(".. Methods ..\n");
-                    new VoidVisitorAdapter(){
-                        @Override
-                        public void visit(MethodDeclaration n, Object arg) {
-
-                            setModifier(n.getModifiers());
-                            if(n.getType() != null)
-                                source.append(n.getType() + " ");
-                            source.append(n.getName() + "(");
-                            if (n.getParameters() != null) {
-                                setParameters(n.getParameters());
-                            }
-                            source.append(")\n");
-                        }
-                    }.visit(n, null);
-                }
-
             }
-            source.append("}\n");
-        }
+        }.visit(n, null);
+        
+    }
+    
+    private void setEnumMethods(EnumDeclaration n){
+        source.append(".. Methods ..\n");
+        // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
+        // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(MethodDeclaration n, Object arg) {
+
+                setModifier(n.getModifiers());
+                if(n.getType() != null)
+                    source.append(n.getType() + " ");
+                source.append(n.getName() + "(");
+                if (n.getParameters() != null) {
+                    setParameters(n.getParameters());
+                }
+                source.append(")\n");
+            }
+        }.visit(n, null);
+       
     }
 
     private void setFields(List<FieldDeclaration> fields) {
@@ -173,7 +208,6 @@ public class CreateUmlCode {
             for (FieldDeclaration n : fields) {
                 setModifier(n.getModifiers());
                 source.append(n.getType());
-
                 for (VariableDeclarator var : n.getVariables()) {
                     source.append(" " + var.getId() + "\n");
                 }
@@ -204,11 +238,12 @@ public class CreateUmlCode {
     }
 
     private void setAggregation(List<ImportDeclaration> imports, PackageDeclaration pack, String nameClass){
-
+        
         if(imports != null && imports.size() > 0)
             for(ImportDeclaration imp : imports){
                 for (String cl : Clazz.getClasses())
                     if(imp.getName().toString().toLowerCase().endsWith(cl.toLowerCase())){
+                        // todo Добавляем количество связей (например 0...more)
                         source.append(nameClass);
 //                        source.append(" \"" + imp.getName() + "\" ");
                         // Если в одном пакете делаем связь короткой, для exception отдельная стрелка
@@ -306,7 +341,6 @@ public class CreateUmlCode {
         String path = nameClass;
         if(imports != null && imports.size() > 0)
         for(ImportDeclaration imp : imports){
-
             if(imp.getName().toString().toLowerCase().endsWith(nameClass.toLowerCase()))
                 path = "" + imp.getName();
         }
@@ -314,7 +348,6 @@ public class CreateUmlCode {
     }
 
     private boolean genericPackage(List<ImportDeclaration> imports, PackageDeclaration pack){
-        String connection = "";
         if(imports != null && imports.size() > 0)
             for(ImportDeclaration imp : imports){
                 if(imp.getName().toString().contains(pack.getName().toString()))

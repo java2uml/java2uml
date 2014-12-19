@@ -17,8 +17,7 @@ public class Package {
     private CompilationUnit cu;
     private PackageDeclaration pack;
     private List<Clazz> classes;
-    private EnumDeclaration enumDeclaration;
-
+    
     public Package(CompilationUnit cu) {
         this.cu = cu;
         classes = new ArrayList<Clazz>();
@@ -32,14 +31,7 @@ public class Package {
          *  Добавление класса в коллекцию
          */
         classes.add(new Clazz(cu));
-        /**
-         *  Вызов визитора для ENUM
-         */
-        new GetEnumDeclaration().visit(cu, null);
-    }
 
-    public EnumDeclaration getEnumDeclaration() {
-        return enumDeclaration;
     }
 
     public CompilationUnit getCu() {
@@ -61,17 +53,6 @@ public class Package {
         @Override
         public void visit(PackageDeclaration n, Object arg) {
                 pack = n;
-        }
-    }
-
-    /**
-     * Visitor implementation for visiting EnumConstantDeclaration nodes.
-     */
-    private class GetEnumDeclaration extends VoidVisitorAdapter {
-        @Override
-        public void visit(EnumDeclaration n, Object arg) {
-            
-            enumDeclaration = n;
         }
     }
 
