@@ -2,12 +2,10 @@ package com.github.java2uml.javapars.core;
 
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.PackageDeclaration;
-import japa.parser.ast.body.EnumDeclaration;
-import japa.parser.ast.expr.NameExpr;
+
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**

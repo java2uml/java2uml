@@ -10,11 +10,16 @@ import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
 
+import japa.parser.ast.comments.Comment;
+import japa.parser.ast.stmt.BlockStmt;
+import japa.parser.ast.stmt.Statement;
 import japa.parser.ast.type.ClassOrInterfaceType;
+import japa.parser.ast.type.Type;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 
 import java.io.*;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,7 +77,7 @@ public class CreateUmlCode {
                     source.append("\n");
                     for (ClassOrInterfaceType type : n.getImplements()) {
                         // Если внутри пакета связь делаем короткую
-                        source.append(nameWithPath(clazz.getCu().getImports(), type.getName()));
+                        source.append(nameWithPath(clazz.getCu(), type.getName()));
                         // Если внутри пакета связь делаем короткую
                         if(genericPackage(clazz.getCu().getImports(), clazz.getCu().getPackage()))
                             source.append(" <|. ");
@@ -84,7 +89,7 @@ public class CreateUmlCode {
                 }
                 if (n.getExtends() != null) {
                     for (ClassOrInterfaceType type : n.getExtends())
-                        source.append("\n" + nameWithPath(clazz.getCu().getImports(), type.getName()));
+                        source.append("\n" + nameWithPath(clazz.getCu(), type.getName()));
                     
                     if(genericPackage(clazz.getCu().getImports(), clazz.getCu().getPackage()))
                         source.append(" <|- ");
@@ -115,11 +120,120 @@ public class CreateUmlCode {
 
                     // Добавляем связь внутренним enum
                     setConnectWithInnerEnums(n, n.getName());
-                    
-                    setAggregation(clazz.getCu().getImports(), clazz.getCu().getPackage(), n.getName());
+                    // todo переделать логику добавления агрегации
+                    setAggregation(n, clazz.getCu(), n.getName());
                 }
             }
         }
+    }
+    // todo связь добавлять только тогда когда создается экземпляр объекта
+    // экземпляры объекта в цикле
+    // либо если объект передан через конструктор
+    private void setAggregation(ClassOrInterfaceDeclaration n, final CompilationUnit cu, final String nameClass){
+        final List<String> objects = new ArrayList<String>();
+        // Анализируем конструктор
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(ConstructorDeclaration n, Object arg) {
+                if(n.getParameters() != null)
+                for (Parameter parameter : n.getParameters()){
+                    for (String cl : Clazz.getClasses()){
+                        if(parameter.getType().toString().equals(cl)
+                        && objectsWithConnection(objects, cu, parameter.getType().toString()) == null){
+                            
+                            source.append(nameClass);
+                            source.append(" \"" + 1 + "\" ");
+                            source.append(" o-- ");
+                            source.append(" \"" + 1 + "\" ");
+                            String connect = nameWithPath(cu, parameter.getType().toString());
+                            source.append(connect + "\n");
+                            objects.add(connect);
+                        }
+                    }
+                }
+            }
+        }.visit(n, null);
+        // Анализируем возвращаемы тип метода
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(MethodDeclaration n, Object arg) {
+                
+                if(n.getParameters() != null && n.getBody() != null)
+                    for (Parameter parameter : n.getParameters()){
+
+                        // Добавляем связь только для объектов созданных в анализируемом проекте
+                        // тело метода не должно быть пустым
+                        // запрещаем замыкать связь на себя
+                        // если Объект был в конструкторе, игнорируем его
+                        for (String cl : Clazz.getClasses()) {
+                            if (parameter.getType().toString().equals(cl)
+                                && !n.getBody().toString().equals("{\n}")
+                                && !parameter.getType().toString().equals(nameClass.toString())
+                                && objectsWithConnection(objects, cu, parameter.getType().toString()) == null
+                                    && !objectInComment(parameter.getAllContainedComments(), parameter.getType().toString())) {
+                                
+                                    source.append(nameClass);
+                                    source.append(" \"" + 1 + "\" ");
+                                    source.append(" o-- ");
+                                    source.append(" \"" + 1 + "\" ");
+                                    String connect = nameWithPath(cu, parameter.getType().toString());
+                                    source.append(connect + "\n");
+                                    objects.add(connect);
+
+
+                            }
+                        }
+                    }
+
+            }
+        }.visit(n, null);
+        
+        // Анализируем тело метода
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(BlockStmt n, Object arg) {
+                // тело метода не должно быть пустым
+                if(n.getStmts() != null)
+                    for (Statement statement : n.getStmts()){
+                        // Добавляем связь только для объектов созданных в анализируемом проекте
+                        // запрещаем замыкать связь на себя
+                        for (String clazz : Clazz.getClasses()){
+
+                                if (statement.toString().contains("new " + clazz)
+                                    && !clazz.equals(nameClass)
+                                    && objectsWithConnection(objects, cu, clazz) == null
+                                    && !objectInComment(statement.getAllContainedComments(), clazz)) {
+                                        source.append(nameClass);
+                                        source.append(" \"" + 1 + "\" ");
+                                        source.append(" o-- ");
+            //                            source.append(" \"" + 1 + "\" ");
+                                        String connect = nameWithPath(cu, clazz);
+                                    
+                                        source.append(connect + "\n");
+                                        objects.add(connect);
+                                }
+                            
+                        }
+
+                    }
+            }
+        }.visit(n, null);
+    }
+    
+    private String objectsWithConnection(List<String> objects, CompilationUnit cu, String checkThis){
+        
+        for(String obj : objects) {
+            if(obj.equals(nameWithPath(cu,checkThis))) {
+                return obj;
+            }
+        }
+        return null;
+    }
+    
+    private boolean objectInComment(List<Comment> comments, String object){
+        if(comments.size() > 0 && comments.get(0).toString().contains("new " + object))
+            return true;
+        return false;
     }
     
     private void setConnectWithInnerEnums(ClassOrInterfaceDeclaration n, final String className){
@@ -159,6 +273,7 @@ public class CreateUmlCode {
 
                     }
                     source.append("}\n");
+
                 }
             }
         }.visit(cu, null);
@@ -231,32 +346,14 @@ public class CreateUmlCode {
     }
 
     private void setParameters(List<Parameter> parameters) {
+
         for (Parameter parameter : parameters) {
+
             source.append(parameter.getType() + " ");
             source.append(parameter.getId());
+            if(parameters.size() > 1 && parameters.indexOf(parameter) < parameters.size() - 1)
+                source.append(", ");
         }
-    }
-
-    private void setAggregation(List<ImportDeclaration> imports, PackageDeclaration pack, String nameClass){
-        
-        if(imports != null && imports.size() > 0)
-            for(ImportDeclaration imp : imports){
-                for (String cl : Clazz.getClasses())
-                    if(imp.getName().toString().toLowerCase().endsWith(cl.toLowerCase())){
-                        // todo Добавляем количество связей (например 0...more)
-                        source.append(nameClass);
-//                        source.append(" \"" + imp.getName() + "\" ");
-                        // Если в одном пакете делаем связь короткой, для exception отдельная стрелка
-                        if(pack != null && imp.getName().toString().contains(pack.getName().toString()))
-                            source.append(" o- ");
-                        else if(imp.getName().toString().toLowerCase().contains("exception"))
-                            source.append(" ..> ");
-                        else
-                            source.append(" o-- ");
-//                        source.append(" \"" + nameClass + "\" ");
-                        source.append(imp.getName() + "\n");
-                    }
-            }
     }
 
     private void setModifier(int mod) {
@@ -337,14 +434,14 @@ public class CreateUmlCode {
         }
     }
     
-    private String nameWithPath(List<ImportDeclaration> imports, String nameClass){
-        String path = nameClass;
-        if(imports != null && imports.size() > 0)
-        for(ImportDeclaration imp : imports){
+    private String nameWithPath(CompilationUnit cu, String nameClass){
+        
+        if(cu.getImports() != null && cu.getImports().size() > 0)
+        for(ImportDeclaration imp : cu.getImports()){
             if(imp.getName().toString().toLowerCase().endsWith(nameClass.toLowerCase()))
-                path = "" + imp.getName();
+                return imp.getName().toString();
         }
-        return path;
+        return cu.getPackage().getName() + "." + nameClass;
     }
 
     private boolean genericPackage(List<ImportDeclaration> imports, PackageDeclaration pack){
@@ -354,5 +451,10 @@ public class CreateUmlCode {
                     return true;
             }
         return false;
+    }
+    
+    private String endAfterLastPoint(String string){
+        String[] str = string.split(".");
+        return str.length > 1 ? str[str.length-1] : string;
     }
 }

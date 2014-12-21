@@ -40,6 +40,7 @@ public class Clazz{
                 clazz = n;
                 if(n != null)
                     classes.add(n.getName());
+
                 if (n.getMembers().size() > 0) {
                     
                     // Вызов визитора для полей
