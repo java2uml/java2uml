@@ -8,11 +8,15 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.sourceforge.plantuml.SourceStringReader;
 
@@ -30,35 +34,69 @@ public class DataExtractor {
         source.append("skinparam classAttributeIconSize 0\n");
         
         // таблица пакетов для всех входящих классов
-        Hashtable<String, String> packages = new Hashtable<>();
+        Map<String, String> packages = new TreeMap<>();
         for (Class clazz : classes) {
         	packages.put(getPackageName(clazz.getCanonicalName()), "");
         }
         
-        // множество связей: исключение <.. класс
+        // множество связей для бросаемых исключений: исключение <.. класс
         Set<String> throwLinks = new HashSet<String>();
+        
+        // хэш точек входа: определяем по public static методу с именем main
+        Map<String, String> entryPoints = new HashMap<>();
         
         // объявление классов...
         for (Class clazz : classes) {
-        	// анонимные классы пока игнорируем
-        	if (clazz.isAnonymousClass()) {
+        	// анонимные классы и классы, доюавленные компилятором, пока игнорируем
+        	if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
         		continue;
         	}
         	
         	// получение информации о классе
-            // String className 	= (clazz.getSimpleName().isEmpty()) ? clazz.getCanonicalName() : clazz.getSimpleName();
         	String className 	= clazz.getCanonicalName();
             String classPack	= getPackageName(clazz.getCanonicalName());
             
             // объявляем класс и его содержимое
             StringBuilder res = new StringBuilder();
             res.append(getClassModifiers(classes, clazz));
+            
+            // реализуемые интерфейсы, не попавшие во входное множество
+            StringBuilder outerInterfaces = new StringBuilder();
+            for (Class inter : clazz.getInterfaces()) {
+            	if (!classes.contains(inter)) {
+            		// внешний интерфейс - укажем
+            		outerInterfaces.append(inter.getSimpleName());
+            		outerInterfaces.append(", ");
+            	}
+            }
+            if (!outerInterfaces.toString().isEmpty()) {
+            	String impl = outerInterfaces.toString(); 
+            	res.append(" <<");
+            	res.append(impl.substring(0, impl.length()-2));
+            	res.append(">> ");
+            }
             res.append(" {\n"); 
+            
+            // буфер статических членов класса
+            StringBuilder staticMembers = new StringBuilder();
             
             // получение информации о полях
             Field[] fields = clazz.getDeclaredFields();
             res.append(".. Fields ..\n");
             for (Field field : fields) {
+            	if (field.isSynthetic()) {
+                	// выводим только объявленные структуры
+                	continue;
+                }
+            	if (Modifier.isStatic(field.getModifiers())) {
+            		// статические члены в конец объявления
+            		staticMembers.append(getMemberModifiers(field.getModifiers()));
+            		staticMembers.append(field.getName());
+            		staticMembers.append(" : ");
+            		staticMembers.append(field.getType().getSimpleName());
+            		staticMembers.append("\n");
+            		continue;
+            	}
             	res.append(getMemberModifiers(field.getModifiers()));
             	res.append(field.getName());
             	res.append(" : ");
@@ -70,11 +108,31 @@ public class DataExtractor {
             Method[] methods = clazz.getDeclaredMethods();
             res.append(".. Methods ..\n");
             for (Method method : methods) {
-                res.append(getMemberModifiers(method.getModifiers()));
+            	if (method.isSynthetic()) {
+            		// выводим только объявленные структуры
+            		continue;
+            	}
+            	if (Modifier.isStatic(method.getModifiers())) {
+            		// статические члены в конец объявления
+            		staticMembers.append(getMemberModifiers(method.getModifiers()));
+            		staticMembers.append(method.getName());
+            		staticMembers.append("()");
+            		staticMembers.append(" : ");
+            		staticMembers.append(method.getReturnType().getSimpleName());
+            		staticMembers.append("\n");
+            		
+            		// определяем точку входа
+            		if (Modifier.isPublic(method.getModifiers()) && method.getName().equals("main")) {
+            			entryPoints.put(clazz.getCanonicalName(), "");
+            		}
+            		continue;
+            	}
+            	res.append(getMemberModifiers(method.getModifiers()));
                 res.append(method.getName());
                 res.append("()");
                 res.append(" : ");
-                res.append(method.getReturnType().getSimpleName() + "\n");
+                res.append(method.getReturnType().getSimpleName());
+                res.append("\n");
                 
                 // бросает ли метод исключение
                 for (Class exception : method.getExceptionTypes()) {
@@ -88,29 +146,134 @@ public class DataExtractor {
                 	}
                 }
             }
+            
+            // инфорация о статике
+            res.append(".. Static ..\n");
+            res.append(staticMembers.toString());
+            
             // закрываем класс
             res.append("}\n");
             
-            // добавляем класс в таблицу пакетов
-            packages.put(classPack, packages.get(classPack) + res.toString());
+            // добавляем класс в таблицу пакетов (класс с точками входа идут в отдельный пакет)
+            if (entryPoints.containsKey(clazz.getCanonicalName())) {
+            	entryPoints.put(clazz.getCanonicalName(), res.toString());
+            } else {
+            	packages.put(classPack, packages.get(classPack) + res.toString());
+            }
         }
         
-        // вывод объявленных классов
-		for (Entry<String, String> entry : packages.entrySet()) {
-			if (entry.getKey().equals("<default_pack>")) {
-				// связи меж пакетом
-				source.append(entry.getValue());
-				source.append("\n");
-				continue;
-			}
-			// связи внутри пакетов
-			source.append("package ");
-			source.append(entry.getKey());
-			source.append(" {\n");
-			source.append(entry.getValue());
-			source.append(" }\n");
-		}
+        // вывод объявленных классов с учетом пакетов и их влроженности 
+        List<String> packList = new ArrayList<>();
+        StringBuilder buffer = new StringBuilder();
+        for (Entry<String, String> entry : packages.entrySet()) {
+        	if (entry.getValue().trim().isEmpty()) {
+        		// добавлять нечего - пропускаем
+        		continue;
+        	}
+        	if (packList.isEmpty()) {
+        		// список пуст - добавим текущий пакет
+        		packList.add(entry.getKey());
+        		buffer.append("package ");
+        		buffer.append(entry.getKey());
+        		buffer.append(" {\n");
+        		buffer.append(entry.getValue());
+        		buffer.append("\n");
+        	} else {
+        		// индекс - является ли текущий пакет пакетом из списка
+        		int packNdx = -1;
+        		for (int i=0; i < packList.size(); ++i) {
+        			if (entry.getKey().contains(packList.get(i))) {
+        				packNdx = i;
+        			}
+        		}
+        		if (packNdx > -1) {
+        			// пакет вложен - буферизуем пакеты, в которые не входит текущий
+        			for (int i=packNdx; i < packList.size(); ++i) {
+        				if (i==packNdx) {
+        					// первый пакет не учитываем
+        					continue;
+        				}
+        				String pack = packList.get(i);
+        				buffer.append("package ");
+                		buffer.append(pack);
+                		buffer.append(" {\n");
+                		buffer.append(packages.get(pack));
+                		buffer.append("\n");
+        			}
+        			// закрывам скобки
+        			for (int i=packNdx; i < packList.size(); ++i) {
+        				if (i==packNdx) {
+        					// первый пакет не учитываем
+        					continue;
+        				}
+        				buffer.append("}\n");
+        			}
+        			// удаляем буфиризированные пакеты
+        			List<String> rest = new ArrayList<>();
+        			rest.addAll(packList.subList(0, packNdx+1));
+        			packList.clear();
+        			for (String pack : rest) {
+        				packList.add(pack);
+        			}
+        			// добавляем текущий пакет
+        			packList.add(entry.getKey());
+        		} else {
+        			// пакет не вложен - буферезуем весь список
+        			for (int i=1; i < packList.size(); ++i) {
+        				// i=1 - первый пакет буферизируется при добавлении в список 
+        				String pack = packList.get(i);
+        				buffer.append("package ");
+                		buffer.append(pack);
+                		buffer.append(" {\n");
+                		buffer.append(packages.get(pack));
+                		buffer.append("\n");
+        			}
+        			// закрывам скобки
+        			for (int i=0; i < packList.size(); ++i) {
+        				buffer.append("}\n");
+        			}
+        			// очищаем список
+        			packList.clear();
+        			// добавляем новый пакет и буферезуем его
+        			packList.add(entry.getKey());
+        			buffer.append("package ");
+            		buffer.append(entry.getKey());
+            		buffer.append(" {\n");
+            		buffer.append(packages.get(entry.getKey()));
+            		buffer.append("\n");
+        		}
+        	}
+        }
         
+        if (!packList.isEmpty()) {
+        	// добавим в буфер последние пакеты
+        	for (int i=1; i < packList.size(); ++i) {
+				String pack = packList.get(i);
+				buffer.append("package ");
+        		buffer.append(pack);
+        		buffer.append(" {\n");
+        		buffer.append(packages.get(pack));
+        		buffer.append("\n");
+			}
+			// закрывам скобки
+			for (int i=0; i < packList.size(); ++i) {
+				buffer.append("}\n");
+			}
+        }
+        // очищаем список пакетов
+		packList.clear();
+		
+		// добавляем содерфимое буфера в сборщик
+		source.append(buffer.toString());
+		
+		// определение точек входа
+		source.append("package Entry-Points <<Cloud>> {\n");
+		for (Entry entry : entryPoints.entrySet()) {
+			source.append(entry.getValue());
+			source.append("\n");
+		}
+		source.append("}\n");
+		        
         // определение межклассовых связей
         for (Class clazz : classes) {
         	if ( clazz.getSimpleName().isEmpty() ) {
@@ -146,16 +309,19 @@ public class DataExtractor {
                     source.append(" <|.. ");
                     source.append(className);
                     source.append("\n");
-                }
+                } 
             }
 
             // получение внешних классов, являющихся полями clazz, объявленных вне clazz
             Field[] fieldClasses = clazz.getDeclaredFields();
             for (Field fieldClass : fieldClasses) {
-                if (fieldClass.getType() instanceof Object) {
+            	if (fieldClass.getType() instanceof Object) {
                     if (classes.contains(fieldClass.getType())) {
                     	if (className.equals(fieldClass.getType().getCanonicalName())) {
                     		// связь на самого себя не учитываем
+                    		continue;
+                    	}
+                    	if (fieldClass.getType().isEnum()) {
                     		continue;
                     	}
                     	if ( isDeclared(fieldClass.getType(), clazz) ) {
@@ -163,7 +329,7 @@ public class DataExtractor {
                     		continue;
                     	}
                         // поле есть внешний класс - добавляем связь агрегирование
-                        source.append(className);
+                    	source.append(className);
                         source.append(" o-- ");
                         source.append(fieldClass.getType().getCanonicalName());
                         source.append("\n");
@@ -278,10 +444,10 @@ public class DataExtractor {
             modStr = "+";
         }
         if (Modifier.isAbstract(mod)) {
-            modStr = "{abstract} " + modStr;
+            modStr += " {abstract} ";
         }
         if (Modifier.isStatic(mod)) {
-            modStr = "{static} " + modStr;
+            modStr += " {static} ";
         }
         return modStr;
     }
