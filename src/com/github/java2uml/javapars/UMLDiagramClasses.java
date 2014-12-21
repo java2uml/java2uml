@@ -36,6 +36,7 @@ public class UMLDiagramClasses {
     }
 
     private void getClasses() {
+        
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
@@ -53,7 +54,6 @@ public class UMLDiagramClasses {
                                     connections.append(" <|.. ");
 
                                 connections.append(nameWithPath(n.getName()) + "\n");
-                                break;
                             }else{
                                 connections.append(type.getName());
                                 connections.append(" ()- ");
@@ -97,7 +97,7 @@ public class UMLDiagramClasses {
                 source.append(n.getName());
                 // Определяем точку входа
                 if (n.getMembers().toString().contains("public static void main(String[] args)"))
-                    source.append(" #GreenYellow/LightGoldenRodYellow");
+                    source.append(" << start >> #orchid");
 
                 if (n.getMembers().size() > 0) {
                     source.append("{\n");
@@ -110,6 +110,7 @@ public class UMLDiagramClasses {
 
                     source.append("}\n");
                     // todo Вытягиваем внутренние классы
+                    accessClass(n);
 
                     // Добавляем связь внутренним enum
                     setConnectWithInnerEnums(n, 
@@ -196,6 +197,117 @@ public class UMLDiagramClasses {
             }
         }.visit(n, null);
 
+    }
+
+    /**
+     *  Поиск внутренних классов
+     * @param n
+     */
+    private void accessClass(ClassOrInterfaceDeclaration n){
+        new VoidVisitorAdapter() {
+            @Override
+            public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                
+                for (BodyDeclaration body : n.getMembers()){
+
+                    // Находим в коде признаки внутреннего класса
+                    if(body.toString().contains(" class ")) {
+                        // Преобразуем доступа к нужным методам
+                        ClassOrInterfaceDeclaration cu = (ClassOrInterfaceDeclaration) body;
+                        getDataInnerClass(cu, n.getName());
+                    }
+                }
+            }
+        }.visit(n, null);
+        
+    }
+
+    /**
+     * 
+     * @param n
+     * @param parentClass
+     */
+    private void getDataInnerClass(ClassOrInterfaceDeclaration n, final String parentClass){
+        new VoidVisitorAdapter() {
+            @Override
+            public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                // Если класс имплементирует интерфейсы создаем связь
+                if (n.getImplements() != null) {
+                    for (ClassOrInterfaceType type : n.getImplements()) {
+                        // Отделяем сторонние интерфейсы
+                        if(availability(type.getName())){
+                            // Если внутри пакета связь делаем короткую
+                            connections.append(nameWithPath(type.getName()));
+                            // Если внутри пакета связь делаем короткую
+                            if (genericPackage(cu.getImports(), cu.getPackage()))
+                                connections.append(" <|. ");
+                            else
+                                connections.append(" <|.. ");
+
+                            connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                        }else{
+                            connections.append(type.getName());
+                            connections.append(" ()- ");
+                            connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                        }
+
+
+
+                    }
+                }
+                // Если класс наследует другой класс создаем связь
+                if (n.getExtends() != null) {
+                    for (ClassOrInterfaceType type : n.getExtends()) {
+                        // Отделяем сторонние классы
+                        if(availability(type.getName())) {
+                            connections.append(nameWithPath(type.getName()));
+                            if (genericPackage(cu.getImports(), cu.getPackage()))
+                                connections.append(" <|- ");
+                            else
+                                connections.append(" <|-- ");
+                            break;
+                        }else{
+                            connections.append(type.getName());
+                            connections.append(" ()- ");
+                        }
+                    }
+
+
+                    connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                }
+                
+                source.append(n.getModifiers() > 0 ? " " : "");
+
+                if (n.isInterface())
+                    source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+                else
+                    source.append("class ");
+                source.append(n.getName());
+                source.append(" << inner >> #GreenYellow/LightGoldenRodYellow");
+                if (n.getMembers().size() > 0) {
+                    source.append("{\n");
+
+                    // Вытягиваем поля
+                    setFields(n);
+
+                    // Вытягиваем методы
+                    setMethods(n);
+
+                    source.append("}\n");
+
+                    // Добавляем связь - композицию
+                    setComposition(cu.getPackage().getName() + "." + n.getName(), parentClass);
+                } else
+                    source.append("\n");
+            }
+        }.visit(n, null);
+    }
+    
+    private void setComposition(String innerClass, String parentClass){
+        
+        connections.append(innerClass);
+        connections.append(" *- ");
+        connections.append(cu.getPackage().getName() + "." + parentClass + "\n");
     }
 
     private void getEnums() {
