@@ -83,23 +83,25 @@ public class Main {
         ui.increaseProgressBarForTwenty();
 
         //todo убрать вывод в консоль после тестирования
-        System.out.println("Классы загружены, передаем на обработку.");
-        System.out.println("----------------------------------------");
+        if (classes == null || classes.size() == 0) {
+            System.out.println("Классы не загружены.");
+        } else {
+            System.out.println("Классы загружены, передаем на обработку.");
+            System.out.println("----------------------------------------");
 
+            for( Class clazz : classes ) {
+                System.out.println(clazz.getName());
+                ui.increaseProgressBarForTwenty();
+            }
 
+            String diagram = DataExtractor.extract(classes);
+    //        System.out.println(diagram);
+            ui.getGeneratedCode().setText(diagram);
+            DataExtractor.generate(diagram);
 
-        for( Class clazz : classes ) {
-            System.out.println(clazz.getName());
-            ui.increaseProgressBarForTwenty();
+            ui.setProgressBarComplete();
+
+            ui.showDiagram();
         }
-
-        String diagram = DataExtractor.extract(classes);
-//        System.out.println(diagram);
-        ui.getGeneratedCode().setText(diagram);
-        DataExtractor.generate(diagram);
-
-        ui.setProgressBarComplete();
-
-        ui.showDiagram();
     }
 }

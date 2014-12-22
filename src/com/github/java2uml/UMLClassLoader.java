@@ -224,9 +224,32 @@ public class UMLClassLoader extends ClassLoader {
         // Загружаем классы в список классов.
         // Исключения пока выбрасываются вверх.
         for (String className : classNames) {
-            System.out.println("Загружается " + className);
-            Class c = loadClass(className);
-            classes.add(c);
+            System.out.print(
+                    "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
+            String loadingClassName = className;
+            String loadingFromPath = path;
+            boolean packetFound = false;
+            while (!packetFound) {
+                try {
+                    Class c = loadClass(loadingClassName);
+                    classes.add(c);
+                    System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
+                    packetFound = true;
+                } catch (NoClassDefFoundError e) {
+                    int posSeparator = loadingClassName.indexOf(".");
+                    if (posSeparator == -1) {
+                        System.out.println("Не найден пакет для класса " + loadingClassName);
+                        break;
+                    }
+                    loadingFromPath = loadingFromPath + System.getProperty("file.separator")
+                            + loadingClassName.substring(0, posSeparator);
+                    loadingClassName = loadingClassName.substring(posSeparator + 1);
+                    index = paths.indexOf(loadingFromPath);
+                    if (index < 0) {
+                        addClassPath(loadingFromPath);
+                    }
+                }
+            }
         }
 
         return classes;
