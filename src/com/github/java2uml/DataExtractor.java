@@ -1,6 +1,5 @@
 package com.github.java2uml;
 
-import net.sourceforge.plantuml.SourceStringReader;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -117,10 +116,10 @@ public class DataExtractor {
             OutputStream png = new FileOutputStream(file);
 
             // генератор диаграмм
-            SourceStringReader reader = new SourceStringReader(source);
+//            SourceStringReader reader = new SourceStringReader(source);
 
             // генерация жиаграммы
-            String desc = reader.generateImage(png);
+//            String desc = reader.generateImage(png);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

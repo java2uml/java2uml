@@ -17,7 +17,6 @@ public class UMLDiagramClasses {
     private CompilationUnit cu;
     private StringBuilder source;
     private StringBuilder connections;
-    private static int num;
 
     public UMLDiagramClasses(CompilationUnit cu, StringBuilder source, StringBuilder connections) {
         this.cu = cu;
@@ -86,8 +85,8 @@ public class UMLDiagramClasses {
                     
                     connections.append(nameWithPath(n.getName()) + "\n");
                 }
-                source.append(Modifier.toString(n.getModifiers() - 1));
-                source.append(n.getModifiers() - 1 > 0 ? " " : "");
+//                source.append(Modifier.toString(n.getModifiers() - 1));
+//                source.append(n.getModifiers() - 1 > 0 ? " " : "");
 
                 if (n.isInterface())
                     source.append(Modifier.toString(Modifier.INTERFACE) + " ");
@@ -96,7 +95,7 @@ public class UMLDiagramClasses {
                     source.append("class ");
                 source.append(n.getName());
                 // Определяем точку входа
-                if (n.getMembers().toString().contains("public static void main(String[] args)"))
+                if (n.getMembers().toString().contains("public static void main(String[] args)") && !n.getName().equals("UMLDiagramClasses"))
                     source.append(" << start >> #orchid");
 
                 if (n.getMembers().size() > 0) {
@@ -211,7 +210,8 @@ public class UMLDiagramClasses {
                 for (BodyDeclaration body : n.getMembers()){
 
                     // Находим в коде признаки внутреннего класса
-                    if(body.toString().contains(" class ")) {
+                    if(body.toString().contains(" class ") && isClass(body)) {
+
                         // Преобразуем доступа к нужным методам
                         ClassOrInterfaceDeclaration cu = (ClassOrInterfaceDeclaration) body;
                         getDataInnerClass(cu, n.getName());
@@ -219,6 +219,17 @@ public class UMLDiagramClasses {
                 }
             }
         }.visit(n, null);
+        
+    }
+    
+    private boolean isClass(BodyDeclaration body){
+        if(body.toString().startsWith("protected ")
+                || body.toString().startsWith("private ")
+                || body.toString().startsWith("class ")
+                || body.toString().startsWith("abstract") 
+                || body.toString().startsWith("static"))
+            return true;
+        return false;
         
     }
 
@@ -276,7 +287,7 @@ public class UMLDiagramClasses {
                     connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
                 }
                 
-                source.append(n.getModifiers() > 0 ? " " : "");
+//                source.append(n.getModifiers() > 0 ? " " : "");
 
                 if (n.isInterface())
                     source.append(Modifier.toString(Modifier.INTERFACE) + " ");
@@ -318,7 +329,7 @@ public class UMLDiagramClasses {
                 if (n != null) {
                     source.append("enum " + n.getName());
                     source.append("{\n");
-                    if (n.getMembers().size() > 0) {
+                    if (n.getMembers() != null && n.getMembers().size() > 0) {
 
                         // Вытягиваем константы
                         if (n.getEntries() != null) {

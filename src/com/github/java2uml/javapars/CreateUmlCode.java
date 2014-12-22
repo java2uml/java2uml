@@ -18,11 +18,12 @@ public class CreateUmlCode {
     private String fileUMLDiagramClasses;
     public final String UML_TEMPLATE = "uml_templates";
     public static List<String> classes;
-
+    private static String projectName;
 
     public CreateUmlCode(String folder) throws Exception {
         // Генерирование названия файла UML
-        fileUMLDiagramClasses = "UMLDiagramClasses." + endAfterLastPoint(folder, "/") + ".ft";
+        projectName = endAfterLastPoint(folder, "/");
+        fileUMLDiagramClasses = "UMLDiagramClasses." + projectName + ".ft";
         init(folder);
     }
 
@@ -50,13 +51,13 @@ public class CreateUmlCode {
         
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
-                if(folder[i].toString().contains("src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + "{\n");
-                    
+                    source.append(getNamePackage(folder[i].toString()) + "#DCDCDC {\n");
+
                 }
                 readPackage(folder[i]);
-                if(folder[i].toString().contains("src") && getNamePackage(folder[i].toString()) != null)
+                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null)
                     source.append("}\n");
             }
             else if (folder[i].toString().toLowerCase().endsWith(".java")) {
