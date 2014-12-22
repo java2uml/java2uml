@@ -85,8 +85,6 @@ public class UMLDiagramClasses {
                     
                     connections.append(nameWithPath(n.getName()) + "\n");
                 }
-//                source.append(Modifier.toString(n.getModifiers() - 1));
-//                source.append(n.getModifiers() - 1 > 0 ? " " : "");
 
                 if (n.isInterface())
                     source.append(Modifier.toString(Modifier.INTERFACE) + " ");
@@ -287,8 +285,6 @@ public class UMLDiagramClasses {
                     connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
                 }
                 
-//                source.append(n.getModifiers() > 0 ? " " : "");
-
                 if (n.isInterface())
                     source.append(Modifier.toString(Modifier.INTERFACE) + " ");
                 else
