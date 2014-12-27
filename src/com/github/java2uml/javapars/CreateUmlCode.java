@@ -1,4 +1,3 @@
-
 package com.github.java2uml.javapars;
 
 import japa.parser.JavaParser;
@@ -34,10 +33,10 @@ public class CreateUmlCode {
         connections = new StringBuilder();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
-        
+
         // разбираем анализируемый проект
         readPackage(new File(path));
-        
+
         source.append(connections);
         // конец сборки
         source.append("@enduml\n");
@@ -48,7 +47,7 @@ public class CreateUmlCode {
 
     private void readPackage(File path) throws Exception {
         File[] folder = path.listFiles();
-        
+
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
@@ -64,7 +63,7 @@ public class CreateUmlCode {
                 createCU(folder[i]);
             }
         }
-        
+
     }
 
     public void createCU(File path) throws Exception {
@@ -153,15 +152,15 @@ public class CreateUmlCode {
         String[] str = string.split(separator);
         return str.length > 1 ? str[str.length-1] : string;
     }
-    
+
     private String getNamePackage(String path){
         String[] subString = path.split("src");
         String namePackage = subString.length > 1 ? subString[1].replace("/", ".").substring(1) : null;
         return namePackage;
     }
-    
+
     private void createListClasses(File path){
-        
+
         File[] folder = path.listFiles();
 
         for (int i = 0; i < folder.length; i++) {
