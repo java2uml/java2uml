@@ -19,8 +19,7 @@ public class Main {
         Method[] methods;
         Field[] fields;
         Constructor[] constructors;
-
-
+        
         //String path = args[0];
         String path = "C:\\Apache2_2\\htdocs\\eclipse\\SeaBattle\\bin";
 
@@ -38,6 +37,6 @@ public class Main {
         
         String diagram = DataExtractor.extract(classes);
         System.out.println(diagram);
-        DataExtractor.generate(diagram);
+        DataExtractor.generate(diagram, "diagrams\\test.png");
     }
 }

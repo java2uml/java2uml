@@ -20,8 +20,9 @@ import java.util.TreeMap;
 
 import net.sourceforge.plantuml.SourceStringReader;
 
-public class DataExtractor {	
-    /**
+public class DataExtractor {
+	
+	/**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
      * @param classes - ножество загруженный классов
      * @return
@@ -170,14 +171,15 @@ public class DataExtractor {
         		// добавлять нечего - пропускаем
         		continue;
         	}
+
         	if (packList.isEmpty()) {
         		// список пуст - добавим текущий пакет
         		packList.add(entry.getKey());
         		buffer.append("package ");
         		buffer.append(entry.getKey());
-        		buffer.append(" {\n");
-        		buffer.append(entry.getValue());
-        		buffer.append("\n");
+        		buffer.append(" #");
+        		buffer.append(getPackageColor(0));
+        		buffer.append(" {\n");		
         	} else {
         		// индекс - является ли текущий пакет пакетом из списка
         		int packNdx = -1;
@@ -188,26 +190,17 @@ public class DataExtractor {
         		}
         		if (packNdx > -1) {
         			// пакет вложен - буферизуем пакеты, в которые не входит текущий
-        			for (int i=packNdx; i < packList.size(); ++i) {
+        			for (int i=packList.size()-1; i >= packNdx; --i) {
         				if (i==packNdx) {
         					// первый пакет не учитываем
         					continue;
         				}
         				String pack = packList.get(i);
-        				buffer.append("package ");
-                		buffer.append(pack);
-                		buffer.append(" {\n");
                 		buffer.append(packages.get(pack));
                 		buffer.append("\n");
+                		buffer.append("}\n");
         			}
-        			// закрывам скобки
-        			for (int i=packNdx; i < packList.size(); ++i) {
-        				if (i==packNdx) {
-        					// первый пакет не учитываем
-        					continue;
-        				}
-        				buffer.append("}\n");
-        			}
+        			
         			// удаляем буфиризированные пакеты
         			List<String> rest = new ArrayList<>();
         			rest.addAll(packList.subList(0, packNdx+1));
@@ -215,51 +208,48 @@ public class DataExtractor {
         			for (String pack : rest) {
         				packList.add(pack);
         			}
+        			
         			// добавляем текущий пакет
         			packList.add(entry.getKey());
+        			buffer.append("package ");
+            		buffer.append(entry.getKey());
+            		buffer.append(" #");
+            		buffer.append(getPackageColor(packList.size()));
+            		buffer.append(" {\n");
         		} else {
         			// пакет не вложен - буферезуем весь список
-        			for (int i=1; i < packList.size(); ++i) {
-        				// i=1 - первый пакет буферизируется при добавлении в список 
+        			for (int i=packList.size()-1; i >= 0; --i) {
         				String pack = packList.get(i);
-        				buffer.append("package ");
-                		buffer.append(pack);
-                		buffer.append(" {\n");
                 		buffer.append(packages.get(pack));
                 		buffer.append("\n");
+                		buffer.append("}\n");
         			}
-        			// закрывам скобки
-        			for (int i=0; i < packList.size(); ++i) {
-        				buffer.append("}\n");
-        			}
+        			
         			// очищаем список
         			packList.clear();
+        			
         			// добавляем новый пакет и буферезуем его
         			packList.add(entry.getKey());
         			buffer.append("package ");
             		buffer.append(entry.getKey());
+            		buffer.append(" #");
+            		buffer.append(getPackageColor(packList.size()));
             		buffer.append(" {\n");
-            		buffer.append(packages.get(entry.getKey()));
-            		buffer.append("\n");
         		}
         	}
         }
         
         if (!packList.isEmpty()) {
         	// добавим в буфер последние пакеты
-        	for (int i=1; i < packList.size(); ++i) {
+        	for (int i=packList.size()-1; i >= 0; --i) {
 				String pack = packList.get(i);
-				buffer.append("package ");
-        		buffer.append(pack);
-        		buffer.append(" {\n");
         		buffer.append(packages.get(pack));
         		buffer.append("\n");
-			}
-			// закрывам скобки
-			for (int i=0; i < packList.size(); ++i) {
-				buffer.append("}\n");
+        		
+        		buffer.append("}\n");
 			}
         }
+        
         // очищаем список пакетов
 		packList.clear();
 		
@@ -363,9 +353,9 @@ public class DataExtractor {
      * Генерация диаграммы классов
      * @param source - исходный текст классов на языке plantuml
      */
-    public static void generate(final String source) {
+    public static void generate(final String source, final String fileName) {
         try {
-            File file = new File("diagrams\\test.png");
+            File file = new File(fileName);
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -387,32 +377,26 @@ public class DataExtractor {
     }
         
     /**
-     * Получение строки с именем пакета
+     * Получение строки с именем пакета (обрезаем из canonicalName строку с именем класса)
      * @param className - полное имя класса
      * @return
      */
     private static String getPackageName(final String className) {
     	if ( className == null ) {
-    		return "<default_pack>";
+    		return "default_pack";
     	}
-    	String[] pack = className.split("\\."); 
-    	if ( pack.length <= 1 ) {
-    		return "<default_pack>";
+    	int classNdx = className.lastIndexOf(".");
+    	if (classNdx > -1) {
+    		return className.substring(0, classNdx);
     	}
-    	String packName = "";
-    	for (int i=0; i < pack.length; ++i) {
-    		if (Character.isUpperCase(pack[i].charAt(0))) {
-    			// перешли с пакета на класс - пакет получен, выходим
-    			break;
-    		}
-    		packName += pack[i] + ".";
-    	}
-    	// уберем лишнюю точку
-    	return (packName.isEmpty()) ? "<default_pack>" : packName.substring(0, packName.length()-1);
+    	return "default_pack";
     }
     
     /**
-     * Проверка объявления класса child в теле класса parent 
+     * Проверка объявления класса child в теле класса parent
+     * @param parent
+     * @param child
+     * @return
      */
     private static boolean isDeclared(final Class parent, final Class child) {
     	if (parent == null || child == null ) {
@@ -425,7 +409,7 @@ public class DataExtractor {
     	}
     	return false;
     }
-    
+        
     /**
      * Получение модификаторов членов класса
      * @param mod
@@ -459,7 +443,10 @@ public class DataExtractor {
      * @return
      */
     private static String getClassModifiers(final Set<Class> classes, final Class clazz) {
-    	String className 	= (clazz.getSimpleName().isEmpty()) ? "<Unknown>" : clazz.getCanonicalName();    	
+    	String unknown 	= getPackageName(clazz.getCanonicalName()) + ".Unknown";
+    	String known	= getPackageName(clazz.getCanonicalName()) + "." + clazz.getSimpleName();
+    	String className 	= (clazz.getSimpleName().isEmpty()) ? unknown : known;
+    	className = clazz.getCanonicalName();
         String modStr 		= "class " + className;
         if (Modifier.isAbstract(clazz.getModifiers())) {
             modStr = "abstract class " + className + " ";
@@ -475,5 +462,23 @@ public class DataExtractor {
         	modStr = "class " + className + " << (E,yellow) >> ";
         }
         return modStr;
+    }
+    
+    /**
+     * Получение цвета пакета в зависимости от уровня вложенности
+     * @param level - чем больше уровень, тем темнее цвет (но не более 10 уровней)
+     * @return
+     */
+    public static String getPackageColor(final int level) {
+    	if (level <= 0) {
+    		// по-умолчанию возвращаем белый
+    		return Integer.toHexString(0xffffff);
+    	}
+    	int color = 0xffffff;
+    	for(int i=1; i < level%11; ++i) {
+    		// с каждым уровнем делаем чуть темнее
+    		color -= 0x111515;
+    	}
+    	return Integer.toHexString(color);
     }
 }
