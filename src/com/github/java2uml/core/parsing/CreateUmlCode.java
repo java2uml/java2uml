@@ -1,4 +1,4 @@
-package com.github.java2uml.javapars;
+package com.github.java2uml.core.parsing;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
