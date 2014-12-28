@@ -30,6 +30,108 @@ public class Main {
         Main.args = args;
         Main main = new Main();
         main.go();
+
+/*
+        if (args.length < 3) {
+            throw new InvalidParameterException("Too few parameters.");
+        }
+
+        Options options = new Options();
+
+        options.setPath(args[0]);
+        options.setOutputFile(args[1]);
+
+        int sourceFileType;
+        int length2Param = args[2].length();
+        if (length2Param <= "java".length() && "java".substring(0, length2Param).equals(args[2])) {
+            sourceFileType = 1;
+        } else if (length2Param <= "class".length() && "class".substring(0, length2Param).equals(args[2])) {
+            sourceFileType = 2;
+        } else {
+            throw new InvalidParameterException("Incorrect parameters.");
+        }
+
+        for (int i = 3; i < args.length; i++) {
+            String param = args[i].toLowerCase();
+            int paramLength = param.length();
+            if (paramLength < 3) {
+                throw new InvalidParameterException("Incorrect parameters.");
+            }
+
+            if (paramLength <= "classes_diagramm".length() && "classes_diagramm".substring(0, paramLength).equals(param)) {
+                options.setClassDiagram();
+                continue;
+            }
+
+            if (paramLength <= "sequence_diagram".length() && "sequence_diagram".substring(0, paramLength).equals(param)) {
+                if (sourceFileType == 1) {
+                    options.resetClassDiagram();
+                    continue;
+                } else {
+                    throw new InvalidParameterException("Incompatible parameters.");
+                }
+            }
+
+            if (paramLength <= "vertical".length() && "vertical".substring(0, paramLength).equals(param)) {
+                for (int j = 3; j < args.length; j++) {
+                    String comparedParam = args[j];
+                    if (comparedParam.length() <= "horizontal".length() && "horizontal".substring(0, comparedParam.length()).equals(comparedParam)) {
+                        throw new InvalidParameterException("Incompatible parameters.");
+                    }
+                }
+                options.setVertical();
+                continue;
+            }
+
+            if (paramLength <= "horizontal".length() && "horizontal".substring(0, paramLength).equals(param)) {
+                for (int j = 3; j < args.length; j++) {
+                    String comparedParam = args[j];
+                    if (comparedParam.length() <= "vertical".length() && "vertical".substring(0, comparedParam.length()).equals(comparedParam)) {
+                        throw new InvalidParameterException("Incompatible parameters.");
+                    }
+                }
+                options.resetVertical();
+                continue;
+            }
+
+            if (paramLength < 5) {
+                throw new InvalidParameterException("Incorrect parameters.");
+            }
+
+            if (paramLength <= "nocomposition".length() && "nocomposition".substring(0, paramLength).equals(param)) {
+                options.resetComposition();
+                continue;
+            }
+
+            if (paramLength <= "noaggregation".length() && "noaggregation".substring(0, paramLength).equals(param)) {
+                options.resetAggregation();
+                continue;
+            }
+
+            if (paramLength <= "noassociation".length() && "noassociation".substring(0, paramLength).equals(param)) {
+                options.resetAssociation();
+                continue;
+            }
+
+            if (paramLength <= "nolollipop".length() && "nolollipop".substring(0, paramLength).equals(param)) {
+                options.resetLollipop();
+                continue;
+            }
+
+            throw new InvalidParameterException("Incorrect parameters.");
+        }
+
+        switch (sourceFileType) {
+            case 1:
+                // вызываем парсинг
+                System.out.println("Парсинг");
+                break;
+            case 2:
+                // вызываем рефлексию
+                System.out.println("Рефлексия");
+                break;
+        }
+ //*/
     }
 
     private void go() throws Exception {
