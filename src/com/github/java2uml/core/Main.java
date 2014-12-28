@@ -15,7 +15,7 @@ public class Main {
     //Из класса UI эту переменную меняет JFileChooser, при выборе директории
     public static String path;
     static String[] args;
-    UI ui;
+
 
     public static String getPath() {
         return path;
@@ -29,47 +29,28 @@ public class Main {
         System.out.println("Java2UML starting point...");
         Main.args = args;
         Main main = new Main();
+
         main.go();
+
     }
 
     private void go() throws Exception {
         Method[] methods;
         Field[] fields;
         Constructor[] constructors;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                initUI();
-            }
-        });
+
+
 
 
     }
 
-    public void initUI() {
-        ui = new UI();
-        ui.initUI().setVisible(true);
-        ui.addActionListenerToChooseFile();
-        ui.getGeneratePlantUML().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Thread generateDiagramThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadClassesAndGenerateDiagram(ui.getPath().getText());
-                    }
-                });
-                generateDiagramThread.start();
 
-            }
-        });
-    }
 
-    public void loadClassesAndGenerateDiagram(String path) {
+    public static void loadClassesAndGenerateDiagram(String path) {
         UMLClassLoader ecl = new UMLClassLoader();
         Set<Class> classes = null;
 
-        ui.increaseProgressBarForTwenty();
+
 
         try {
             classes = ecl.loadClasses(path);
@@ -77,7 +58,6 @@ public class Main {
             ex.printStackTrace();
         }
 
-        ui.increaseProgressBarForTwenty();
 
         //todo убрать вывод в консоль после тестирования
         if (classes == null || classes.size() == 0) {
@@ -88,17 +68,16 @@ public class Main {
 
             for (Class clazz : classes) {
                 System.out.println(clazz.getName());
-                ui.increaseProgressBarForTwenty();
+
             }
 
             String diagram = DataExtractor.extract(classes);
             //        System.out.println(diagram);
-            ui.getGeneratedCode().setText(diagram);
+
             DataExtractor.generate(diagram);
 
-            ui.setProgressBarComplete();
-
-            ui.showDiagram();
         }
     }
+
+
 }

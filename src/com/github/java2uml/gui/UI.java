@@ -42,6 +42,8 @@ public class UI {
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
 
+    private static UI ui;
+
     public JTextField getPath() {
         return path;
     }
@@ -52,6 +54,17 @@ public class UI {
 
     public JTextArea getGeneratedCode() {
         return generatedCode;
+    }
+
+    private UI(){
+
+    }
+
+    public static UI getInstance(){
+        if (ui == null){
+            ui = new UI();
+        }
+        return ui;
     }
 
     private JMenuBar initMenu(){
@@ -224,6 +237,8 @@ public class UI {
 
         return value;
     }
+
+
 
     public void setProgressBarComplete(){
         progressBar.setValue(100);
