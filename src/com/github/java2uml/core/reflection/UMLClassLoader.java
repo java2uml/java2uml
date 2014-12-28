@@ -1,4 +1,4 @@
-package com.github.java2uml;
+package com.github.java2uml.core.reflection;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -224,6 +224,7 @@ public class UMLClassLoader extends ClassLoader {
         // Загружаем классы в список классов.
         // Исключения пока выбрасываются вверх.
         for (String className : classNames) {
+            // TODO убрать вывод после тестирования
             System.out.print(
                     "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
             String loadingClassName = className;
@@ -233,11 +234,13 @@ public class UMLClassLoader extends ClassLoader {
                 try {
                     Class c = loadClass(loadingClassName);
                     classes.add(c);
+                    // TODO убрать вывод после тестирования
                     System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
                     packetFound = true;
                 } catch (NoClassDefFoundError e) {
                     int posSeparator = loadingClassName.indexOf(".");
                     if (posSeparator == -1) {
+                        // TODO убрать вывод после тестирования
                         System.out.println("Не найден пакет для класса " + loadingClassName);
                         break;
                     }

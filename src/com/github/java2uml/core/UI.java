@@ -1,4 +1,4 @@
-package com.github.java2uml;
+package com.github.java2uml.core;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

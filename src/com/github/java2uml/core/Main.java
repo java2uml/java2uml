@@ -1,22 +1,22 @@
-package com.github.java2uml;
+package com.github.java2uml.core;
 
-import javax.imageio.ImageIO;
+import com.github.java2uml.DataExtractor;
+import com.github.java2uml.UI;
+import com.github.java2uml.core.reflection.UMLClassLoader;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
 
 public class Main {
-    static String[] args;
-    UI ui;
-
     //Из класса UI эту переменную меняет JFileChooser, при выборе директории
     public static String path;
+    static String[] args;
+    UI ui;
 
     public static String getPath() {
         return path;
@@ -45,11 +45,9 @@ public class Main {
         });
 
 
-
-
     }
 
-    public void initUI (){
+    public void initUI() {
         ui = new UI();
         ui.initUI().setVisible(true);
         ui.addActionListenerToChooseFile();
@@ -68,15 +66,15 @@ public class Main {
         });
     }
 
-    public void loadClassesAndGenerateDiagram(String path){
+    public void loadClassesAndGenerateDiagram(String path) {
         UMLClassLoader ecl = new UMLClassLoader();
         Set<Class> classes = null;
 
         ui.increaseProgressBarForTwenty();
 
         try {
-             classes = ecl.loadClasses(path);
-        } catch (ClassNotFoundException ex){
+            classes = ecl.loadClasses(path);
+        } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
         }
 
@@ -89,13 +87,13 @@ public class Main {
             System.out.println("Классы загружены, передаем на обработку.");
             System.out.println("----------------------------------------");
 
-            for( Class clazz : classes ) {
+            for (Class clazz : classes) {
                 System.out.println(clazz.getName());
                 ui.increaseProgressBarForTwenty();
             }
 
             String diagram = DataExtractor.extract(classes);
-    //        System.out.println(diagram);
+            //        System.out.println(diagram);
             ui.getGeneratedCode().setText(diagram);
             DataExtractor.generate(diagram);
 

@@ -1,4 +1,4 @@
-package com.github.java2uml;
+package com.github.java2uml.core;
 
 
 import java.io.*;
