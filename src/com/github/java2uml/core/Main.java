@@ -1,7 +1,5 @@
 package com.github.java2uml.core;
 
-import com.github.java2uml.DataExtractor;
-import com.github.java2uml.UI;
 import com.github.java2uml.core.reflection.UMLClassLoader;
 
 import javax.swing.*;
