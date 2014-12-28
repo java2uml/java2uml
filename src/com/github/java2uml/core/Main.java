@@ -1,6 +1,7 @@
 package com.github.java2uml.core;
 
 import com.github.java2uml.core.reflection.UMLClassLoader;
+import com.github.java2uml.gui.UI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
