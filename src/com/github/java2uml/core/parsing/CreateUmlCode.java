@@ -12,23 +12,24 @@ import java.util.List;
  */
 public class CreateUmlCode {
     public static final int ALL = 1;
-    public static final int AGGREGATION = 4;
-    public static final int COMPOSITION = 5;
-    public static final int ASSOCIATION = 6;
+    public static final int AGGREGATION = 2;
+    public static final int COMPOSITION = 3;
+    public static final int ASSOCIATION = 4;
     public static StringBuilder source;
     public static StringBuilder connections;
     public static StringBuilder aggregation;
     public static StringBuilder composition;
     public static StringBuilder association;
-    private String fileUMLDiagramClasses;
-    public final String UML_TEMPLATE = "uml_templates";
+    private static String fileUMLDiagramClasses;
+    public static final String UML_TEMPLATE = "uml_templates";
     public static List<String> classes;
     private static String projectName;
     private int typeConnections;
 
     public CreateUmlCode(String folder, int typeConnections) throws Exception {
-        // Генерирование названия файла UML
         this.typeConnections = typeConnections;
+        projectName = endAfterLastPoint(folder, "/");
+        // Генерирование названия файла UML
         fileUMLDiagramClasses = "classes.plantuml";
         init(folder);
     }
@@ -47,13 +48,10 @@ public class CreateUmlCode {
         // разбираем анализируемый проект
         readPackage(new File(path));
 
-        source.append(connections);
-        typeConnections(typeConnections);
+        neededTypeConnections(typeConnections);
         // конец сборки
         source.append("@enduml\n");
 
-        // Запись в файл UML в папку uml_templates
-        write(source.toString());
     }
 
     private void readPackage(File path) throws Exception {
@@ -61,7 +59,6 @@ public class CreateUmlCode {
 
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
-                System.out.println(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null);
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("namespace ");
                     source.append(getNamePackage(folder[i].toString()) + " {\n");
@@ -129,7 +126,8 @@ public class CreateUmlCode {
         }
     }
 
-    public void write(String text) {
+    public static int write() {
+        String text = source.toString();
         //Определяем файл
         File folder = new File(UML_TEMPLATE).getAbsoluteFile();
         File file = new File(UML_TEMPLATE + "/" + fileUMLDiagramClasses).getAbsoluteFile();
@@ -150,12 +148,17 @@ public class CreateUmlCode {
             try {
                 //Записываем текст в файл
                 out.print(text);
-            } finally {
+            } catch (Exception e){
+                return 0;
+                
+            }finally {
                 out.close();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return 0;
         }
+        
+        return 1;
     }
 
     public static String endAfterLastPoint(String string, String separator){
@@ -189,7 +192,8 @@ public class CreateUmlCode {
         return className;
     }
     
-    private void typeConnections(int type){
+    private void neededTypeConnections(int type){
+        source.append(connections);
         switch (type){
             case AGGREGATION:
                 source.append(aggregation);
@@ -207,7 +211,4 @@ public class CreateUmlCode {
         }
         
     }
-        
-        
-    
 }
