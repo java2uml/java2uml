@@ -11,18 +11,25 @@ import java.util.List;
  * Created by nadcukandrej on 09.12.14.
  */
 public class CreateUmlCode {
-
-    private static StringBuilder source;
-    private static StringBuilder connections;
+    public static final int ALL = 1;
+    public static final int AGGREGATION = 4;
+    public static final int COMPOSITION = 5;
+    public static final int ASSOCIATION = 6;
+    public static StringBuilder source;
+    public static StringBuilder connections;
+    public static StringBuilder aggregation;
+    public static StringBuilder composition;
+    public static StringBuilder association;
     private String fileUMLDiagramClasses;
     public final String UML_TEMPLATE = "uml_templates";
     public static List<String> classes;
     private static String projectName;
+    private int typeConnections;
 
-    public CreateUmlCode(String folder) throws Exception {
+    public CreateUmlCode(String folder, int typeConnections) throws Exception {
         // Генерирование названия файла UML
-        projectName = endAfterLastPoint(folder, "/");
-        fileUMLDiagramClasses = "UMLDiagramClasses." + projectName + ".ft";
+        this.typeConnections = typeConnections;
+        fileUMLDiagramClasses = "classes.plantuml";
         init(folder);
     }
 
@@ -31,6 +38,9 @@ public class CreateUmlCode {
         createListClasses(new File(path));
         source = new StringBuilder();
         connections = new StringBuilder();
+        aggregation = new StringBuilder();
+        composition = new StringBuilder();
+        association = new StringBuilder();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
 
@@ -38,6 +48,7 @@ public class CreateUmlCode {
         readPackage(new File(path));
 
         source.append(connections);
+        typeConnections(typeConnections);
         // конец сборки
         source.append("@enduml\n");
 
@@ -50,9 +61,10 @@ public class CreateUmlCode {
 
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
+                System.out.println(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null);
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + "#DCDCDC {\n");
+                    source.append(getNamePackage(folder[i].toString()) + " {\n");
 
                 }
                 readPackage(folder[i]);
@@ -79,9 +91,7 @@ public class CreateUmlCode {
         /**
          *   Начало анализа кода
          */
-        UMLDiagramClasses umlDiagramClasses = new UMLDiagramClasses(cu, source, connections);
-        source = umlDiagramClasses.getSource();
-        connections = umlDiagramClasses.getConnections();
+        new UMLDiagramClasses(cu);
     }
 
     public static String setModifier(int mod) {
@@ -178,4 +188,26 @@ public class CreateUmlCode {
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
     }
+    
+    private void typeConnections(int type){
+        switch (type){
+            case AGGREGATION:
+                source.append(aggregation);
+                break;
+            case COMPOSITION:
+                source.append(composition);
+                break;
+            case ASSOCIATION:
+                source.append(association);
+                break;
+            default:
+                source.append(aggregation);
+                source.append(composition);
+                source.append(association);
+        }
+        
+    }
+        
+        
+    
 }
