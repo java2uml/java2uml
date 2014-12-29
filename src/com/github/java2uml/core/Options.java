@@ -1,20 +1,21 @@
 package com.github.java2uml.core;
 
-import java.util.Hashtable;
-
 /**
- * Created by Igor on 28.12.2014.
+ * Вспомогательный класс для передачи параметров запуска.
+ *
+ * Created by Игорь Акимов on 28.12.2014.
  */
 public class Options {
     private String path = null;
-    private String outputFile = null;
+    private String outputFile = "classes.plantuml";
     private String header = null;
 
     private boolean isClassDiagram = true;
-    private boolean isComposition = true;
-    private boolean isAggregation = true;
-    private boolean isAssociation = true;
-    private boolean isLollipop = true;
+
+    private boolean showComposition = true;
+    private boolean showAggregation = true;
+    private boolean showAssociation = true;
+    private boolean showLollipop = true;
 
     private boolean isVertical = true;
 
@@ -49,6 +50,10 @@ public class Options {
         return isClassDiagram;
     }
 
+    public boolean isSequenceDiagram() {
+        return !isClassDiagram;
+    }
+
     public void setClassDiagram() {
         isClassDiagram = true;
     }
@@ -57,52 +62,36 @@ public class Options {
         isClassDiagram = false;
     }
 
-    public boolean isComposition() {
-        return isComposition;
+    public boolean isShowComposition() {
+        return showComposition;
     }
 
-    public void setComposition() {
-        isComposition = true;
+    public void setShowComposition(boolean showComposition) {
+        this.showComposition = showComposition;
     }
 
-    public void resetComposition() {
-        isComposition = false;
+    public boolean isShowAggregation() {
+        return showAggregation;
     }
 
-    public boolean isAggregation() {
-        return isAggregation;
+    public void setShowAggregation(boolean showAggregation) {
+        this.showAggregation = showAggregation;
     }
 
-    public void setAggregation() {
-        isAggregation = true;
+    public boolean isShowAssociation() {
+        return showAssociation;
     }
 
-    public void resetAggregation() {
-        isAggregation = false;
+    public void setShowAssociation(boolean showAssociation) {
+        this.showAssociation = showAssociation;
     }
 
-    public boolean isAssociation() {
-        return isAssociation;
+    public boolean isShowLollipop() {
+        return showLollipop;
     }
 
-    public void setAssociation() {
-        isAssociation = true;
-    }
-
-    public void resetAssociation() {
-        isAssociation = false;
-    }
-
-    public boolean isLollipop() {
-        return isLollipop;
-    }
-
-    public void setLollipop() {
-        isLollipop = true;
-    }
-
-    public void resetLollipop() {
-        isLollipop = false;
+    public void setShowLollipop(boolean showLollipop) {
+        this.showLollipop = showLollipop;
     }
 
     public boolean isVertical() {
