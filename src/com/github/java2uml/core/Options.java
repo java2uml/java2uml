@@ -16,6 +16,7 @@ public class Options {
     private boolean showAggregation = true;
     private boolean showAssociation = true;
     private boolean showLollipop = true;
+    private boolean showImplementation = true;
 
     private boolean isVertical = true;
 
@@ -92,6 +93,14 @@ public class Options {
 
     public void setShowLollipop(boolean showLollipop) {
         this.showLollipop = showLollipop;
+    }
+
+    public boolean isShowImplementation() {
+        return showImplementation;
+    }
+
+    public void setShowImplementation(boolean showImplementation) {
+        this.showImplementation = showImplementation;
     }
 
     public boolean isVertical() {

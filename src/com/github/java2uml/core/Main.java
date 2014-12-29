@@ -186,6 +186,13 @@ public class Main {
                 continue;
             }
 
+            // Параметр, запрещающий вывод "леденцов".
+            if (paramLength <= "noimplementation".length() && "noimplementation".substring(0, paramLength)
+                    .equals(param)) {
+                options.setShowImplementation(false);
+                continue;
+            }
+
             throw new InvalidParameterException("Incorrect parameters.");
         }
 
