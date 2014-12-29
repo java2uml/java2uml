@@ -1,4 +1,4 @@
-package com.github.java2uml.javapars;
+package com.github.java2uml.core.parsing;
 
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
@@ -11,18 +11,26 @@ import java.util.List;
  * Created by nadcukandrej on 09.12.14.
  */
 public class CreateUmlCode {
-
-    private static StringBuilder source;
-    private static StringBuilder connections;
-    private String fileUMLDiagramClasses;
-    public final String UML_TEMPLATE = "uml_templates";
+    public static final int ALL = 1;
+    public static final int AGGREGATION = 2;
+    public static final int COMPOSITION = 3;
+    public static final int ASSOCIATION = 4;
+    public static StringBuilder source;
+    public static StringBuilder connections;
+    public static StringBuilder aggregation;
+    public static StringBuilder composition;
+    public static StringBuilder association;
+    private static String fileUMLDiagramClasses;
+    public static final String UML_TEMPLATE = "uml_templates";
     public static List<String> classes;
     private static String projectName;
+    private int typeConnections;
 
-    public CreateUmlCode(String folder) throws Exception {
-        // Генерирование названия файла UML
+    public CreateUmlCode(String folder, int typeConnections) throws Exception {
+        this.typeConnections = typeConnections;
         projectName = endAfterLastPoint(folder, "/");
-        fileUMLDiagramClasses = "UMLDiagramClasses." + projectName + ".ft";
+        // Генерирование названия файла UML
+        fileUMLDiagramClasses = "classes.plantuml";
         init(folder);
     }
 
@@ -31,18 +39,19 @@ public class CreateUmlCode {
         createListClasses(new File(path));
         source = new StringBuilder();
         connections = new StringBuilder();
+        aggregation = new StringBuilder();
+        composition = new StringBuilder();
+        association = new StringBuilder();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
 
         // разбираем анализируемый проект
         readPackage(new File(path));
 
-        source.append(connections);
+        neededTypeConnections(typeConnections);
         // конец сборки
         source.append("@enduml\n");
 
-        // Запись в файл UML в папку uml_templates
-        write(source.toString());
     }
 
     private void readPackage(File path) throws Exception {
@@ -52,7 +61,7 @@ public class CreateUmlCode {
             if (folder[i].isDirectory()) {
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + "#DCDCDC {\n");
+                    source.append(getNamePackage(folder[i].toString()) + " {\n");
 
                 }
                 readPackage(folder[i]);
@@ -79,9 +88,7 @@ public class CreateUmlCode {
         /**
          *   Начало анализа кода
          */
-        UMLDiagramClasses umlDiagramClasses = new UMLDiagramClasses(cu, source, connections);
-        source = umlDiagramClasses.getSource();
-        connections = umlDiagramClasses.getConnections();
+        new UMLDiagramClasses(cu);
     }
 
     public static String setModifier(int mod) {
@@ -119,7 +126,8 @@ public class CreateUmlCode {
         }
     }
 
-    public void write(String text) {
+    public static int write() {
+        String text = source.toString();
         //Определяем файл
         File folder = new File(UML_TEMPLATE).getAbsoluteFile();
         File file = new File(UML_TEMPLATE + "/" + fileUMLDiagramClasses).getAbsoluteFile();
@@ -140,12 +148,17 @@ public class CreateUmlCode {
             try {
                 //Записываем текст в файл
                 out.print(text);
-            } finally {
+            } catch (Exception e){
+                return 0;
+                
+            }finally {
                 out.close();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return 0;
         }
+        
+        return 1;
     }
 
     public static String endAfterLastPoint(String string, String separator){
@@ -177,5 +190,25 @@ public class CreateUmlCode {
         String[] subString = file.split("/");
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
+    }
+    
+    private void neededTypeConnections(int type){
+        source.append(connections);
+        switch (type){
+            case AGGREGATION:
+                source.append(aggregation);
+                break;
+            case COMPOSITION:
+                source.append(composition);
+                break;
+            case ASSOCIATION:
+                source.append(association);
+                break;
+            default:
+                source.append(aggregation);
+                source.append(composition);
+                source.append(association);
+        }
+        
     }
 }

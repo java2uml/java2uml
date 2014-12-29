@@ -1,4 +1,4 @@
-package com.github.java2uml.javapars;
+package com.github.java2uml.core.parsing;
 
 import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
@@ -15,23 +15,11 @@ import java.util.List;
  */
 public class UMLDiagramClasses {
     private CompilationUnit cu;
-    private StringBuilder source;
-    private StringBuilder connections;
 
-    public UMLDiagramClasses(CompilationUnit cu, StringBuilder source, StringBuilder connections) {
+    public UMLDiagramClasses(CompilationUnit cu) {
         this.cu = cu;
-        this.source = source;
-        this.connections = connections;
         getClasses();
         getEnums();
-    }
-
-    public StringBuilder getSource() {
-        return source;
-    }
-
-    public StringBuilder getConnections() {
-        return connections;
     }
 
     private void getClasses() {
@@ -45,18 +33,18 @@ public class UMLDiagramClasses {
                             // Отделяем сторонние интерфейсы
                             if(availability(type.getName())){
                                 // Если внутри пакета связь делаем короткую
-                                connections.append(nameWithPath(type.getName()));
+                                CreateUmlCode.connections.append(nameWithPath(type.getName()));
                                 // Если внутри пакета связь делаем короткую
                                 if (genericPackage(cu.getImports(), cu.getPackage()))
-                                    connections.append(" <|. ");
+                                    CreateUmlCode.connections.append(" <|. ");
                                 else
-                                    connections.append(" <|.. ");
+                                    CreateUmlCode.connections.append(" <|.. ");
 
-                                connections.append(nameWithPath(n.getName()) + "\n");
+                                CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
                             }else{
-                                connections.append(type.getName());
-                                connections.append(" ()- ");
-                                connections.append(nameWithPath(n.getName()) + "\n");
+                                CreateUmlCode.connections.append(type.getName());
+                                CreateUmlCode.connections.append(" ()- ");
+                                CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
                             }
                             
 
@@ -68,36 +56,36 @@ public class UMLDiagramClasses {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
                         if(availability(type.getName())) {
-                            connections.append(nameWithPath(type.getName()));
+                            CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             if (genericPackage(cu.getImports(), cu.getPackage()))
-                                connections.append(" <|- ");
+                                CreateUmlCode.connections.append(" <|- ");
                             else
-                                connections.append(" <|-- ");
+                                CreateUmlCode.connections.append(" <|-- ");
                             break;
                         }else{
-                            connections.append(type.getName());
-                            connections.append(" ()- ");
+                            CreateUmlCode.connections.append(type.getName());
+                            CreateUmlCode.connections.append(" ()- ");
                         }
 
 
                     }
 
-                    
-                    connections.append(nameWithPath(n.getName()) + "\n");
+
+                    CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
                 }
 
                 if (n.isInterface())
-                    source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
 
                 else
-                    source.append("class ");
-                source.append(n.getName());
+                    CreateUmlCode.source.append("class ");
+                CreateUmlCode.source.append(n.getName());
                 // Определяем точку входа
                 if (n.getMembers().toString().contains("public static void main(String[] args)") && !n.getName().equals("UMLDiagramClasses"))
-                    source.append(" << start >> #orchid");
+                    CreateUmlCode.source.append(" << start >> ");
 
                 if (n.getMembers().size() > 0) {
-                    source.append("{\n");
+                    CreateUmlCode.source.append("{\n");
 
                     // Вытягиваем поля
                     setFields(n);
@@ -105,8 +93,8 @@ public class UMLDiagramClasses {
                     // Вытягиваем методы
                     setMethods(n);
 
-                    source.append("}\n");
-                    // todo Вытягиваем внутренние классы
+                    CreateUmlCode.source.append("}\n");
+                    // Вытягиваем внутренние классы
                     accessClass(n);
 
                     // Добавляем связь внутренним enum
@@ -116,7 +104,7 @@ public class UMLDiagramClasses {
                     // Добавляем связь - агрегацию
                     setAggregation(n, nameWithPath(n.getName()));
                 } else
-                    source.append("\n");
+                    CreateUmlCode.source.append("\n");
 
             }
         }.visit(cu, null);
@@ -155,17 +143,17 @@ public class UMLDiagramClasses {
                 if ((item.equals(cl) || containsClass(item, cl))
                         && !nameWithPath(cl).equals(nameClass) 
                         && !writeClass.toString().contains("." + cl + ".")) {
-                    connections.append(nameClass);
-                    connections.append(" \" " + 1 + "\" ");
-                    connections.append(" o-- ");
-                    connections.append(" \"0..");
+                    CreateUmlCode.aggregation.append(nameClass);
+                    CreateUmlCode.aggregation.append(" \" " + 1 + "\" ");
+                    CreateUmlCode.aggregation.append(" o-- ");
+                    CreateUmlCode.aggregation.append(" \"0..");
                     if (item.equals(cl))
-                        connections.append(quantityConnection(typeFields, cl) + "\" ");
+                        CreateUmlCode.aggregation.append(quantityConnection(typeFields, cl) + "\" ");
                     else
-                        connections.append("*\" ");
+                        CreateUmlCode.aggregation.append("*\" ");
 
                     String connect = nameWithPath(cl);
-                    connections.append(connect + "\n");
+                    CreateUmlCode.aggregation.append(connect + "\n");
                     writeClass.append("." + cl + ".");
                 }
             }
@@ -188,9 +176,9 @@ public class UMLDiagramClasses {
         new VoidVisitorAdapter() {
             @Override
             public void visit(EnumDeclaration n, Object arg) {
-                connections.append(className);
-                connections.append(" *- ");
-                connections.append(path + "." + n.getName() + "\n");
+                CreateUmlCode.composition.append(className);
+                CreateUmlCode.composition.append(" *- ");
+                CreateUmlCode.composition.append(path + "." + n.getName() + "\n");
             }
         }.visit(n, null);
 
@@ -246,18 +234,18 @@ public class UMLDiagramClasses {
                         // Отделяем сторонние интерфейсы
                         if(availability(type.getName())){
                             // Если внутри пакета связь делаем короткую
-                            connections.append(nameWithPath(type.getName()));
+                            CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             // Если внутри пакета связь делаем короткую
                             if (genericPackage(cu.getImports(), cu.getPackage()))
-                                connections.append(" <|. ");
+                                CreateUmlCode.connections.append(" <|. ");
                             else
-                                connections.append(" <|.. ");
+                                CreateUmlCode.connections.append(" <|.. ");
 
-                            connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                            CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
                         }else{
-                            connections.append(type.getName());
-                            connections.append(" ()- ");
-                            connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                            CreateUmlCode.connections.append(type.getName());
+                            CreateUmlCode.connections.append(" ()- ");
+                            CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
                         }
 
 
@@ -269,30 +257,30 @@ public class UMLDiagramClasses {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
                         if(availability(type.getName())) {
-                            connections.append(nameWithPath(type.getName()));
+                            CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             if (genericPackage(cu.getImports(), cu.getPackage()))
-                                connections.append(" <|- ");
+                                CreateUmlCode.connections.append(" <|- ");
                             else
-                                connections.append(" <|-- ");
+                                CreateUmlCode.connections.append(" <|-- ");
                             break;
                         }else{
-                            connections.append(type.getName());
-                            connections.append(" ()- ");
+                            CreateUmlCode.connections.append(type.getName());
+                            CreateUmlCode.connections.append(" ()- ");
                         }
                     }
 
 
-                    connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                    CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
                 }
                 
                 if (n.isInterface())
-                    source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
                 else
-                    source.append("class ");
-                source.append(n.getName());
-                source.append(" << inner >> #GreenYellow/LightGoldenRodYellow");
+                    CreateUmlCode.source.append("class ");
+                CreateUmlCode.source.append(n.getName());
+                CreateUmlCode.source.append(" << inner >> ");
                 if (n.getMembers().size() > 0) {
-                    source.append("{\n");
+                    CreateUmlCode.source.append("{\n");
 
                     // Вытягиваем поля
                     setFields(n);
@@ -300,21 +288,21 @@ public class UMLDiagramClasses {
                     // Вытягиваем методы
                     setMethods(n);
 
-                    source.append("}\n");
+                    CreateUmlCode.source.append("}\n");
 
                     // Добавляем связь - композицию
                     setComposition(cu.getPackage().getName() + "." + n.getName(), parentClass);
                 } else
-                    source.append("\n");
+                    CreateUmlCode.source.append("\n");
             }
         }.visit(n, null);
     }
     
     private void setComposition(String innerClass, String parentClass){
-        
-        connections.append(innerClass);
-        connections.append(" *- ");
-        connections.append(cu.getPackage().getName() + "." + parentClass + "\n");
+
+        CreateUmlCode.composition.append(innerClass);
+        CreateUmlCode.composition.append(" *- ");
+        CreateUmlCode.composition.append(cu.getPackage().getName() + "." + parentClass + "\n");
     }
 
     private void getEnums() {
@@ -323,14 +311,14 @@ public class UMLDiagramClasses {
             @Override
             public void visit(EnumDeclaration n, Object arg) {
                 if (n != null) {
-                    source.append("enum " + n.getName());
-                    source.append("{\n");
+                    CreateUmlCode.source.append("enum " + n.getName());
+                    CreateUmlCode.source.append("{\n");
                     if (n.getMembers() != null && n.getMembers().size() > 0) {
 
                         // Вытягиваем константы
                         if (n.getEntries() != null) {
                             for (EnumConstantDeclaration constant : n.getEntries())
-                                source.append(constant.getName() + "\n");
+                                CreateUmlCode.source.append(constant.getName() + "\n");
                         }
                         // Вытягиваем поля и методы
                         if (n.getMembers().size() > 0) {
@@ -339,7 +327,7 @@ public class UMLDiagramClasses {
                         }
 
                     }
-                    source.append("}\n");
+                    CreateUmlCode.source.append("}\n");
 
                 }
             }
@@ -348,16 +336,16 @@ public class UMLDiagramClasses {
     }
 
     private void setEnumFields(EnumDeclaration n) {
-        source.append(".. Fields ..\n");
+        CreateUmlCode.source.append(".. Fields ..\n");
         // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
         // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
         new VoidVisitorAdapter() {
             @Override
             public void visit(FieldDeclaration n, Object arg) {
-                source.append(CreateUmlCode.setModifier(n.getModifiers()));
-                source.append(n.getType());
+                CreateUmlCode.source.append(CreateUmlCode.setModifier(n.getModifiers()));
+                CreateUmlCode.source.append(n.getType());
                 for (VariableDeclarator var : n.getVariables()) {
-                    source.append(" " + var.getId() + "\n");
+                    CreateUmlCode.source.append(" " + var.getId() + "\n");
                 }
             }
         }.visit(n, null);
@@ -365,21 +353,21 @@ public class UMLDiagramClasses {
     }
 
     private void setEnumMethods(EnumDeclaration n) {
-        source.append(".. Methods ..\n");
+        CreateUmlCode.source.append(".. Methods ..\n");
         // Так как в EnumDeclaration нет прямого метода разбиения этих данных,
         // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
         new VoidVisitorAdapter() {
             @Override
             public void visit(MethodDeclaration n, Object arg) {
 
-                source.append(CreateUmlCode.setModifier(n.getModifiers()));
+                CreateUmlCode.source.append(CreateUmlCode.setModifier(n.getModifiers()));
                 if (n.getType() != null)
-                    source.append(n.getType() + " ");
-                source.append(n.getName() + "(");
+                    CreateUmlCode.source.append(n.getType() + " ");
+                CreateUmlCode.source.append(n.getName() + "(");
                 if (n.getParameters() != null) {
                     setParameters(n.getParameters());
                 }
-                source.append(")\n");
+                CreateUmlCode.source.append(")\n");
             }
         }.visit(n, null);
 
@@ -391,10 +379,10 @@ public class UMLDiagramClasses {
             @Override
             public void visit(FieldDeclaration n, Object arg) {
 
-                source.append(CreateUmlCode.setModifier(n.getModifiers()));
-                source.append(n.getType());
+                CreateUmlCode.source.append(CreateUmlCode.setModifier(n.getModifiers()));
+                CreateUmlCode.source.append(n.getType());
                 for (VariableDeclarator var : n.getVariables()) {
-                    source.append(" " + var.getId() + "\n");
+                    CreateUmlCode.source.append(" " + var.getId() + "\n");
                 }
             }
         }.visit(clazz, null);
@@ -406,14 +394,14 @@ public class UMLDiagramClasses {
             @Override
             public void visit(MethodDeclaration n, Object arg) {
 
-                source.append(CreateUmlCode.setModifier(n.getModifiers()));
+                CreateUmlCode.source.append(CreateUmlCode.setModifier(n.getModifiers()));
                 if (n.getType() != null)
-                    source.append(n.getType() + " ");
-                source.append(n.getName() + "(");
+                    CreateUmlCode.source.append(n.getType() + " ");
+                CreateUmlCode.source.append(n.getName() + "(");
                 if (n.getParameters() != null) {
                     setParameters(n.getParameters());
                 }
-                source.append(")\n");
+                CreateUmlCode.source.append(")\n");
             }
         }.visit(clazz, null);
 
@@ -423,10 +411,10 @@ public class UMLDiagramClasses {
 
         for (Parameter parameter : parameters) {
 
-            source.append(parameter.getType() + " ");
-            source.append(parameter.getId());
+            CreateUmlCode.source.append(parameter.getType() + " ");
+            CreateUmlCode.source.append(parameter.getId());
             if (parameters.size() > 1 && parameters.indexOf(parameter) < parameters.size() - 1)
-                source.append(", ");
+                CreateUmlCode.source.append(", ");
         }
     }
 
