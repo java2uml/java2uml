@@ -9,16 +9,16 @@ public class Options {
     private String path = null;
     private String outputFile = null;
     private String header = null;
-    private Hashtable<String, Boolean> options;
+
+    private boolean isClassDiagram = true;
+    private boolean isComposition = true;
+    private boolean isAggregation = true;
+    private boolean isAssociation = true;
+    private boolean isLollipop = true;
+
+    private boolean isVertical = true;
 
     public Options() {
-        options = new Hashtable<String, Boolean>();
-        options.put("class_diagram", true);
-        options.put("composition", true);
-        options.put("aggregation", true);
-        options.put("association", true);
-        options.put("lollipop", true);
-        options.put("vertical", true);
     }
 
     public String getPath() {
@@ -46,74 +46,78 @@ public class Options {
     }
 
     public boolean isClassDiagram() {
-        return options.get("class_diagram");
+        return isClassDiagram;
     }
 
     public void setClassDiagram() {
-        options.put("class_diagram", true);
+        isClassDiagram = true;
     }
 
     public void resetClassDiagram() {
-        options.put("class_diagram", false);
+        isClassDiagram = false;
     }
 
     public boolean isComposition() {
-        return options.get("composition");
+        return isComposition;
     }
 
     public void setComposition() {
-        options.put("composition", true);
+        isComposition = true;
     }
 
     public void resetComposition() {
-        options.put("composition", false);
+        isComposition = false;
     }
 
     public boolean isAggregation() {
-        return options.get("aggregation");
+        return isAggregation;
     }
 
     public void setAggregation() {
-        options.put("aggregation", true);
+        isAggregation = true;
     }
 
     public void resetAggregation() {
-        options.put("aggregation", false);
+        isAggregation = false;
     }
 
     public boolean isAssociation() {
-        return options.get("association");
+        return isAssociation;
     }
 
     public void setAssociation() {
-        options.put("association", true);
+        isAssociation = true;
     }
 
     public void resetAssociation() {
-        options.put("association", false);
+        isAssociation = false;
     }
 
     public boolean isLollipop() {
-        return options.get("lollipop");
+        return isLollipop;
     }
 
     public void setLollipop() {
-        options.put("lollipop", true);
+        isLollipop = true;
     }
 
     public void resetLollipop() {
-        options.put("lollipop", false);
+        isLollipop = false;
     }
 
     public boolean isVertical() {
-        return options.get("vertical");
+        return isVertical;
+    }
+
+    public boolean isHorizontal() {
+        return !isVertical;
     }
 
     public void setVertical() {
-        options.put("vertical", true);
+        isVertical = true;
     }
 
-    public void resetVertical() {
-        options.put("vertical", false);
+    public void setHorizontal() {
+        isVertical = false;
     }
 }

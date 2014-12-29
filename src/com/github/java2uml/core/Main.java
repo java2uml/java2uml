@@ -43,9 +43,9 @@ public class Main {
 
         int sourceFileType;
         int length2Param = args[2].length();
-        if (length2Param <= "java".length() && "java".substring(0, length2Param).equals(args[2])) {
+        if (length2Param >= 3 && length2Param <= "java".length() && "java".substring(0, length2Param).equals(args[2])) {
             sourceFileType = 1;
-        } else if (length2Param <= "class".length() && "class".substring(0, length2Param).equals(args[2])) {
+        } else if (length2Param >= 3 && length2Param <= "class".length() && "class".substring(0, length2Param).equals(args[2])) {
             sourceFileType = 2;
         } else {
             throw new InvalidParameterException("Incorrect parameters.");
@@ -90,7 +90,7 @@ public class Main {
                         throw new InvalidParameterException("Incompatible parameters.");
                     }
                 }
-                options.resetVertical();
+                options.setHorizontal();
                 continue;
             }
 
