@@ -1,0 +1,84 @@
+package com.github.java2uml.gui;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+
+/**
+ * Created by mac on 29.12.14.
+ */
+public class Help extends JFrame implements ActionListener {
+    private final int WIDTH = 600;
+    private final int HEIGHT = 400;
+    private JEditorPane editorPane;
+    private URL helpURL;
+
+    public Help(String _title, URL _helpURL){
+        super(_title);
+        helpURL = _helpURL;
+        editorPane = new JEditorPane();
+        editorPane.setEditable(false);
+
+        try {
+            editorPane.setPage(_helpURL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        editorPane.addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+                    try {
+                        editorPane.setPage(e.getURL());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
+        getContentPane().add(new JScrollPane(editorPane));
+        setSize(600, 400);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String strAction = e.getActionCommand();
+        URL tempURL;
+        try {
+            if (strAction == "Contents") {
+                tempURL = editorPane.getPage();
+                editorPane.setPage(helpURL);
+            }
+            if (strAction == "Close"){
+                processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            }
+        } catch (IOException ex){
+            ex.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        URL index = null;
+        File file = new File("github/java2uml/gui/index.html");
+        try {
+            index = file.toURI().toURL();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        new Help("Test", index);
+    }
+}

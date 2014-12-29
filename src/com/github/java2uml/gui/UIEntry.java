@@ -33,6 +33,7 @@ public class UIEntry {
 
             }
         });
+        ui.disablingNonWorkingOptions();
 
     }
 
@@ -47,7 +48,7 @@ public class UIEntry {
 
     }
 
-    public static void generate(final String source, final String fileName) {
+    public static void generateDiagram(final String source, final String fileName) {
         try {
             File file = new File(fileName);
             if (!file.exists()) {
