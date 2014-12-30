@@ -60,6 +60,11 @@ public class Main {
         // Разбираем оставшиеся параметры.
         for (int i = firstOptionalArgument; i < args.length; i++) {
             String param = args[i];
+
+            if (param.trim().isEmpty()) {
+                continue;
+            }
+
             paramLength = param.length();
             // Длина параметра не может быть меньше 3 символов.
             if (paramLength < 3) {
