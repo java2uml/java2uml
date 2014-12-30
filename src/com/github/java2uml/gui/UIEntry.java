@@ -15,6 +15,50 @@ public class UIEntry {
     UI ui;
     String[] args;
 
+
+    private String[] gettingParametersFromUI(){
+        args = new String[9];
+        for (int i = 0; i < args.length; i++) {
+            args[i] = "";
+        }
+        if (ui.getParsingCheckboxItem().getState()){
+            args[0] = "java";
+        } else args[0] = "class";
+
+        args[1] = ui.getPath().getText().toString();
+
+        if (!ui.getShowHeader().getState()){
+            args[2] = "noheader";
+        }
+
+
+        if (ui.getClassDiagramCheckboxItem().getState()) {
+            args[3] = "classes_diagram";
+        } else {
+            args[3] = "sequence_diagram";
+        }
+        if (ui.getVerticalDirectionCheckboxItem().getState()) {
+            args[4] = "vertical";
+        } else args[4] = "horizontal";
+        if (!ui.getShowComposition().getState()){
+            args[5] = "nocomposition";
+        }
+        if (!ui.getShowAggregation().getState()){
+            args[6] = "noaggregation";
+        }
+        if (!ui.getShowAssociation().getState()){
+            args[7] = "noassociation";
+        }
+        if (!ui.getShowLollipops().getState()){
+            args[8] = "nolollipop";
+        }
+        for (int i = 0; i < args.length; i++){
+            System.out.println(args[i]);
+        }
+        return args;
+    }
+
+
     public void initUI() {
         ui = UI.getInstance();
         ui.initUI().setVisible(true);
@@ -22,16 +66,19 @@ public class UIEntry {
         ui.getGeneratePlantUML().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Thread generateDiagramThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-//                        Main.main();
-//                        loadClassesAndGenerateDiagram(ui.getPath().getText());
-                    }
-                });
-                generateDiagramThread.start();
+                    args = gettingParametersFromUI();
 
-            }
+                        try {
+                            Main.main(gettingParametersFromUI());
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+
+
+                }
+
+
+
         });
         ui.disablingNonWorkingOptions();
 

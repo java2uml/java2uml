@@ -56,9 +56,7 @@ public class UI {
         return generatePlantUML;
     }
 
-    public JTextArea getGeneratedCode() {
-        return generatedCode;
-    }
+
 
     private UI(){
 
@@ -69,6 +67,50 @@ public class UI {
             ui = new UI();
         }
         return ui;
+    }
+
+    public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
+        return horizontalDirectionCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getVerticalDirectionCheckboxItem() {
+        return verticalDirectionCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getClassDiagramCheckboxItem() {
+        return classDiagramCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getSequenceDiagramCheckboxItem() {
+        return sequenceDiagramCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getReflectionCheckboxItem() {
+        return reflectionCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getParsingCheckboxItem() {
+        return parsingCheckboxItem;
+    }
+
+    public JCheckBoxMenuItem getShowLollipops() {
+        return showLollipops;
+    }
+
+    public JCheckBoxMenuItem getShowHeader() {
+        return showHeader;
+    }
+
+    public JCheckBoxMenuItem getShowAssociation() {
+        return showAssociation;
+    }
+
+    public JCheckBoxMenuItem getShowComposition() {
+        return showComposition;
+    }
+
+    public JCheckBoxMenuItem getShowAggregation() {
+        return showAggregation;
     }
 
     private JMenuBar initMenu(){
@@ -165,31 +207,33 @@ public class UI {
 //                } else helpWindow = Help.getInstance();
             }
         });
+//todo: Вытащить параметры из комбобоксов
+
+        setTypeOfDiagram.addItem(classDiagramCheckboxItem.getText().toString());
+        setTypeOfDiagram.addItem(sequenceDiagramCheckboxItem.getText().toString());
+        setDirectionOfDiagram.addItem(verticalDirectionCheckboxItem.getText().toString());
+        setDirectionOfDiagram.addItem(horizontalDirectionCheckboxItem.getText().toString());
 
         return menu;
     }
 
     public void disablingNonWorkingOptions(){
-        horizontalDirectionCheckboxItem.setEnabled(false);
-        verticalDirectionCheckboxItem.setEnabled(false);
+
+        classDiagramCheckboxItem.setState(true);
         verticalDirectionCheckboxItem.setState(true);
         classDiagramCheckboxItem.setEnabled(false);
         sequenceDiagramCheckboxItem.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
-        setDirectionOfDiagram.setEnabled(false);
+
         setTypeOfDiagram.setEnabled(false);
-        parsingCheckboxItem.setEnabled(false);
-        reflectionCheckboxItem.setEnabled(false);
-        showAssociation.setState(true);
-        showAssociation.setEnabled(false);
-        showAggregation.setEnabled(false);
         showAggregation.setState(true);
-        showComposition.setEnabled(false);
+        showAssociation.setState(true);
         showComposition.setState(true);
-        showHeader.setEnabled(false);
-        showHeader.setState(true);
-        showLollipops.setEnabled(false);
         showLollipops.setState(true);
+        showHeader.setState(true);
+
+
+
 
     }
 
@@ -229,10 +273,7 @@ public class UI {
         fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-        setTypeOfDiagram.addItem(CLASS_DIAGRAM);
-        setTypeOfDiagram.addItem(SEQUENCE_DIAGRAM);
-        setDirectionOfDiagram.addItem(VERTICAL_DIRECTION);
-        setDirectionOfDiagram.addItem(HORIZONTAL_DIRECTION);
+
 
         panelForButtons.add(browse);
         panelForButtons.add(setTypeOfDiagram);
@@ -273,6 +314,8 @@ public class UI {
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+
+
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
@@ -292,7 +335,7 @@ public class UI {
                 if (resultOfChoice == JFileChooser.APPROVE_OPTION){
                     chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
                     path.setText(chosenDirectory.toString());
-                    Main.setPath(chosenDirectory.toString());
+
 
                 }
             }
