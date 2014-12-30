@@ -154,15 +154,15 @@ public class UI {
         helpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                if (!Help.helpIsNull()) {
-                    if (!helpWindow.isVisible()) {
-                        helpWindow.setVisible(true);
-                    } else {
-                        helpWindow.toFront();
-                        helpWindow.repaint();
-                    }
-                } else helpWindow = Help.getInstance();
+            new Help("Help");
+//                if (!Help.helpIsNull()) {
+//                    if (!helpWindow.isVisible()) {
+//                        helpWindow.setVisible(true);
+//                    } else {
+//                        helpWindow.toFront();
+//                        helpWindow.repaint();
+//                    }
+//                } else helpWindow = Help.getInstance();
             }
         });
 

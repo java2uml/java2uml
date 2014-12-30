@@ -5,6 +5,7 @@ h1 {
 	font-size: 50;
 	text-align: center
 }
+
 li {
 	padding-bottom: 5px;
 	list-style-type: decimal;
@@ -13,6 +14,19 @@ li {
 	font-weight: bold;
 
 }
+
+
 a {
 	color: #9D9DAD;
 }
+blockquote{
+  font-size: 15;
+  font-family: Arial;
+  font-style: italic;
+  border-width: 1px;
+  border-spacing: 20;
+  border-style: dashed;
+  padding: 10px;
+}
+
+
