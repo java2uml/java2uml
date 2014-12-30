@@ -1,4 +1,4 @@
-package com.github.java2uml;
+package master_r1_affect205.src.com.github.java2uml;
 
 import java.io.File;
 import java.io.FileNotFoundException;
