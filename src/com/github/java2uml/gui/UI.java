@@ -46,6 +46,8 @@ public class UI {
 
     private static UI ui;
 
+    private static Help helpWindow;
+
     public JTextField getPath() {
         return path;
     }
@@ -148,6 +150,21 @@ public class UI {
         menu.add(file);
         menu.add(options);
         menu.add(help);
+
+        helpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (!Help.helpIsNull()) {
+                    if (!helpWindow.isVisible()) {
+                        helpWindow.setVisible(true);
+                    } else {
+                        helpWindow.toFront();
+                        helpWindow.repaint();
+                    }
+                } else helpWindow = Help.getInstance();
+            }
+        });
 
         return menu;
     }

@@ -20,15 +20,34 @@ public class Help extends JFrame implements ActionListener {
     private final int HEIGHT = 400;
     private JEditorPane editorPane;
     private URL helpURL;
+    private static Help help;
 
-    public Help(String _title, URL _helpURL){
+    public static boolean helpIsNull(){
+        return help == null;
+    }
+
+    public static Help getInstance(){
+        if (help == null){
+            help = new Help("Java2UML Help");
+        }
+        return help;
+    }
+
+    private Help(String _title){
         super(_title);
-        helpURL = _helpURL;
+        URL helpURL = null;
+        File file = new File("github/java2uml/gui/help.html");
+        try {
+            helpURL = file.toURI().toURL();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
         editorPane = new JEditorPane();
         editorPane.setEditable(false);
 
         try {
-            editorPane.setPage(_helpURL);
+            editorPane.setPage(helpURL);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -60,7 +79,7 @@ public class Help extends JFrame implements ActionListener {
         try {
             if (strAction == "Contents") {
                 tempURL = editorPane.getPage();
-                editorPane.setPage(helpURL);
+                editorPane.setPage(tempURL);
             }
             if (strAction == "Close"){
                 processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
@@ -70,15 +89,5 @@ public class Help extends JFrame implements ActionListener {
         }
     }
 
-    public static void main(String[] args) {
-        URL index = null;
-        File file = new File("github/java2uml/gui/index.html");
-        try {
-            index = file.toURI().toURL();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
 
-        new Help("Test", index);
-    }
 }
