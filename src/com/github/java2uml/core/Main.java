@@ -1,14 +1,17 @@
 package com.github.java2uml.core;
 
-import com.github.java2uml.core.reflection.Reflection;
-
 public class Main {
     // todo
     // Из класса UI эту переменную меняет JFileChooser, при выборе директории.
     // Необходимо эту переменную из Main перенести в пакет GUI.
     public static String path;
+<<<<<<< HEAD
 //    static String[] args;
 //    UI ui;
+=======
+    static String[] args;
+
+>>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
 
     public static void main(String[] args) throws Exception {
         final int firstOptionalArgument = 2; // Порядковый номер первого необязательно параметра.
@@ -22,6 +25,7 @@ public class Main {
             throw new InvalidParameterException("Too few parameters.");
         }
 
+<<<<<<< HEAD
         // Создаем новый объект с параметрами.
         Options options = new Options();
 
@@ -212,6 +216,15 @@ public class Main {
                 break;
         }
         //*/
+=======
+    public static void main(String[] args) throws Exception {
+        System.out.println("Java2UML starting point...");
+        Main.args = args;
+        Main main = new Main();
+
+        main.go();
+
+>>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
     }
 
 /* Следующие методы отключены, т.к. должны быть реализованы в соответствующих местах.
@@ -222,16 +235,10 @@ public class Main {
         Method[] methods;
         Field[] fields;
         Constructor[] constructors;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                initUI();
-            }
-        });
 
 
-    }
 
+<<<<<<< HEAD
     // todo
     // Метод должен быть в пакете GUI.
     public void initUI() {
@@ -248,9 +255,9 @@ public class Main {
                     }
                 });
                 generateDiagramThread.start();
+=======
+>>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
 
-            }
-        });
     }
 */
     // todo
@@ -260,6 +267,7 @@ public class Main {
         return path;
     }
 
+<<<<<<< HEAD
     // todo
     // Метод должен быть в пакете reflection и parsing (устанавливать путь в options), если этот
     // метод нужен в GUI, надо посмотреть, как его заменить.
@@ -267,4 +275,42 @@ public class Main {
         path = _path;
     }
 //*/
+=======
+
+
+    public static void loadClassesAndGenerateDiagram(String path) {
+        UMLClassLoader ecl = new UMLClassLoader();
+        Set<Class> classes = null;
+
+
+
+        try {
+            classes = ecl.loadClasses(path);
+        } catch (ClassNotFoundException ex) {
+            ex.printStackTrace();
+        }
+
+
+        //todo убрать вывод в консоль после тестирования
+        if (classes == null || classes.size() == 0) {
+            System.out.println("Классы не загружены.");
+        } else {
+            System.out.println("Классы загружены, передаем на обработку.");
+            System.out.println("----------------------------------------");
+
+            for (Class clazz : classes) {
+                System.out.println(clazz.getName());
+
+            }
+
+            String diagram = DataExtractor.extract(classes);
+            //        System.out.println(diagram);
+
+            DataExtractor.generate(diagram);
+
+        }
+    }
+
+
+>>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
 }

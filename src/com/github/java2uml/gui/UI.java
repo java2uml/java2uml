@@ -18,12 +18,14 @@ public class UI {
     private JButton browse;
     private JTabbedPane tabs;
     private JMenuBar menu;
-    private JMenu file, help, typeOfDiagramMenu, options, direction;
-    private JMenuItem helpItem, saveItem, exitItem, aboutItem, generateItem, chooseItem, newItem;
-    JRadioButtonMenuItem horizontalDirectionRadioItem, verticalDirectionRadioItem, classDiagramRadioItem,
-            sequenceDiagramRadioItem;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
+    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
+            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
+    showComposition, showAggregation;
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
+    ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
     private JButton generatePlantUML;
@@ -42,6 +44,10 @@ public class UI {
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
 
+    private static UI ui;
+
+    private static Help helpWindow;
+
     public JTextField getPath() {
         return path;
     }
@@ -54,49 +60,89 @@ public class UI {
         return generatedCode;
     }
 
+    private UI(){
+
+    }
+
+    public static UI getInstance(){
+        if (ui == null){
+            ui = new UI();
+        }
+        return ui;
+    }
+
     private JMenuBar initMenu(){
         menu = new JMenuBar();
+
         file = new JMenu("File");
         help = new JMenu("Help");
         typeOfDiagramMenu = new JMenu("Type will be...");
 
         options = new JMenu("Options");
         direction = new JMenu("Direction will be...");
+        diagramGeneratingMethods = new JMenu("I want to parse...");
+        whichRelationsAreShown = new JMenu("Relations to be shown...");
+
+        showAssociation = new StayOpenCheckBoxMenuItem("Association");
+        showAssociation.setState(true);
+        showAggregation = new StayOpenCheckBoxMenuItem("Aggregation");
+        showComposition = new StayOpenCheckBoxMenuItem("Composition");
+
+        showHeader = new StayOpenCheckBoxMenuItem("Show header");
+        showLollipops = new StayOpenCheckBoxMenuItem("Show lollipop interfaces");
+
         helpItem = new JMenuItem("Help");
-        saveItem = new JMenuItem("Save");
         exitItem = new JMenuItem("Exit");
 
         aboutItem = new JMenuItem("About");
         generateItem = new JMenuItem("Generate");
         chooseItem = new JMenuItem("Choose dir");
-        newItem = new JMenuItem("New");
 
+        parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
 
-        horizontalDirectionRadioItem = new JRadioButtonMenuItem("Horizontal");
-        verticalDirectionRadioItem = new JRadioButtonMenuItem("Vertical");
-        directionGroup.add(horizontalDirectionRadioItem);
-        directionGroup.add(verticalDirectionRadioItem);
-
-        classDiagramRadioItem = new JRadioButtonMenuItem("Class");
-        sequenceDiagramRadioItem = new JRadioButtonMenuItem("Sequence");
-        typeOfDiagramGroup.add(classDiagramRadioItem);
-        typeOfDiagramGroup.add(sequenceDiagramRadioItem);
+        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(".class files");
+        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(".java files");
+        parsingMethod.add(reflectionCheckboxItem);
+        parsingMethod.add(parsingCheckboxItem);
 
 
-        file.add(newItem);
+        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Horizontal");
+
+        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Vertical");
+
+        directionGroup.add(horizontalDirectionCheckboxItem);
+        directionGroup.add(verticalDirectionCheckboxItem);
+
+        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Class");
+        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Sequence");
+        typeOfDiagramGroup.add(classDiagramCheckboxItem);
+        typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
+
+
+
         file.add(chooseItem);
         file.add(generateItem);
-        file.add(saveItem);
+
         file.add(exitItem);
 
+        whichRelationsAreShown.add(showAggregation);
+        whichRelationsAreShown.add(showAssociation);
+        whichRelationsAreShown.add(showComposition);
+
         options.add(direction);
-        direction.add(horizontalDirectionRadioItem);
-        direction.add(verticalDirectionRadioItem);
+        options.add(diagramGeneratingMethods);
+        options.add(whichRelationsAreShown);
+        diagramGeneratingMethods.add(parsingCheckboxItem);
+        diagramGeneratingMethods.add(reflectionCheckboxItem);
+        direction.add(horizontalDirectionCheckboxItem);
+        direction.add(verticalDirectionCheckboxItem);
         options.add(typeOfDiagramMenu);
-        typeOfDiagramMenu.add(classDiagramRadioItem);
-        typeOfDiagramMenu.add(sequenceDiagramRadioItem);
+        typeOfDiagramMenu.add(classDiagramCheckboxItem);
+        typeOfDiagramMenu.add(sequenceDiagramCheckboxItem);
+        options.add(showHeader);
+        options.add(showLollipops);
 
         help.add(helpItem);
         help.add(aboutItem);
@@ -105,7 +151,46 @@ public class UI {
         menu.add(options);
         menu.add(help);
 
+        helpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (!Help.helpIsNull()) {
+                    if (!helpWindow.isVisible()) {
+                        helpWindow.setVisible(true);
+                    } else {
+                        helpWindow.toFront();
+                        helpWindow.repaint();
+                    }
+                } else helpWindow = Help.getInstance();
+            }
+        });
+
         return menu;
+    }
+
+    public void disablingNonWorkingOptions(){
+        horizontalDirectionCheckboxItem.setEnabled(false);
+        verticalDirectionCheckboxItem.setEnabled(false);
+        verticalDirectionCheckboxItem.setState(true);
+        classDiagramCheckboxItem.setEnabled(false);
+        sequenceDiagramCheckboxItem.setEnabled(false);
+        classDiagramCheckboxItem.setState(true);
+        setDirectionOfDiagram.setEnabled(false);
+        setTypeOfDiagram.setEnabled(false);
+        parsingCheckboxItem.setEnabled(false);
+        reflectionCheckboxItem.setEnabled(false);
+        showAssociation.setState(true);
+        showAssociation.setEnabled(false);
+        showAggregation.setEnabled(false);
+        showAggregation.setState(true);
+        showComposition.setEnabled(false);
+        showComposition.setState(true);
+        showHeader.setEnabled(false);
+        showHeader.setState(true);
+        showLollipops.setEnabled(false);
+        showLollipops.setState(true);
+
     }
 
     public JFrame initUI() {
@@ -224,6 +309,8 @@ public class UI {
 
         return value;
     }
+
+
 
     public void setProgressBarComplete(){
         progressBar.setValue(100);
