@@ -1,3 +1,16 @@
 .gitignore
 /.idea
 /out
+master_r1_affect205/src/com/github/java2uml/Main.java~44e141a5e37cbd256abc2da66af500f877e67274
+src/src.iml
+src/com/.idea/com.iml
+src/com/.idea/compiler.xml
+src/com/.idea/encodings.xml
+src/com/.idea/misc.xml
+src/com/.idea/modules.xml
+src/com/.idea/vcs.xml
+src/com/.idea/workspace.xml
+src/com/.idea/copyright/profiles_settings.xml
+src/com/.idea/dictionaries/mac.xml
+src/com/.idea/scopes/scope_settings.xml
+src/com/github/java2uml/gui/whatIsUML.html
