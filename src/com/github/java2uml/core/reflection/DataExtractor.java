@@ -1,4 +1,4 @@
-package com.github.java2uml.core;
+package com.github.java2uml.core.reflection;
 
 
 import java.io.*;
