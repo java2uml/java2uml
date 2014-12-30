@@ -1,31 +1,24 @@
 package com.github.java2uml.core;
 
+import com.github.java2uml.core.reflection.Reflection;
+
 public class Main {
     // todo
     // Из класса UI эту переменную меняет JFileChooser, при выборе директории.
     // Необходимо эту переменную из Main перенести в пакет GUI.
-    public static String path;
-<<<<<<< HEAD
-//    static String[] args;
-//    UI ui;
-=======
-    static String[] args;
-
->>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
+    // public static String path;
 
     public static void main(String[] args) throws Exception {
         final int firstOptionalArgument = 2; // Порядковый номер первого необязательно параметра.
 //        Main main = new Main();
 //        main.go();
 
-//*
         // Должны быть заданы хотя бы два параметра: тип файлов для преобразования и
         // путь к исходным файлам.
         if (args.length < 2) {
             throw new InvalidParameterException("Too few parameters.");
         }
 
-<<<<<<< HEAD
         // Создаем новый объект с параметрами.
         Options options = new Options();
 
@@ -193,8 +186,8 @@ public class Main {
             }
 
             // Параметр, запрещающий вывод "леденцов".
-            if (paramLength <= "noimplementation".length() && "noimplementation".substring(0, paramLength)
-                    .equals(param)) {
+            if (paramLength <= "noimplementation".length() && "noimplementation"
+                    .substring(0, paramLength).equals(param)) {
                 options.setShowImplementation(false);
                 continue;
             }
@@ -215,102 +208,21 @@ public class Main {
                 reflection.loadClassesAndGenerateDiagram(options);
                 break;
         }
-        //*/
-=======
-    public static void main(String[] args) throws Exception {
-        System.out.println("Java2UML starting point...");
-        Main.args = args;
-        Main main = new Main();
-
-        main.go();
-
->>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
     }
 
-/* Следующие методы отключены, т.к. должны быть реализованы в соответствующих местах.
-
+/*
     // todo
-    // Метод должен быть в пакете GUI
-    private void go() throws Exception {
-        Method[] methods;
-        Field[] fields;
-        Constructor[] constructors;
-
-
-
-<<<<<<< HEAD
-    // todo
-    // Метод должен быть в пакете GUI.
-    public void initUI() {
-        ui = new UI();
-        ui.initUI().setVisible(true);
-        ui.addActionListenerToChooseFile();
-        ui.getGeneratePlantUML().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Thread generateDiagramThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadClassesAndGenerateDiagram(ui.getPath().getText());
-                    }
-                });
-                generateDiagramThread.start();
-=======
->>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
-
-    }
-*/
-    // todo
-    // Метод должен быть в пакете reflection и parsing (получать путь из options), если этот
+    // Метод должен быть в пакете reflection или parsing (получать путь из options), если этот
     // метод нужен в GUI, надо посмотреть, как его заменить.
     public static String getPath() {
         return path;
     }
 
-<<<<<<< HEAD
     // todo
-    // Метод должен быть в пакете reflection и parsing (устанавливать путь в options), если этот
+    // Метод должен быть в пакете reflection или parsing (устанавливать путь в options), если этот
     // метод нужен в GUI, надо посмотреть, как его заменить.
     public static void setPath(String _path) {
         path = _path;
     }
 //*/
-=======
-
-
-    public static void loadClassesAndGenerateDiagram(String path) {
-        UMLClassLoader ecl = new UMLClassLoader();
-        Set<Class> classes = null;
-
-
-
-        try {
-            classes = ecl.loadClasses(path);
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-
-
-        //todo убрать вывод в консоль после тестирования
-        if (classes == null || classes.size() == 0) {
-            System.out.println("Классы не загружены.");
-        } else {
-            System.out.println("Классы загружены, передаем на обработку.");
-            System.out.println("----------------------------------------");
-
-            for (Class clazz : classes) {
-                System.out.println(clazz.getName());
-
-            }
-
-            String diagram = DataExtractor.extract(classes);
-            //        System.out.println(diagram);
-
-            DataExtractor.generate(diagram);
-
-        }
-    }
-
-
->>>>>>> 2e4d191d77dee76583af8b65ed506085a6ab5051
 }
