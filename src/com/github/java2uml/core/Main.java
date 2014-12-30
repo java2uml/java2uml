@@ -1,5 +1,7 @@
 package com.github.java2uml.core;
 
+import com.github.java2uml.core.reflection.Reflection;
+
 public class Main {
     // todo
     // Из класса UI эту переменную меняет JFileChooser, при выборе директории.
@@ -205,6 +207,8 @@ public class Main {
             case 2:
                 // вызываем рефлексию
                 System.out.println("Рефлексия");
+                Reflection reflection = new Reflection();
+                reflection.loadClassesAndGenerateDiagram(options);
                 break;
         }
         //*/
@@ -247,45 +251,6 @@ public class Main {
 
             }
         });
-    }
-
-    // todo
-    // Метод должен быть в пакете reflection.
-    public void loadClassesAndGenerateDiagram(String path) {
-        UMLClassLoader ecl = new UMLClassLoader();
-        Set<Class> classes = null;
-
-        ui.increaseProgressBarForTwenty();
-
-        try {
-            classes = ecl.loadClasses(path);
-        } catch (ClassNotFoundException ex) {
-            ex.printStackTrace();
-        }
-
-        ui.increaseProgressBarForTwenty();
-
-        //todo убрать вывод в консоль после тестирования
-        if (classes == null || classes.size() == 0) {
-            System.out.println("Классы не загружены.");
-        } else {
-            System.out.println("Классы загружены, передаем на обработку.");
-            System.out.println("----------------------------------------");
-
-            for (Class clazz : classes) {
-                System.out.println(clazz.getName());
-                ui.increaseProgressBarForTwenty();
-            }
-
-            String diagram = DataExtractor.extract(classes);
-            //        System.out.println(diagram);
-            ui.getGeneratedCode().setText(diagram);
-            DataExtractor.generate(diagram);
-
-            ui.setProgressBarComplete();
-
-            ui.showDiagram();
-        }
     }
 */
     // todo
