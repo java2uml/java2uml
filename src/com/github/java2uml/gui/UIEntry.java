@@ -22,7 +22,7 @@ public class UIEntry {
         }
 
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
-        args[1] = valueOf(ui.getPath());
+        args[1] = ui.getPath().getText().toString();
         args[2] = !ui.getShowHeader().getState() ? "noheader" : "";
         args[3] = ui.getClassDiagramCheckboxItem().getState() ? "classes_diagram" : "sequence_diagram";
         args[4] = ui.getVerticalDirectionCheckboxItem().getState() ? "vertical" : "horizontal";
