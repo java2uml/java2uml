@@ -66,7 +66,7 @@ public class UIEntry {
         ui.getGeneratePlantUML().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                    args = gettingParametersFromUI();
+
 
                         try {
                             Main.main(gettingParametersFromUI());
@@ -80,7 +80,7 @@ public class UIEntry {
 
 
         });
-        ui.disablingNonWorkingOptions();
+        ui.settingStateForAllOptions();
 
     }
 

@@ -217,7 +217,7 @@ public class UI {
         return menu;
     }
 
-    public void disablingNonWorkingOptions(){
+    public void settingStateForAllOptions(){
 
         classDiagramCheckboxItem.setState(true);
         verticalDirectionCheckboxItem.setState(true);
@@ -230,7 +230,7 @@ public class UI {
         showAssociation.setState(true);
         showComposition.setState(true);
         showLollipops.setState(true);
-        showHeader.setState(true);
+
 
 
 

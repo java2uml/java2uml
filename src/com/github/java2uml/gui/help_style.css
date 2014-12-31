@@ -1,7 +1,6 @@
 h1 {
 	font-family: Arial;
 	color: #8FB299;
-	text-align: left;
 	font-size: 50;
 	text-align: center
 }
@@ -14,8 +13,15 @@ li {
 	font-weight: bold;
 
 }
+#paramForPointers {
+	color: #9D9DAD;
 
+}
 
+footer{
+	text-align: right;
+}
+/*b8c4cc*/
 a {
 	color: #9D9DAD;
 }
@@ -27,6 +33,10 @@ blockquote{
   border-spacing: 20;
   border-style: dashed;
   padding: 10px;
+}
+b {
+	font-family: Arial;
+	font-size: 15;
 }
 
 
