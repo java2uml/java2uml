@@ -300,7 +300,7 @@ public class DataExtractor {
             String classPack = getPackageName(clazz.getCanonicalName());
             
             // объявление связей...
-            if (opt.isShowExtention()) {
+            if (opt.isShowExtension()) {
             	if (classes.contains(superClass)) {
                     // супер класс доступен во множестве - добавим связь
                 	source.append(superClass.getCanonicalName());

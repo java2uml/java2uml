@@ -12,14 +12,14 @@ import java.util.Set;
  * Created by Игорь Акимов on 30.12.2014.
  */
 public class Reflection {
-	public void loadClassesAndGenerateDiagram(Options options) throws Exception {
+	public void loadClassesAndGenerateDiagram() throws Exception {
 		UMLClassLoader ecl = new UMLClassLoader();
 		Set<Class> classes = null;
 
 		// ui.increaseProgressBarForTwenty();
 
 		// Пробуем загрузить классы.
-		classes = ecl.loadClasses(options.getPath());
+		classes = ecl.loadClasses(Options.getPath());
 
 		// ui.increaseProgressBarForTwenty();
 
@@ -38,10 +38,10 @@ public class Reflection {
 			// ui.increaseProgressBarForTwenty();
 			// }
 			// Создаем код UML из загруженных классов.
-			String diagram = DataExtractor.extract(classes, options);
+			String diagram = DataExtractor.extract(classes);
 
 			// Сохраняем код в заданный файл.
-			File outputFile = new File(options.getOutputFile());
+			File outputFile = new File(Options.getOutputFile());
 			FileWriter outputWriter = new FileWriter(outputFile);
 			outputWriter.write(diagram);
 			outputWriter.flush();
