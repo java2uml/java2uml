@@ -23,13 +23,13 @@ public class UIEntry {
 
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
         args[1] = valueOf(ui.getPath());
-        args[2] = !ui.getShowHeader().getState() ? "noheader" : null;
+        args[2] = !ui.getShowHeader().getState() ? "noheader" : "";
         args[3] = ui.getClassDiagramCheckboxItem().getState() ? "classes_diagram" : "sequence_diagram";
         args[4] = ui.getVerticalDirectionCheckboxItem().getState() ? "vertical" : "horizontal";
-        args[5] = !ui.getShowComposition().getState() ? "nocomposition" : null;
-        args[6] = !ui.getShowAggregation().getState() ? "noaggregation" : null;
-        args[7] = !ui.getShowAssociation().getState() ? "noassociation" : null;
-        args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : null;
+        args[5] = !ui.getShowComposition().getState() ? "nocomposition" : "";
+        args[6] = !ui.getShowAggregation().getState() ? "noaggregation" : "";
+        args[7] = !ui.getShowAssociation().getState() ? "noassociation" : "";
+        args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : "";
 
         for (String str : args) System.out.println(str);
 
