@@ -8,53 +8,31 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 
-/**
- * Created by mac on 28.12.14.
- */
+import static java.lang.String.*;
+
 public class UIEntry {
     UI ui;
     String[] args;
 
 
-    private String[] gettingParametersFromUI(){
+    private String[] gettingParametersFromUI() {
         args = new String[9];
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
         }
-        if (ui.getParsingCheckboxItem().getState()){
-            args[0] = "java";
-        } else args[0] = "class";
 
-        args[1] = ui.getPath().getText().toString();
+        args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
+        args[1] = valueOf(ui.getPath());
+        args[2] = !ui.getShowHeader().getState() ? "noheader" : null;
+        args[3] = ui.getClassDiagramCheckboxItem().getState() ? "classes_diagram" : "sequence_diagram";
+        args[4] = ui.getVerticalDirectionCheckboxItem().getState() ? "vertical" : "horizontal";
+        args[5] = !ui.getShowComposition().getState() ? "nocomposition" : null;
+        args[6] = !ui.getShowAggregation().getState() ? "noaggregation" : null;
+        args[7] = !ui.getShowAssociation().getState() ? "noassociation" : null;
+        args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : null;
 
-        if (!ui.getShowHeader().getState()){
-            args[2] = "noheader";
-        }
+        for (String str : args) System.out.println(str);
 
-
-        if (ui.getClassDiagramCheckboxItem().getState()) {
-            args[3] = "classes_diagram";
-        } else {
-            args[3] = "sequence_diagram";
-        }
-        if (ui.getVerticalDirectionCheckboxItem().getState()) {
-            args[4] = "vertical";
-        } else args[4] = "horizontal";
-        if (!ui.getShowComposition().getState()){
-            args[5] = "nocomposition";
-        }
-        if (!ui.getShowAggregation().getState()){
-            args[6] = "noaggregation";
-        }
-        if (!ui.getShowAssociation().getState()){
-            args[7] = "noassociation";
-        }
-        if (!ui.getShowLollipops().getState()){
-            args[8] = "nolollipop";
-        }
-        for (int i = 0; i < args.length; i++){
-            System.out.println(args[i]);
-        }
         return args;
     }
 
@@ -66,17 +44,16 @@ public class UIEntry {
         ui.getGeneratePlantUML().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                    args = gettingParametersFromUI();
+                args = gettingParametersFromUI();
 
-                        try {
-                            Main.main(gettingParametersFromUI());
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
-
-
+                try {
+                    Main.main(gettingParametersFromUI());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
                 }
 
+
+            }
 
 
         });
@@ -108,11 +85,9 @@ public class UIEntry {
             // генератор диаграмм
             SourceStringReader reader = new SourceStringReader(source);
 
-            // генерация жиаграммы
+            // генерация диаграммы
             String desc = reader.generateImage(png);
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
