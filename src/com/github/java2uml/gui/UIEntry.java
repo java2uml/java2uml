@@ -44,7 +44,12 @@ public class UIEntry {
         ui.getGeneratePlantUML().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                args = gettingParametersFromUI();
+
+                        try {
+                            Main.main(gettingParametersFromUI());
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
 
                 try {
                     Main.main(gettingParametersFromUI());
@@ -52,12 +57,10 @@ public class UIEntry {
                     e1.printStackTrace();
                 }
 
-
             }
 
-
         });
-        ui.disablingNonWorkingOptions();
+        ui.settingStateForAllOptions();
 
     }
 
