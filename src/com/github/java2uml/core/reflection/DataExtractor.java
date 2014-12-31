@@ -28,7 +28,6 @@ import net.sourceforge.plantuml.SourceStringReader;
 import com.github.java2uml.core.Options;
 
 public class DataExtractor {
-	
 	/**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru

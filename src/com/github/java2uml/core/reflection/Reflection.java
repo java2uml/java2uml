@@ -37,7 +37,6 @@ public class Reflection {
 			// System.out.println(clazz.getName());
 			// ui.increaseProgressBarForTwenty();
 			// }
-
 			// Создаем код UML из загруженных классов.
 			String diagram = DataExtractor.extract(classes, options);
 
