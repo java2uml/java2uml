@@ -23,8 +23,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.github.javauml.core.Options;
-
 import net.sourceforge.plantuml.SourceStringReader;
 
 public class DataExtractor {
