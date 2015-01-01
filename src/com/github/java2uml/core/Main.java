@@ -3,24 +3,14 @@ package com.github.java2uml.core;
 import com.github.java2uml.core.reflection.Reflection;
 
 public class Main {
-    // todo
-    // Из класса UI эту переменную меняет JFileChooser, при выборе директории.
-    // Необходимо эту переменную из Main перенести в пакет GUI.
-    // public static String path;
-
     public static void main(String[] args) throws Exception {
-        final int firstOptionalArgument = 2; // Порядковый номер первого необязательно параметра.
-//        Main main = new Main();
-//        main.go();
+        final int FIRST_OPTIONAL_ARGUMENT = 2; // Порядковый номер первого необязательно параметра.
 
         // Должны быть заданы хотя бы два параметра: тип файлов для преобразования и
         // путь к исходным файлам.
         if (args.length < 2) {
-            throw new InvalidParameterException("Too few parameters.");
+            throw new InvalidParameterException("Too few parameters (" + args.length + ").");
         }
-
-//        // Создаем новый объект с параметрами.
-//        Options options = new Options();
 
         // Проверяем первый параметр - тип исходных файлов. Параметр обязательный.
         int sourceFileType;
@@ -32,7 +22,8 @@ public class Main {
                 .substring(0, length2Param).equals(args[0].toLowerCase())) {
             sourceFileType = 2;
         } else {
-            throw new InvalidParameterException("Incorrect parameters.");
+            throw new InvalidParameterException(
+                    "Incorrect parameters. The first parameter must be a \"java\" or \"class\"");
         }
 
         // Проверяем второй параметр - путь к файлам. Если присутствует знак '=', то указано
@@ -47,20 +38,22 @@ public class Main {
             paramLength = paramName.length();
             if ("src".equals(paramName)) {
                 Options.setPath(paramValue);
-            } else if (paramLength <= "source_path".length() && "source_path"
+            } else if (paramLength >= 3 && paramLength <= "source_path".length() && "source_path"
                     .substring(0, paramLength).equals(paramName)) {
                 Options.setPath(paramValue);
             } else {
-                throw new InvalidParameterException("Incorrect parameters.");
+                throw new InvalidParameterException(
+                        "Incorrect second parameter: \"" + args[1] + "\".");
             }
         } else {
             Options.setPath(args[1]);
         }
 
         // Разбираем оставшиеся параметры.
-        for (int i = firstOptionalArgument; i < args.length; i++) {
+        for (int i = FIRST_OPTIONAL_ARGUMENT; i < args.length; i++) {
             String param = args[i];
 
+            // Пустые параметры пропускаем.
             if (param.trim().isEmpty()) {
                 continue;
             }
@@ -68,7 +61,8 @@ public class Main {
             paramLength = param.length();
             // Длина параметра не может быть меньше 3 символов.
             if (paramLength < 3) {
-                throw new InvalidParameterException("Incorrect parameters.");
+                throw new InvalidParameterException("Incorrect parameter " + (i + 1)
+                        + ". Parameter can not be shorter than 3 characters.");
             }
 
             // Проверяем параметры с именами, устанавливаем соответствующие значения.
@@ -86,7 +80,8 @@ public class Main {
                     Options.setHeader(paramValue);
                     continue;
                 } else {
-                    throw new InvalidParameterException("Incorrect parameters.");
+                    throw new InvalidParameterException(
+                            "Incorrect parameter " + (i + 1) + ": \"" + param + "\".");
                 }
             }
 
@@ -95,11 +90,16 @@ public class Main {
             // быть задан совместно с "sequence_diagram"
             if (paramLength <= "classes_diagram".length() && "classes_diagram"
                     .substring(0, paramLength).equals(param)) {
-                for (int j = firstOptionalArgument; j < args.length; j++) {
+                for (int j = FIRST_OPTIONAL_ARGUMENT; j < args.length; j++) {
                     String comparedParam = args[j].toLowerCase();
+                    if (comparedParam.trim().isEmpty()) {
+                        continue;
+                    }
                     if (comparedParam.length() <= "sequence_diagram".length() && "sequence_diagram"
                             .substring(0, comparedParam.length()).equals(comparedParam)) {
-                        throw new InvalidParameterException("Incompatible parameters.");
+                        throw new InvalidParameterException(
+                                "Incompatible parameters " + (i + 1) + " and " + (j + 1) + ": \""
+                                        + param + "\" and \"" + comparedParam + "\".");
                     }
                 }
                 Options.setClassDiagram();
@@ -112,18 +112,25 @@ public class Main {
             if (paramLength <= "sequence_diagram".length() && "sequence_diagram"
                     .substring(0, paramLength).equals(param)) {
                 if (sourceFileType == 1) {
-                    for (int j = firstOptionalArgument; j < args.length; j++) {
+                    for (int j = FIRST_OPTIONAL_ARGUMENT; j < args.length; j++) {
                         String comparedParam = args[j].toLowerCase();
+                        if (comparedParam.trim().isEmpty()) {
+                            continue;
+                        }
                         if (comparedParam.length() <= "classes_diagram".length()
                                 && "classes_diagram".substring(0, comparedParam.length())
                                 .equals(comparedParam)) {
-                            throw new InvalidParameterException("Incompatible parameters.");
+                            throw new InvalidParameterException(
+                                    "Incompatible parameters " + (i + 1) + " and " + (j + 1)
+                                            + ": \"" + param + "\" and \"" + comparedParam + "\".");
                         }
                     }
                     Options.resetClassDiagram();
                     continue;
                 } else {
-                    throw new InvalidParameterException("Incompatible parameters.");
+                    throw new InvalidParameterException(
+                            "Incompatible parameters 1 and " + (i + 1) + ": \"" + args[0] + "\" and \""
+                                    + param + "\".");
                 }
             }
 
@@ -131,11 +138,16 @@ public class Main {
             // совместно с параметром "horizontal".
             if (paramLength <= "vertical".length() && "vertical".substring(0, paramLength)
                     .equals(param)) {
-                for (int j = firstOptionalArgument; j < args.length; j++) {
+                for (int j = FIRST_OPTIONAL_ARGUMENT; j < args.length; j++) {
                     String comparedParam = args[j].toLowerCase();
+                    if (comparedParam.trim().isEmpty()) {
+                        continue;
+                    }
                     if (comparedParam.length() <= "horizontal".length() && "horizontal"
                             .substring(0, comparedParam.length()).equals(comparedParam)) {
-                        throw new InvalidParameterException("Incompatible parameters.");
+                        throw new InvalidParameterException(
+                                "Incompatible parameters " + (i + 1) + " and " + (j + 1) + ": \"" + param
+                                        + "\" and \"" + comparedParam + "\".");
                     }
                 }
                 Options.setVertical();
@@ -146,11 +158,16 @@ public class Main {
             // совместно с параметром "vertical".
             if (paramLength <= "horizontal".length() && "horizontal".substring(0, paramLength)
                     .equals(param)) {
-                for (int j = firstOptionalArgument; j < args.length; j++) {
+                for (int j = FIRST_OPTIONAL_ARGUMENT; j < args.length; j++) {
                     String comparedParam = args[j].toLowerCase();
+                    if (comparedParam.trim().isEmpty()) {
+                        continue;
+                    }
                     if (comparedParam.length() <= "vertical".length() && "vertical"
                             .substring(0, comparedParam.length()).equals(comparedParam)) {
-                        throw new InvalidParameterException("Incompatible parameters.");
+                        throw new InvalidParameterException(
+                                "Incompatible parameters " + (i + 1) + " and " + (j + 1) + ": \"" + param
+                                        + "\" and \"" + comparedParam + "\".");
                     }
                 }
                 Options.setHorizontal();
@@ -159,7 +176,8 @@ public class Main {
 
             // Следующие параметры можно сократить до 5 символов.
             if (paramLength < 5) {
-                throw new InvalidParameterException("Incorrect parameters.");
+                throw new InvalidParameterException("Incorrect parameters " + (i + 1)
+                        + ". Parameter can not be shorter than 5 characters.");
             }
 
             // Параметр, запрещающий вывод композиции.
@@ -197,7 +215,8 @@ public class Main {
                 continue;
             }
 
-            throw new InvalidParameterException("Incorrect parameters.");
+            throw new InvalidParameterException(
+                    "Incorrect parameter " + (i + 1) + ": \"" + param + "\".");
         }
 
         // Запускаем соответствующую обработку.
@@ -214,20 +233,4 @@ public class Main {
                 break;
         }
     }
-
-/*
-    // todo
-    // Метод должен быть в пакете reflection или parsing (получать путь из options), если этот
-    // метод нужен в GUI, надо посмотреть, как его заменить.
-    public static String getPath() {
-        return path;
-    }
-
-    // todo
-    // Метод должен быть в пакете reflection или parsing (устанавливать путь в options), если этот
-    // метод нужен в GUI, надо посмотреть, как его заменить.
-    public static void setPath(String _path) {
-        path = _path;
-    }
-//*/
 }
