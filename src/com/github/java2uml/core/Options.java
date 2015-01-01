@@ -1,129 +1,133 @@
 package com.github.java2uml.core;
+
+import com.github.java2uml.core.Options;
+
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
  * Created by Игорь Акимов on 28.12.2014.
  */
-public class Options {
-    private String path = null;
-    private String outputFile = "classes.plantuml";
-    private String header = null;
+public final class Options {
+    private static String path = null;
+    private static String outputFile = "classes.plantuml";
+    private static String header = null;
 
-    private boolean isClassDiagram = true;
+    private static boolean isClassDiagram = true;
 
-    private boolean showComposition 	= true;
-    private boolean showAggregation 	= true;
-    private boolean showAssociation 	= true;
-    private boolean showLollipop 		= true;
-    private boolean showImplementation 	= true;
-    private boolean showExtention		= true;
+    private static boolean showComposition 	= true;
+    private static boolean showAggregation 	= true;
+    private static boolean showAssociation 	= true;
+    private static boolean showLollipop 		= true;
+    private static boolean showImplementation 	= true;
 
-    private boolean isVertical = true;
+    private static boolean isVertical = true;
+    
+    private static boolean showMethodArgs = false;
 
-    public Options() {
+    private Options() {
     }
 
-    public String getPath() {
+    public static String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public static void setPath(String path) {
+        Options.path = path;
     }
 
-    public String getOutputFile() {
+    public static String getOutputFile() {
         return outputFile;
     }
 
-    public void setOutputFile(String outputFile) {
-        this.outputFile = outputFile;
+    public static void setOutputFile(String outputFile) {
+        Options.outputFile = outputFile;
     }
 
-    public String getHeader() {
+    public static String getHeader() {
         return header;
     }
 
-    public void setHeader(String header) {
-        this.header = header;
+    public static void setHeader(String header) {
+        Options.header = header;
     }
 
-    public boolean isClassDiagram() {
+    public static boolean isClassDiagram() {
         return isClassDiagram;
     }
 
-    public boolean isSequenceDiagram() {
+    public static boolean isSequenceDiagram() {
         return !isClassDiagram;
     }
 
-    public void setClassDiagram() {
+    public static void setClassDiagram() {
         isClassDiagram = true;
     }
 
-    public void resetClassDiagram() {
+    public static void resetClassDiagram() {
         isClassDiagram = false;
     }
 
-    public boolean isShowComposition() {
+    public static boolean isShowComposition() {
         return showComposition;
     }
 
-    public void setShowComposition(boolean showComposition) {
-        this.showComposition = showComposition;
+    public static void setShowComposition(boolean showComposition) {
+        Options.showComposition = showComposition;
     }
 
-    public boolean isShowAggregation() {
+    public static boolean isShowAggregation() {
         return showAggregation;
     }
 
-    public void setShowAggregation(boolean showAggregation) {
-        this.showAggregation = showAggregation;
+    public static void setShowAggregation(boolean showAggregation) {
+        Options.showAggregation = showAggregation;
     }
 
-    public boolean isShowAssociation() {
+    public static boolean isShowAssociation() {
         return showAssociation;
     }
 
-    public void setShowAssociation(boolean showAssociation) {
-        this.showAssociation = showAssociation;
+    public static void setShowAssociation(boolean showAssociation) {
+        Options.showAssociation = showAssociation;
     }
 
-    public boolean isShowLollipop() {
+    public static boolean isShowLollipop() {
         return showLollipop;
     }
 
-    public void setShowLollipop(boolean showLollipop) {
-        this.showLollipop = showLollipop;
+    public static void setShowLollipop(boolean showLollipop) {
+        Options.showLollipop = showLollipop;
     }
 
-    public boolean isShowImplementation() {
+    public static boolean isShowImplementation() {
         return showImplementation;
     }
 
-    public void setShowImplementation(boolean showImplementation) {
-        this.showImplementation = showImplementation;
-    }
-    
-    public boolean isShowExtention() {
-        return showExtention;
+    public static void setShowImplementation(boolean showImplementation) {
+        Options.showImplementation = showImplementation;
     }
 
-    public void setShowExtention(boolean showExtention) {
-        this.showExtention = showImplementation;
-    }
-    
-    public boolean isVertical() {
+    public static boolean isVertical() {
         return isVertical;
     }
 
-    public boolean isHorizontal() {
+    public static boolean isHorizontal() {
         return !isVertical;
     }
 
-    public void setVertical() {
+    public static void setVertical() {
         isVertical = true;
     }
 
-    public void setHorizontal() {
+    public static void setHorizontal() {
         isVertical = false;
+    }
+    
+    public static boolean getShowMethodArgs() {
+    	return showMethodArgs;
+    }
+    
+    public static void setShowMethodArgs(boolean showMethodArgs) {
+    	Options.showMethodArgs = showMethodArgs;
     }
 }
