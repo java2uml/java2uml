@@ -24,18 +24,18 @@ public class Help extends JFrame implements ActionListener {
     private URL helpURL;
     private static Help help;
 
-//    public static boolean helpIsNull(){
-//        return help == null;
-//    }
-//
-//    public static Help getInstance(){
-//        if (help == null){
-//            help = new Help("Java2UML Help");
-//        }
-//        return help;
-//    }
+    public static boolean helpIsNull(){
+        return help == null;
+    }
 
-    public Help(String _title){
+    public static Help getInstance(){
+        if (help == null){
+            help = new Help("Java2UML Help");
+        }
+        return help;
+    }
+
+    private Help(String _title){
         super(_title);
         URL helpURL = null;
         File file = new File("src/com/github/java2uml/gui/help.html");

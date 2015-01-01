@@ -17,6 +17,12 @@ li {
 
 
 }
+#h1smallerfont{
+    	font-family: Arial;
+	color: #8FB299;
+	font-size: 40;
+	text-align: center
+}
 p {
 	padding-left: 5px;
 	padding-right: 5px;
