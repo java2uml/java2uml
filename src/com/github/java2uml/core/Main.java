@@ -19,8 +19,8 @@ public class Main {
             throw new InvalidParameterException("Too few parameters.");
         }
 
-        // Создаем новый объект с параметрами.
-        Options options = new Options();
+//        // Создаем новый объект с параметрами.
+//        Options options = new Options();
 
         // Проверяем первый параметр - тип исходных файлов. Параметр обязательный.
         int sourceFileType;
@@ -46,15 +46,15 @@ public class Main {
             String paramValue = args[1].substring(equalSignPos + 1);
             paramLength = paramName.length();
             if ("src".equals(paramName)) {
-                options.setPath(paramValue);
+                Options.setPath(paramValue);
             } else if (paramLength <= "source_path".length() && "source_path"
                     .substring(0, paramLength).equals(paramName)) {
-                options.setPath(paramValue);
+                Options.setPath(paramValue);
             } else {
                 throw new InvalidParameterException("Incorrect parameters.");
             }
         } else {
-            options.setPath(args[1]);
+            Options.setPath(args[1]);
         }
 
         // Разбираем оставшиеся параметры.
@@ -79,11 +79,11 @@ public class Main {
                 int paramNameLength = paramName.length();
                 if (paramNameLength >= 3 && paramNameLength <= "output_file".length()
                         && "output_file".substring(0, paramNameLength).equals(paramName)) {
-                    options.setOutputFile(paramValue);
+                    Options.setOutputFile(paramValue);
                     continue;
                 } else if (paramNameLength >= 3 && paramNameLength <= "header".length() && "header"
                         .substring(0, paramNameLength).equals(paramName)) {
-                    options.setHeader(paramValue);
+                    Options.setHeader(paramValue);
                     continue;
                 } else {
                     throw new InvalidParameterException("Incorrect parameters.");
@@ -102,7 +102,7 @@ public class Main {
                         throw new InvalidParameterException("Incompatible parameters.");
                     }
                 }
-                options.setClassDiagram();
+                Options.setClassDiagram();
                 continue;
             }
 
@@ -120,7 +120,7 @@ public class Main {
                             throw new InvalidParameterException("Incompatible parameters.");
                         }
                     }
-                    options.resetClassDiagram();
+                    Options.resetClassDiagram();
                     continue;
                 } else {
                     throw new InvalidParameterException("Incompatible parameters.");
@@ -138,7 +138,7 @@ public class Main {
                         throw new InvalidParameterException("Incompatible parameters.");
                     }
                 }
-                options.setVertical();
+                Options.setVertical();
                 continue;
             }
 
@@ -153,7 +153,7 @@ public class Main {
                         throw new InvalidParameterException("Incompatible parameters.");
                     }
                 }
-                options.setHorizontal();
+                Options.setHorizontal();
                 continue;
             }
 
@@ -165,35 +165,35 @@ public class Main {
             // Параметр, запрещающий вывод композиции.
             if (paramLength <= "nocomposition".length() && "nocomposition".substring(0, paramLength)
                     .equals(param)) {
-                options.setShowComposition(false);
+                Options.setShowComposition(false);
                 continue;
             }
 
             // Параметр, запрещающий вывод агрегации.
             if (paramLength <= "noaggregation".length() && "noaggregation".substring(0, paramLength)
                     .equals(param)) {
-                options.setShowAggregation(false);
+                Options.setShowAggregation(false);
                 continue;
             }
 
             // Параметр, запрещающий вывод ассоциации.
             if (paramLength <= "noassociation".length() && "noassociation".substring(0, paramLength)
                     .equals(param)) {
-                options.setShowAssociation(false);
+                Options.setShowAssociation(false);
                 continue;
             }
 
             // Параметр, запрещающий вывод "леденцов".
             if (paramLength <= "nolollipop".length() && "nolollipop".substring(0, paramLength)
                     .equals(param)) {
-                options.setShowLollipop(false);
+                Options.setShowLollipop(false);
                 continue;
             }
 
             // Параметр, запрещающий вывод "леденцов".
             if (paramLength <= "noimplementation".length() && "noimplementation"
                     .substring(0, paramLength).equals(param)) {
-                options.setShowImplementation(false);
+                Options.setShowImplementation(false);
                 continue;
             }
 
@@ -210,7 +210,7 @@ public class Main {
                 // вызываем рефлексию
                 System.out.println("Рефлексия");
                 Reflection reflection = new Reflection();
-                reflection.loadClassesAndGenerateDiagram(options);
+                reflection.loadClassesAndGenerateDiagram();
                 break;
         }
     }
