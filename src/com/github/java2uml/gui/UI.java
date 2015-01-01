@@ -12,7 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class UI {
+public class UI implements ExceptionListener {
     private JFrame mainFrame;
     private JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram;
     private JButton browse;
@@ -51,7 +51,7 @@ public class UI {
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
 
-    private static UI ui;
+
 
     private static Help helpWindow;
 
@@ -63,17 +63,16 @@ public class UI {
         return generatePlantUML;
     }
 
-
+    private static class UIHolder {
+        static final UI UI_INSTANCE = new UI();
+    }
 
     private UI(){
 
     }
 
     public static UI getInstance(){
-        if (ui == null){
-            ui = new UI();
-        }
-        return ui;
+        return UIHolder.UI_INSTANCE;
     }
 
     public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
@@ -387,4 +386,13 @@ public class UI {
 
     }
 
+    @Override
+    public void handleExceptionAndShowDialog(Exception exception) {
+        new ExceptionDialog(mainFrame, "", "");
+    }
+
+    @Override
+    public void handleExceptionAndDisplayItInCodeArea(Exception exception) {
+
+    }
 }

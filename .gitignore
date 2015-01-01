@@ -14,3 +14,6 @@ src/com/.idea/copyright/profiles_settings.xml
 src/com/.idea/dictionaries/mac.xml
 src/com/.idea/scopes/scope_settings.xml
 src/com/github/java2uml/gui/whatIsUML.html
+classes.plantuml
+diagram.png
+src/com/.idea/uiDesigner.xml

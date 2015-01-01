@@ -9,11 +9,12 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 
 import static java.lang.String.*;
 
 public class UIEntry {
-    UI ui;
+    static UI ui;
     String[] args;
 
 
@@ -42,7 +43,7 @@ public class UIEntry {
 
 
     public void initUI() {
-        
+
         ui = UI.getInstance();
         ui.initUI().setVisible(true);
         ui.addActionListenerToChooseFile();
@@ -50,14 +51,12 @@ public class UIEntry {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                        try {
-                            Main.main(gettingParametersFromUI());
-                            generateDiagram(generatePlantUMLAndLoadToTextArea(Options.getOutputFile()), "diagram.png");
-                        } catch (Exception e1) {
-                            e1.printStackTrace();
-                        }
-
-
+                try {
+                    Main.main(gettingParametersFromUI());
+                    generateDiagram(generatePlantUMLAndLoadToTextArea(Options.getOutputFile()), "diagram.png");
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
             }
 
         });
@@ -67,16 +66,24 @@ public class UIEntry {
 
     public static void main(String[] args) {
         final UIEntry uiEntry = new UIEntry();
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                uiEntry.initUI();
-            }
-        });
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    uiEntry.initUI();
 
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        ui.handleExceptionAndShowDialog(new IOException());
+        
     }
 
-    private String generatePlantUMLAndLoadToTextArea(String outputPath){
+    private String generatePlantUMLAndLoadToTextArea(String outputPath) {
         String plantUMLCode = null;
         try {
             plantUMLCode = FileUtils.readFile(new File(outputPath));
