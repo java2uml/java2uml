@@ -13,8 +13,11 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,26 +31,29 @@ import net.sourceforge.plantuml.SourceStringReader;
 import com.github.java2uml.core.Options;
 
 public class DataExtractor {
+	
 	/**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param classes - ножество загруженный классов
-     * @param options - объект с настройками генерации
      * @return boolean
      */
-    public static String extract(final Set<Class> classes, final Options opt) {
+    public static String extract(final Set<Class> classes) {
 
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
         source.append("skinparam classAttributeIconSize 0\n");
         
+        // список связей между классами
+        List<String> links = new ArrayList<>(); 
+        		
         // таблица пакетов для всех входящих классов
         Map<String, String> packages = new TreeMap<>();
-        Set<String> names = new HashSet<>();
+        Set<String> classNames = new HashSet<>();
         for (Class clazz : classes) {
         	packages.put(getPackageName(clazz.getCanonicalName()), "");
-        	names.add(clazz.getCanonicalName());
+        	classNames.add(clazz.getCanonicalName());
         }
         
         // множество связей для бросаемых исключений: исключение <.. класс
@@ -72,7 +78,7 @@ public class DataExtractor {
             res.append(getClassModifiers(classes, clazz));
             
             // реализуемые интерфейсы, не попавшие во входное множество
-            if (opt.isShowLollipop()) {
+            if (Options.isShowLollipop()) {
             	StringBuilder outerInterfaces = new StringBuilder();
                 for (Class inter : clazz.getInterfaces()) {
                 	if (!classes.contains(inter)) {
@@ -152,7 +158,7 @@ public class DataExtractor {
                 for (Class exception : method.getExceptionTypes()) {
                 	if (classes.contains(exception)) {
                 		// добавляем связь о брошенном исключении
-                		if (opt.isShowAssociation()) {
+                		if (Options.isShowAssociation()) {
                 			String link = exception.getCanonicalName();
                     		link += " <.. ";
                     		link += className;
@@ -260,7 +266,6 @@ public class DataExtractor {
 				String pack = packList.get(i);
         		buffer.append(packages.get(pack));
         		buffer.append("\n");
-        		
         		buffer.append("}\n");
 			}
         }
@@ -300,24 +305,26 @@ public class DataExtractor {
             String classPack = getPackageName(clazz.getCanonicalName());
             
             // объявление связей...
-            if (opt.isShowExtension()) {
-            	if (classes.contains(superClass)) {
-                    // супер класс доступен во множестве - добавим связь
-                	source.append(superClass.getCanonicalName());
-                    source.append(" <|-- ");
-                    source.append(className);
-                    source.append("\n");
-                }
+            if (classes.contains(superClass)) {
+                // супер класс доступен во множестве - добавим связь
+                StringBuilder link = new StringBuilder();
+                link.append(superClass.getCanonicalName());
+                link.append(" <|-- ");
+                link.append(className);
+                link.append("\n");
+                links.add(link.toString());
             }
             
-            if (opt.isShowImplementation()) {
+            if (Options.isShowImplementation()) {
             	for (Class interfc : interfaces) {
                     if (classes.contains(interfc)) {
                         // интерфейс доступен во множестве - добавим связь
-                    	source.append(interfc.getCanonicalName());
-                        source.append(" <|.. ");
-                        source.append(className);
-                        source.append("\n");
+                    	StringBuilder link = new StringBuilder();
+                    	link.append(interfc.getCanonicalName());
+                    	link.append(" <|.. ");
+                    	link.append(className);
+                    	link.append("\n");
+                    	links.add(link.toString());
                     } 
                 }
             }
@@ -339,11 +346,13 @@ public class DataExtractor {
                     		continue;
                     	}
                         // поле есть внешний класс - добавляем связь агрегирование
-                    	if (opt.isShowAggregation()) {
-                    		source.append(className);
-                            source.append(" o-- ");
-                            source.append(fieldClass.getType().getCanonicalName());
-                            source.append("\n");
+                    	if (Options.isShowAggregation()) {
+                    		StringBuilder link = new StringBuilder();
+                        	link.append(className);
+                        	link.append(" o-- ");
+                        	link.append(fieldClass.getType().getCanonicalName());
+                        	link.append("\n");
+                        	links.add(link.toString());
                             continue;
                     	}
                     }
@@ -352,22 +361,40 @@ public class DataExtractor {
                 	if (fieldClass.getType().isArray()) {
             			// для массивов связь композиция
             			String arrayClassName = getArrayName(fieldClass.getType().getCanonicalName());
-            			if (names.contains(arrayClassName) && !arrayClassName.equals(className)) {
+            			if (classNames.contains(arrayClassName) && !arrayClassName.equals(className)) {
             				// есть вхождение - устанавливаем связь
-            				if (opt.isShowComposition()) {
-            					source.append(className);
-                                source.append(" *-- ");
-                                source.append(getArrayName(fieldClass.getType().getCanonicalName()));
-                                source.append("\n");
+            				if (Options.isShowComposition()) {
+            					StringBuilder link = new StringBuilder();
+                            	link.append(className);
+                            	link.append(" *-- ");
+                            	link.append(getArrayName(fieldClass.getType().getCanonicalName()));
+                            	link.append("\n");
+                            	links.add(link.toString());
                         	}
             			}
             			// идем дальше
             			continue;
             		}
-//            		if (Collection.class.isAssignableFrom(fieldClass.getType()) || Map.class.isAssignableFrom(fieldClass.getType())) {
-//            			// поле является коллекцией - проверим тип параметра
-//            			System.out.println("COLLECTION");
-//            		}
+            		if (Collection.class.isAssignableFrom(fieldClass.getType()) || Map.class.isAssignableFrom(fieldClass.getType())) {
+            			// поле является коллекцией - проверим тип параметра
+            			// TODO: проработать более сложную вложенность; например, когда аргумент есть массив
+            			ParameterizedType pType = (ParameterizedType) fieldClass.getGenericType();
+            			Type[] classList = (Type[]) pType.getActualTypeArguments();
+            			for (Type type : classList) {
+            				// получаем класс дженерик-аргумента
+            				Class<?> genericClass = (Class<?>) type; 
+            				if (classes.contains(genericClass) && Options.isShowComposition() && !genericClass.getCanonicalName().equals(className)) {
+            					// есть вхождение - устанавливаем связь
+            					StringBuilder link = new StringBuilder();
+                            	link.append(className);
+                            	link.append(" *-- ");
+                            	link.append(genericClass.getCanonicalName());
+                            	link.append("\n");
+                            	links.add(link.toString());
+            				}
+            			}
+            			continue;
+            		}
                 }
             	
             }
@@ -376,17 +403,22 @@ public class DataExtractor {
             for ( Class declaredClass : declaredClasses ) {
             	if (classes.contains(declaredClass)) {
             		// связь через композицию
-            		if (opt.isShowComposition()) {
-            			source.append(className);
-                        source.append(" *-- ");
-                        source.append(declaredClass.getCanonicalName());
-                        source.append("\n");
+            		if (Options.isShowComposition()) {
+            			StringBuilder link = new StringBuilder();
+                    	link.append(className);
+                    	link.append(" *-- ");
+                    	link.append(declaredClass.getCanonicalName());
+                    	link.append("\n");
+                    	links.add(link.toString());
             		}
             	}
             }
         }
         
-        // брошенные исключения
+        // вывод связей
+        for (String link : links) {
+        	source.append(link);
+        }
         for (String link : throwLinks) {
         	source.append(link);
         }
