@@ -303,7 +303,7 @@ public class UI implements ExceptionListener {
 
         scrollPane = new JScrollPane(generatedCode);
 
-
+        generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         panelForGeneratedCode.setLayout(new BoxLayout(panelForGeneratedCode, BoxLayout.Y_AXIS));
 
@@ -388,11 +388,14 @@ public class UI implements ExceptionListener {
 
     @Override
     public void handleExceptionAndShowDialog(Exception exception) {
-        new ExceptionDialog(mainFrame, "", "");
+
+        JOptionPane.showMessageDialog(mainFrame, exception.getMessage(), "It's an error, breathe deeply", JOptionPane.ERROR_MESSAGE);
     }
+
 
     @Override
     public void handleExceptionAndDisplayItInCodeArea(Exception exception) {
-
+        StringBuilder stringBuilder = new StringBuilder("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
+        generatedCode.setText(stringBuilder.toString());
     }
 }

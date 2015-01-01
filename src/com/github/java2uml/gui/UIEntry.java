@@ -79,7 +79,7 @@ public class UIEntry {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        ui.handleExceptionAndShowDialog(new IOException());
+
         
     }
 
