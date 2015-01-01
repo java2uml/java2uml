@@ -31,6 +31,13 @@ public class UI {
     private JButton generatePlantUML;
     private JComboBox setDirectionOfDiagram, setTypeOfDiagram;
     private JTextField path;
+
+    public JTextArea getGeneratedCode() {
+        return generatedCode;
+    }
+
+
+
     private JTextArea generatedCode;
     private JProgressBar progressBar;
     private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;

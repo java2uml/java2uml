@@ -1,7 +1,9 @@
 package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
+import com.github.java2uml.core.Options;
 import net.sourceforge.plantuml.SourceStringReader;
+import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -49,6 +51,7 @@ public class UIEntry {
 
                         try {
                             Main.main(gettingParametersFromUI());
+                            generateDiagram(generatePlantUMLAndLoadToTextArea(Options.getOutputFile()), "diagram.png");
                         } catch (Exception e1) {
                             e1.printStackTrace();
                         }
@@ -75,6 +78,17 @@ public class UIEntry {
             }
         });
 
+    }
+
+    private String generatePlantUMLAndLoadToTextArea(String outputPath){
+        String plantUMLCode = null;
+        try {
+            plantUMLCode = FileUtils.readFile(new File(outputPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ui.getGeneratedCode().setText(plantUMLCode);
+        return plantUMLCode;
     }
 
     public static void generateDiagram(final String source, final String fileName) {
