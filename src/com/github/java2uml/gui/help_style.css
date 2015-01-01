@@ -9,25 +9,33 @@ li {
 	padding-bottom: 5px;
 	list-style-type: decimal;
 	font-family: Arial;
-	font-size: 15;
-	font-weight: bold;
+	font-size: 16;
 
 }
 #paramForPointers {
 	color: #9D9DAD;
 
+
+}
+p {
+	padding-left: 5px;
+	padding-right: 5px;
+	font-family: 'Tangerine', serif;
+	font-size: 16;
 }
 
 footer{
 	text-align: right;
 }
+
 /*b8c4cc*/
 a {
+	
 	color: #9D9DAD;
 }
 blockquote{
-  font-size: 15;
-  font-family: Arial;
+  font-size: 16;
+  font-family: 'Tangerine', serif;
   font-style: italic;
   border-width: 1px;
   border-spacing: 20;
@@ -36,7 +44,15 @@ blockquote{
 }
 b {
 	font-family: Arial;
-	font-size: 15;
+	font-size: 16;
+}
+.header img {
+  left: inherit;
 }
 
+.header h1 {
+  position: relative;
+  top: 18px;
+  left: 10px;
+}
 

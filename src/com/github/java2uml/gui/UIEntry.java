@@ -28,7 +28,7 @@ public class UIEntry {
         args[1] = ui.getPath().getText().toString();
 
         if (!ui.getShowHeader().getState()){
-            args[2] = "noheader";
+            args[2] = "";
         }
 
 
