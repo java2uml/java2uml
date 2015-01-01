@@ -16,7 +16,6 @@ public final class Options {
     private static boolean showAssociation 	= true;
     private static boolean showLollipop 		= true;
     private static boolean showImplementation 	= true;
-    private static boolean showExtension = true;
 
     private static boolean isVertical = true;
 
@@ -102,15 +101,7 @@ public final class Options {
     public static void setShowImplementation(boolean showImplementation) {
         Options.showImplementation = showImplementation;
     }
-    
-    public static boolean isShowExtension() {
-        return showExtension;
-    }
 
-    public static void setShowExtension(boolean showExtension) {
-        Options.showExtension = showExtension;
-    }
-    
     public static boolean isVertical() {
         return isVertical;
     }
