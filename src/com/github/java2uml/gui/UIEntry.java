@@ -25,7 +25,7 @@ public class UIEntry {
 
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
         args[1] = ui.getPath().getText().toString();
-        args[2] = !ui.getShowHeader().getState() ? "noheader" : "";
+        args[2] = !ui.getShowHeader().getState() ? "" : "";
         args[3] = ui.getClassDiagramCheckboxItem().getState() ? "classes_diagram" : "sequence_diagram";
         args[4] = ui.getVerticalDirectionCheckboxItem().getState() ? "vertical" : "horizontal";
         args[5] = !ui.getShowComposition().getState() ? "nocomposition" : "";
@@ -42,6 +42,7 @@ public class UIEntry {
 
 
     public void initUI() {
+        
         ui = UI.getInstance();
         ui.initUI().setVisible(true);
         ui.addActionListenerToChooseFile();
@@ -56,11 +57,6 @@ public class UIEntry {
                             e1.printStackTrace();
                         }
 
-                try {
-                    Main.main(gettingParametersFromUI());
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
 
             }
 
@@ -91,7 +87,7 @@ public class UIEntry {
         return plantUMLCode;
     }
 
-    public static void generateDiagram(final String source, final String fileName) {
+    public void generateDiagram(String source, String fileName) {
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -106,6 +102,8 @@ public class UIEntry {
 
             // генерация диаграммы
             String desc = reader.generateImage(png);
+
+            ui.showDiagram();
 
         } catch (IOException e) {
             e.printStackTrace();
