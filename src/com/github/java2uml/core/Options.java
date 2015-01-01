@@ -1,5 +1,4 @@
 package com.github.java2uml.core;
-
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
@@ -12,11 +11,12 @@ public class Options {
 
     private boolean isClassDiagram = true;
 
-    private boolean showComposition = true;
-    private boolean showAggregation = true;
-    private boolean showAssociation = true;
-    private boolean showLollipop = true;
-    private boolean showImplementation = true;
+    private boolean showComposition 	= true;
+    private boolean showAggregation 	= true;
+    private boolean showAssociation 	= true;
+    private boolean showLollipop 		= true;
+    private boolean showImplementation 	= true;
+    private boolean showExtention		= true;
 
     private boolean isVertical = true;
 
@@ -102,7 +102,15 @@ public class Options {
     public void setShowImplementation(boolean showImplementation) {
         this.showImplementation = showImplementation;
     }
+    
+    public boolean isShowExtention() {
+        return showExtention;
+    }
 
+    public void setShowExtention(boolean showExtention) {
+        this.showExtention = showImplementation;
+    }
+    
     public boolean isVertical() {
         return isVertical;
     }

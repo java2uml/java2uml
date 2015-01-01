@@ -289,15 +289,19 @@ public class UMLClassLoader extends ClassLoader {
         // иначе добавляем относительный путь. Получившееся полное имя класса заносим
         // в список имен.
         classPrefix = (classPrefix.isEmpty()) ? classPrefix : classPrefix + ".";
-        for (String fileName : files) {
-            classNames.add(classPrefix + fileName.split(CLASS_EXTENSION)[0]);
+        if (files != null) {
+            for (String fileName : files) {
+                classNames.add(classPrefix + fileName.split(CLASS_EXTENSION)[0]);
+            }
         }
 
         // Ищем классы в подпапках.
-        for (File subDir : children) {
-            if (subDir.isDirectory()) {
-                classNames = classList(subDir.getPath(), classPrefix + subDir.getName(),
-                        classNames);
+        if (children != null) {
+            for (File subDir : children) {
+                if (subDir.isDirectory()) {
+                    classNames = classList(subDir.getPath(), classPrefix + subDir.getName(),
+                            classNames);
+                }
             }
         }
 

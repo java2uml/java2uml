@@ -30,7 +30,6 @@ footer{
 
 /*b8c4cc*/
 a {
-	
 	color: #9D9DAD;
 }
 blockquote{
@@ -46,13 +45,7 @@ b {
 	font-family: Arial;
 	font-size: 16;
 }
-.header img {
-  left: inherit;
-}
-
-.header h1 {
-  position: relative;
-  top: 18px;
-  left: 10px;
+#imglink {
+	color: white;
 }
 
