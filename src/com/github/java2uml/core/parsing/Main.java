@@ -15,6 +15,6 @@ public class Main {
          * * 1 - текстовый файл с PlantUML кодом создан
          * * 0 - не создан
          */
-        int result = new CreateUmlCode(absolutePath, 1).write();
+        new CreateUmlCode().write();
     }
 }

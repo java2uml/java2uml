@@ -1,5 +1,6 @@
 package com.github.java2uml.core.parsing;
 
+import com.github.java2uml.core.Options;
 import japa.parser.JavaParser;
 import japa.parser.ast.CompilationUnit;
 import java.io.*;
@@ -8,13 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by nadcukandrej on 09.12.14.
+ *
+ * 
+ * * Created by Nadchuk Andrei on 09.12.14.
  */
 public class CreateUmlCode {
-    public static final int ALL = 1;
-    public static final int AGGREGATION = 2;
-    public static final int COMPOSITION = 3;
-    public static final int ASSOCIATION = 4;
+
     public static StringBuilder source;
     public static StringBuilder connections;
     public static StringBuilder aggregation;
@@ -26,12 +26,11 @@ public class CreateUmlCode {
     private static String projectName;
     private int typeConnections;
 
-    public CreateUmlCode(String folder, int typeConnections) throws Exception {
-        this.typeConnections = typeConnections;
-        projectName = endAfterLastPoint(folder, "/");
+    public CreateUmlCode() throws Exception {
+        projectName = endAfterLastPoint(Options.getPath(), "/");
         // Генерирование названия файла UML
-        fileUMLDiagramClasses = "classes.plantuml";
-        init(folder);
+        fileUMLDiagramClasses = Options.getOutputFile();
+        init(Options.getPath());
     }
 
     public void init(String path) throws Exception {
@@ -44,16 +43,23 @@ public class CreateUmlCode {
         association = new StringBuilder();
         // текст в формате plantuml - начало сборки
         source.append("@startuml\n");
+        
 
         // разбираем анализируемый проект
         readPackage(new File(path));
-
-        neededTypeConnections(typeConnections);
+        // добавляем опции исходя из Options
+        neededTypeConnections();
         // конец сборки
         source.append("@enduml\n");
 
     }
 
+    /**
+     *  Analysis package and the creation of nesting
+     * @author - Nadchuk Andrei navikom11@mail.ru
+     * @param path
+     * @throws Exception
+     */
     private void readPackage(File path) throws Exception {
         File[] folder = path.listFiles();
 
@@ -61,7 +67,7 @@ public class CreateUmlCode {
             if (folder[i].isDirectory()) {
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + " {\n");
+                    source.append(getNamePackage(folder[i].toString()) + "{\n");
 
                 }
                 readPackage(folder[i]);
@@ -75,6 +81,12 @@ public class CreateUmlCode {
 
     }
 
+    /**
+     *  Call parser file
+     * @author - Nadchuk Andrei navikom11@mail.ru
+     * @param path
+     * @throws Exception
+     */
     public void createCU(File path) throws Exception {
         // creates an input stream for the file to be parsed
         FileInputStream in = new FileInputStream(path);
@@ -126,39 +138,41 @@ public class CreateUmlCode {
         }
     }
 
-    public static int write() {
+    /**
+     *  Writing to a file generated string 
+     * @author - Nadchuk Andrei navikom11@mail.ru 
+     * @throws IOException
+     */
+    public static void write() throws IOException {
         String text = source.toString();
-        //Определяем файл
-        File folder = new File(UML_TEMPLATE).getAbsoluteFile();
-        File file = new File(UML_TEMPLATE + "/" + fileUMLDiagramClasses).getAbsoluteFile();
+        //Определяем папку и файл для записи кода plantUml
+//        File folder = new File(UML_TEMPLATE).getAbsoluteFile();
+//        File file = new File(UML_TEMPLATE + "/" + fileUMLDiagramClasses).getAbsoluteFile();
+        //Определяем файл для записи кода plantUml
+        File file = new File(fileUMLDiagramClasses).getAbsoluteFile();
+
+        
+        //проверяем, что если папка не существует то создаем ее
+//        if (!folder.exists()) {
+//            folder.mkdir();
+//        }
+        //проверяем, что если файл не существует то создаем его
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        //PrintWriter обеспечит возможности записи в файл
+        PrintWriter out = new PrintWriter(file.getAbsoluteFile());
 
         try {
-            //проверяем, что если папка не существует то создаем ее
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-            //проверяем, что если файл не существует то создаем его
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            //PrintWriter обеспечит возможности записи в файл
-            PrintWriter out = new PrintWriter(file.getAbsoluteFile());
-
-            try {
-                //Записываем текст в файл
-                out.print(text);
-            } catch (Exception e){
-                return 0;
-                
-            }finally {
-                out.close();
-            }
-        } catch (IOException e) {
-            return 0;
+            //Записываем текст в файл
+            out.print(text);
+        } catch (Exception e){
+            
+            
+        }finally {
+            out.close();
         }
-        
-        return 1;
     }
 
     public static String endAfterLastPoint(String string, String separator){
@@ -191,24 +205,23 @@ public class CreateUmlCode {
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
     }
-    
-    private void neededTypeConnections(int type){
+
+    /**
+     *  Adding links and other options
+     * @author - Nadchuk Andrei navikom11@mail.ru 
+     */
+    private void neededTypeConnections(){
+
+        if(Options.getHeader() != null && Options.getHeader().length() > 0)
+            source.append("title " + Options.getHeader() + "\n");
+
         source.append(connections);
-        switch (type){
-            case AGGREGATION:
-                source.append(aggregation);
-                break;
-            case COMPOSITION:
-                source.append(composition);
-                break;
-            case ASSOCIATION:
-                source.append(association);
-                break;
-            default:
-                source.append(aggregation);
-                source.append(composition);
-                source.append(association);
-        }
+        if(Options.isShowAggregation())
+            source.append(aggregation);
+        if(Options.isShowComposition())
+            source.append(composition);
+        if(Options.isShowAssociation())
+            source.append(association);
         
     }
 }
