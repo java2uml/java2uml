@@ -1,5 +1,6 @@
 package com.github.java2uml.core;
 
+import com.github.java2uml.core.parsing.CreateUmlCode;
 import com.github.java2uml.core.reflection.Reflection;
 
 public class Main {
@@ -224,6 +225,7 @@ public class Main {
             case 1:
                 // вызываем парсинг
                 System.out.println("Парсинг");
+                new CreateUmlCode().write();
                 break;
             case 2:
                 // вызываем рефлексию
