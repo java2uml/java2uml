@@ -5,6 +5,8 @@ import japa.parser.ast.CompilationUnit;
 import japa.parser.ast.ImportDeclaration;
 import japa.parser.ast.PackageDeclaration;
 import japa.parser.ast.body.*;
+import japa.parser.ast.expr.NameExpr;
+import japa.parser.ast.stmt.ThrowStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
 import java.lang.reflect.Modifier;
@@ -18,7 +20,7 @@ import java.util.List;
 public class UMLDiagramClasses {
     private CompilationUnit cu;
 
-    public UMLDiagramClasses(CompilationUnit cu) {
+    public UMLDiagramClasses(CompilationUnit cu){
         this.cu = cu;
         getClasses();
         getEnums();
@@ -93,6 +95,9 @@ public class UMLDiagramClasses {
 
                     // Вытягиваем поля
                     setFields(n);
+                    
+                    // Вытягиваем конструкторы
+                    setConstructors(n, nameWithPath(n.getName()));
 
                     // Вытягиваем методы
                     setMethods(n);
@@ -113,6 +118,23 @@ public class UMLDiagramClasses {
             }
         }.visit(cu, null);
 
+    }
+    
+    private void setConstructors(ClassOrInterfaceDeclaration n, final String nameClass){
+        new VoidVisitorAdapter() {
+            @Override
+            public void visit(ConstructorDeclaration n, Object arg) {
+                if(n.getThrows() != null)
+                    for (NameExpr expr : n.getThrows()){
+                        CreateUmlCode.association.append(nameWithPath(expr.toString()));
+                        CreateUmlCode.association.append(" <.. ");
+                        CreateUmlCode.association.append(nameClass + "\n");
+                        
+                    }
+
+            }
+        }.visit(n, null);
+        
     }
 
     /**

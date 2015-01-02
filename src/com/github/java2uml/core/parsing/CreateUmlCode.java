@@ -25,6 +25,8 @@ public class CreateUmlCode {
     public static List<String> classes;
     private static String projectName;
     private int typeConnections;
+    private static int level = 0;
+    private static String color;
 
     public CreateUmlCode() throws Exception {
         projectName = endAfterLastPoint(Options.getPath(), "/");
@@ -63,16 +65,21 @@ public class CreateUmlCode {
     private void readPackage(File path) throws Exception {
         File[] folder = path.listFiles();
 
+
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
+                
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                    level++;
+                    color = (level == 1 ? "#FFFFFF" : "#DDDDDD");
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + "{\n");
-
+                    source.append(getNamePackage(folder[i].toString()) + " " + color + " {\n");
                 }
                 readPackage(folder[i]);
-                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null)
+                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("}\n");
+                    level--;
+                }
             }
             else if (folder[i].toString().toLowerCase().endsWith(".java")) {
                 createCU(folder[i]);
@@ -100,7 +107,12 @@ public class CreateUmlCode {
         /**
          *   Начало анализа кода
          */
-        new UMLDiagramClasses(cu);
+        if(Options.isClassDiagram())
+            new UMLDiagramClasses(cu);
+        else if(Options.isSequenceDiagram()){
+            // todo создать генератор диаграммы последовательностей
+            
+        }
     }
 
     public static String setModifier(int mod) {
@@ -143,8 +155,10 @@ public class CreateUmlCode {
      * @author - Nadchuk Andrei navikom11@mail.ru 
      * @throws IOException
      */
-    public static void write() throws IOException {
+    public static void write() throws IOException, CreateUmlCodeException {
         String text = source.toString();
+        if(text.trim().length() == 0)
+            throw new CreateUmlCodeException("plantUML code is not generated");
         //Определяем папку и файл для записи кода plantUml
 //        File folder = new File(UML_TEMPLATE).getAbsoluteFile();
 //        File file = new File(UML_TEMPLATE + "/" + fileUMLDiagramClasses).getAbsoluteFile();
@@ -168,8 +182,7 @@ public class CreateUmlCode {
             //Записываем текст в файл
             out.print(text);
         } catch (Exception e){
-            
-            
+            throw new CreateUmlCodeException("Error writing to file");
         }finally {
             out.close();
         }
