@@ -70,7 +70,9 @@ public class CreateUmlCode {
             if (folder[i].isDirectory()) {
                 
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                    System.out.println(folder[i].toString());
                     level++;
+
                     color = (level == 1 ? "#FFFFFF" : "#DDDDDD");
                     source.append("namespace ");
                     source.append(getNamePackage(folder[i].toString()) + " " + color + " {\n");

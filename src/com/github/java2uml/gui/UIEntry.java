@@ -113,20 +113,46 @@ public class UIEntry {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                Main.main(gettingParametersFromUI());
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-                        generateDiagram(plantUMLCode, "diagram.png");
-                        ui.showDiagram();
-                    }
-                }).start();
+                new SW().execute();
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+//
+//                        generateDiagram(plantUMLCode, "diagram.png");
+//                        ui.showDiagram();
+//                    }
+//                }).start();
+
 
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
+        }
+    }
+    public class SW extends SwingWorker<String,String> {
+        @Override
+        protected String doInBackground() throws Exception {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Main.main(gettingParametersFromUI());
+                        generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                        generateDiagram(plantUMLCode, "diagram.png");
+                        ui.showDiagram();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+
+
+
+
+            return "";
         }
     }
 }

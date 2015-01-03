@@ -379,7 +379,10 @@ public class UI implements ExceptionListener {
     public void showDiagram(){
         try {
             diagram = ImageIO.read(new File("diagram.png"));
+//            System.out.println(diagram.getWidth() + "" + "" + diagram.getHeight());
+//
             labelForDiagram = new JLabel(new ImageIcon(diagram));
+
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
@@ -389,6 +392,7 @@ public class UI implements ExceptionListener {
 
 
             tabs.addTab("Diagram", scrollPaneForDiagram);
+
 
 
         } catch (IOException e) {
@@ -415,6 +419,7 @@ public class UI implements ExceptionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            getGeneratedCode().setText("");
             getProgressBar().setValue(0);
 
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
