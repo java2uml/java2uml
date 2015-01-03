@@ -1,7 +1,5 @@
 package com.github.java2uml.gui;
 
-import com.github.java2uml.core.Main;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -25,6 +23,15 @@ public class UI implements ExceptionListener {
     showComposition, showAggregation;
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
+
+    public JProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(JProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
+
     ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
@@ -119,6 +126,14 @@ public class UI implements ExceptionListener {
         return showAggregation;
     }
 
+    public JMenuItem getGenerateItem() {
+        return generateItem;
+    }
+
+    public void setGenerateItem(JMenuItem generateItem) {
+        this.generateItem = generateItem;
+    }
+
     private JMenuBar initMenu(){
         menu = new JMenuBar();
 
@@ -168,8 +183,13 @@ public class UI implements ExceptionListener {
         typeOfDiagramGroup.add(classDiagramCheckboxItem);
         typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
 
-
-
+        chooseItem.addActionListener(new ChooseFileActionListener());
+        exitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
         file.add(chooseItem);
         file.add(generateItem);
 
@@ -268,6 +288,8 @@ public class UI implements ExceptionListener {
         tabs = new JTabbedPane();
         tabs.addTab("PlantUML code", panelForGeneratedCode);
 
+        browse.addActionListener(new ChooseFileActionListener());
+
 
         tabs.addTab("Diagram", panelForDiagram);
 
@@ -285,7 +307,7 @@ public class UI implements ExceptionListener {
         panelForButtons.add(setTypeOfDiagram);
         panelForButtons.add(setDirectionOfDiagram);
         panelForButtons.add(generatePlantUML);
-//        panelForButtons.setBorder(new EmptyBorder(0, 3, 0, 3));
+
 
         panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
 
@@ -305,9 +327,20 @@ public class UI implements ExceptionListener {
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        //todo заменить на GridBagLayout
         panelForGeneratedCode.setLayout(new BoxLayout(panelForGeneratedCode, BoxLayout.Y_AXIS));
 
         panelForGeneratedCode.add(scrollPane);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+        panel.add(new JPanel());
+        panel.add(new JButton("Copy to Clipboard"));
+        panel.add(new JPanel());
+
+
+
         panelForGeneratedCode.setBorder(new EmptyBorder(0,5,5,5));
 
 
@@ -315,8 +348,8 @@ public class UI implements ExceptionListener {
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
         mainFrame.add(BorderLayout.NORTH, panelForPathAndButtons);
-//        mainFrame.add(BorderLayout.CENTER, panelForGeneratedCode);
-        mainFrame.setSize(500, 500);
+
+        mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -330,26 +363,6 @@ public class UI implements ExceptionListener {
     }
 
 
-
-    public File addActionListenerToChooseFile(){
-
-        browse.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                progressBar.setValue(0);
-                int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
-                if (resultOfChoice == JFileChooser.APPROVE_OPTION){
-                    chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
-                    path.setText(chosenDirectory.toString());
-
-
-                }
-            }
-        });
-
-        return chosenDirectory;
-    }
-
     public int increaseProgressBarForTwenty(){
         int value = progressBar.getValue() + 20;
         int maximum = progressBar.getMaximum();
@@ -358,8 +371,6 @@ public class UI implements ExceptionListener {
 
         return value;
     }
-
-
 
     public void setProgressBarComplete(){
         progressBar.setValue(100);
@@ -398,4 +409,22 @@ public class UI implements ExceptionListener {
         StringBuilder stringBuilder = new StringBuilder("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
         generatedCode.setText(stringBuilder.toString());
     }
+
+    public class ChooseFileActionListener implements ActionListener {
+
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            getProgressBar().setValue(0);
+
+            int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
+            if (resultOfChoice == JFileChooser.APPROVE_OPTION){
+                chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+                path.setText(chosenDirectory.toString());
+
+
+            }
+        }
+    }
+
 }

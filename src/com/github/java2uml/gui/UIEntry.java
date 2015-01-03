@@ -16,6 +16,7 @@ import static java.lang.String.*;
 public class UIEntry {
     static UI ui;
     String[] args;
+    String plantUMLCode;
 
 
     private String[] gettingParametersFromUI() {
@@ -43,23 +44,13 @@ public class UIEntry {
 
 
     public void initUI() {
+        GenerateActionListener generateActionListener = new GenerateActionListener();
 
         ui = UI.getInstance();
         ui.initUI().setVisible(true);
-        ui.addActionListenerToChooseFile();
-        ui.getGeneratePlantUML().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-                try {
-                    Main.main(gettingParametersFromUI());
-                    generateDiagram(generatePlantUMLAndLoadToTextArea(Options.getOutputFile()), "diagram.png");
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-        });
+        ui.getGeneratePlantUML().addActionListener(generateActionListener);
+        ui.getGenerateItem().addActionListener(generateActionListener);
         ui.settingStateForAllOptions();
 
     }
@@ -84,7 +75,7 @@ public class UIEntry {
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
-        String plantUMLCode = null;
+        plantUMLCode = null;
         try {
             plantUMLCode = FileUtils.readFile(new File(outputPath));
         } catch (IOException e) {
@@ -110,12 +101,32 @@ public class UIEntry {
             // генерация диаграммы
             String desc = reader.generateImage(png);
 
-            ui.showDiagram();
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public class GenerateActionListener implements ActionListener {
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                Main.main(gettingParametersFromUI());
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                        generateDiagram(plantUMLCode, "diagram.png");
+                        ui.showDiagram();
+                    }
+                }).start();
+
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
 }
