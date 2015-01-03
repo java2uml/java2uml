@@ -32,13 +32,6 @@ import com.github.java2uml.core.Options;
 
 public class DataExtractor {
 	
-	private static final String LINK_LINK	= "link";
-	private static final String LINK_VALUE 	= "value";
-	private static final String LINK_TYPE 	= "type";
-	private static final String LINK_MULT 	= "mult";
-	private static final String LINK_LEFT 	= "left";
-	private static final String LINK_RIGHT 	= "right";
-	
 	/**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -50,8 +43,22 @@ public class DataExtractor {
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
+        //source.append("skinparam backgroundColor Snow\n");
+        //source.append("skinparam monochrome true\n");
         source.append("skinparam classAttributeIconSize 0\n");
-        source.append("scale 1.0\n");
+//        source.append("skinparam classBorderColor MediumSeaGreen\n");
+//        source.append("skinparam classBackgroundColor Lavender\n");
+//        source.append("skinparam classFontSize 20\n");
+//        source.append("skinparam classAttributeFontSize 18\n");
+//        source.append("skinparam packageBorderColor DarkSlateGray\n");
+//        source.append("skinparam packageBackgroundColor GhostWhite\n");
+//        source.append("skinparam packageFontColor Black\n");
+//        source.append("skinparam packageFontStyle italic\n");
+//        source.append("skinparam packageFontSize 18\n");
+//        source.append("skinparam classArrowColor Black\n");
+//        source.append("skinparam classArrowFontSize 24\n");
+//        source.append("skinparam classArrowFontStyle bold\n");
+//        source.append("scale 1.0\n");
         
         // список связей между классами
         List<String> links = new ArrayList<String>();
@@ -110,7 +117,7 @@ public class DataExtractor {
             
             // получение информации о полях
             Field[] fields = clazz.getDeclaredFields();
-            res.append(".. Fields ..\n");
+            res.append(".. Fields  ..\n");
             for (Field field : fields) {
             	if (field.isSynthetic()) {
                 	// выводим только объявленные структуры
@@ -206,8 +213,8 @@ public class DataExtractor {
         		packList.add(entry.getKey());
         		buffer.append("package ");
         		buffer.append(entry.getKey());
-        		buffer.append(" #");
-        		buffer.append(getPackageColor(0));
+        		//buffer.append(" #");
+        		//buffer.append(getPackageColor(0));
         		buffer.append(" {\n");		
         	} else {
         		// индекс - является ли текущий пакет пакетом из списка
@@ -242,8 +249,8 @@ public class DataExtractor {
         			packList.add(entry.getKey());
         			buffer.append("package ");
             		buffer.append(entry.getKey());
-            		buffer.append(" #");
-            		buffer.append(getPackageColor(packList.size()));
+            		//buffer.append(" #");
+            		//buffer.append(getPackageColor(packList.size()));
             		buffer.append(" {\n");
         		} else {
         			// пакет не вложен - буферезуем весь список
@@ -261,8 +268,8 @@ public class DataExtractor {
         			packList.add(entry.getKey());
         			buffer.append("package ");
             		buffer.append(entry.getKey());
-            		buffer.append(" #");
-            		buffer.append(getPackageColor(packList.size()));
+            		//buffer.append(" #");
+            		//buffer.append(getPackageColor(packList.size()));
             		buffer.append(" {\n");
         		}
         	}
@@ -659,7 +666,7 @@ public class DataExtractor {
 			}
 		}
 		// добавим в связь		
-    	return clsLeft + " " + leftMult + " " + leftLinkType + ".." + rightLinkType + " " + rightMult + " " + clsRight + "\n";
+    	return clsLeft + " " + leftMult + " " + new StringBuffer(leftLinkType).reverse().toString() + ".." + new StringBuffer(rightLinkType).reverse().toString() + " " + rightMult + " " + clsRight + "\n";
     }
     
     /**
