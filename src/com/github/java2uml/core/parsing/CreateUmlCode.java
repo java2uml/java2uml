@@ -197,6 +197,8 @@ public class CreateUmlCode {
 
     private String getNamePackage(String path){
         String[] subString = path.split("src");
+        if (subString.length > 1 && (subString[1].contains(".") || subString[1].contains("-")))
+            return null;
         String namePackage = subString.length > 1 ? subString[1].replace("/", ".").substring(1) : null;
         return namePackage;
     }
