@@ -377,9 +377,17 @@ public class UI implements ExceptionListener {
         progressBar.setValue(100);
     }
 
-    public void showDiagram(){
+    public JLabel getLabelForDiagram() {
+        return labelForDiagram;
+    }
+
+    public void setLabelForDiagram(JLabel labelForDiagram) {
+        this.labelForDiagram = labelForDiagram;
+    }
+
+    public void showDiagram(String diagramName){
         try {
-            diagram = ImageIO.read(new File("diagram.png"));
+            diagram = ImageIO.read(new File(diagramName));
 //            System.out.println(diagram.getWidth() + "" + "" + diagram.getHeight());
 //
             labelForDiagram = new JLabel(new ImageIcon(diagram));
@@ -421,6 +429,7 @@ public class UI implements ExceptionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             getGeneratedCode().setText("");
+            getProgressBar().setString("0%");
             getProgressBar().setValue(0);
 
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);

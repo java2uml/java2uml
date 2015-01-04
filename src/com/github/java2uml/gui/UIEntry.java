@@ -113,6 +113,9 @@ public class UIEntry {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
+                ui.getLabelForDiagram().setIcon(null);
+                ui.getProgressBar().setValue(0);
+                ui.getProgressBar().setString("0%");
                 new SW().execute();
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -136,7 +139,7 @@ public class UIEntry {
                         ui.getProgressBar().setString("Loading diagram...");
                         ui.increaseProgressBarForTwenty();
                         generateDiagram(plantUMLCode, "diagram.png");
-                        ui.showDiagram();
+                        ui.showDiagram("diagram.png");
                         ui.setProgressBarComplete();
                         ui.getProgressBar().setString("Complete");
                     } catch (Exception e) {
