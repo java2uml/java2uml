@@ -4,6 +4,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -13,7 +15,7 @@ import java.io.IOException;
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
     private JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram;
-    private JButton browse;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram;
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
@@ -35,7 +37,6 @@ public class UI implements ExceptionListener {
     ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
-    private JButton generatePlantUML;
     private JComboBox setDirectionOfDiagram, setTypeOfDiagram;
     private JTextField path;
 
@@ -272,7 +273,7 @@ public class UI implements ExceptionListener {
         generatePlantUML = new JButton("Generate");
         labelForDiagram = new JLabel();
         setTypeOfDiagram = new JComboBox();
-
+        copyToClipboard = new JButton("Copy to clipboard");
         setDirectionOfDiagram = new JComboBox();
         generatedCode = new JTextArea();
         path = new JTextField();
@@ -280,25 +281,32 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons = new JPanel();
         progressBar = new JProgressBar();
         progressBar.setBorder(new EmptyBorder(0, 3, 0, 3));
-
-        scrollPaneForDiagram = new JScrollPane(labelForDiagram);
-        scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-
         tabs = new JTabbedPane();
-        tabs.addTab("PlantUML code", panelForGeneratedCode);
-
-        browse.addActionListener(new ChooseFileActionListener());
-
-
-        tabs.addTab("Diagram", panelForDiagram);
-
-
-        path.setToolTipText("Enter path here");
-
+        scrollPaneForDiagram = new JScrollPane(labelForDiagram);
         separatorBetweenPathAndButtons = new JSeparator();
         separatorBetweenButtonsAndProgressBar = new JSeparator();
         fileChooser = new JFileChooser();
+
+        progressBar.setStringPainted(true);
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+
+        browse.addActionListener(new ChooseFileActionListener());
+        copyToClipboard.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Clipboard clipboard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
+                clipboard.setContents (new StringSelection(getGeneratedCode().getText()), null);
+            }
+        });
+
+        scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        tabs.addTab("PlantUML code", panelForGeneratedCode);
+        tabs.addTab("Diagram", panelForDiagram);
+        path.setToolTipText("Enter path here");
+
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
 
@@ -307,13 +315,9 @@ public class UI implements ExceptionListener {
         panelForButtons.add(setTypeOfDiagram);
         panelForButtons.add(setDirectionOfDiagram);
         panelForButtons.add(generatePlantUML);
-
-
         panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
-
         panelForPath.setLayout(new GridLayout(1, 1));
         panelForPath.add(path);
-
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
@@ -321,44 +325,23 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(progressBar);
 
-
-
         scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        //todo заменить на GridBagLayout
-        panelForGeneratedCode.setLayout(new BoxLayout(panelForGeneratedCode, BoxLayout.Y_AXIS));
-
-        panelForGeneratedCode.add(scrollPane);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-        panel.add(new JPanel());
-        panel.add(new JButton("Copy to Clipboard"));
-        panel.add(new JPanel());
-
-
-
-        panelForGeneratedCode.setBorder(new EmptyBorder(0,5,5,5));
-
-
+        panelForGeneratedCode.setLayout(new GridBagLayout());
+        panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
+        panelForGeneratedCode.add(copyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
+        panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
         mainFrame.add(BorderLayout.NORTH, panelForPathAndButtons);
-
         mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-
-
-        progressBar.setStringPainted(true);
-
-        progressBar.setMinimum(0);
-        progressBar.setMaximum(100);
+        mainFrame.setBackground(new Color(143178153));
 
         return mainFrame;
     }
