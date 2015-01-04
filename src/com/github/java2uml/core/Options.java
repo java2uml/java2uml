@@ -11,15 +11,31 @@ public final class Options {
 
     private static boolean isClassDiagram = true;
 
-    private static boolean showComposition 	= true;
-    private static boolean showAggregation 	= true;
-    private static boolean showAssociation 	= true;
-    private static boolean showLollipop 		= true;
-    private static boolean showImplementation 	= true;
+    private static boolean showComposition = true;
+    private static boolean showAggregation = true;
+    private static boolean showAssociation = true;
+    private static boolean showLollipop = true;
+    private static boolean showImplementation = true;
 
     private static boolean isVertical = true;
 
     private Options() {
+    }
+
+    public static void init() {
+        path = null;
+        outputFile = "classes.plantuml";
+        header = null;
+
+        isClassDiagram = true;
+
+        showComposition = true;
+        showAggregation = true;
+        showAssociation = true;
+        showLollipop = true;
+        showImplementation = true;
+
+        isVertical = true;
     }
 
     public static String getPath() {
