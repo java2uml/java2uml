@@ -30,7 +30,7 @@ import net.sourceforge.plantuml.SourceStringReader;
 
 import com.github.java2uml.core.Options;
 
-public class DataExtractor {
+public class DataExtractorOld {
 	
 	/**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
@@ -43,26 +43,11 @@ public class DataExtractor {
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
-        //source.append("skinparam backgroundColor Snow\n");
-        //source.append("skinparam monochrome true\n");
         source.append("skinparam classAttributeIconSize 0\n");
-//        source.append("skinparam classBorderColor MediumSeaGreen\n");
-//        source.append("skinparam classBackgroundColor Lavender\n");
-//        source.append("skinparam classFontSize 20\n");
-//        source.append("skinparam classAttributeFontSize 18\n");
-//        source.append("skinparam packageBorderColor DarkSlateGray\n");
-//        source.append("skinparam packageBackgroundColor GhostWhite\n");
-//        source.append("skinparam packageFontColor Black\n");
-//        source.append("skinparam packageFontStyle italic\n");
-//        source.append("skinparam packageFontSize 18\n");
-//        source.append("skinparam classArrowColor Black\n");
-//        source.append("skinparam classArrowFontSize 24\n");
-//        source.append("skinparam classArrowFontStyle bold\n");
-//        source.append("scale 1.0\n");
         
         // список связей между классами
-        List<String> links = new ArrayList<String>();
-        
+        List<String> links = new ArrayList<>(); 
+        		
         // таблица пакетов для всех входящих классов
         Map<String, String> packages = new TreeMap<>();
         Set<String> classNames = new HashSet<>();
@@ -117,7 +102,7 @@ public class DataExtractor {
             
             // получение информации о полях
             Field[] fields = clazz.getDeclaredFields();
-            res.append(".. Fields  ..\n");
+            res.append(".. Fields ..\n");
             for (Field field : fields) {
             	if (field.isSynthetic()) {
                 	// выводим только объявленные структуры
@@ -213,8 +198,8 @@ public class DataExtractor {
         		packList.add(entry.getKey());
         		buffer.append("package ");
         		buffer.append(entry.getKey());
-        		//buffer.append(" #");
-        		//buffer.append(getPackageColor(0));
+        		buffer.append(" #");
+        		buffer.append(getPackageColor(0));
         		buffer.append(" {\n");		
         	} else {
         		// индекс - является ли текущий пакет пакетом из списка
@@ -249,8 +234,8 @@ public class DataExtractor {
         			packList.add(entry.getKey());
         			buffer.append("package ");
             		buffer.append(entry.getKey());
-            		//buffer.append(" #");
-            		//buffer.append(getPackageColor(packList.size()));
+            		buffer.append(" #");
+            		buffer.append(getPackageColor(packList.size()));
             		buffer.append(" {\n");
         		} else {
         			// пакет не вложен - буферезуем весь список
@@ -268,8 +253,8 @@ public class DataExtractor {
         			packList.add(entry.getKey());
         			buffer.append("package ");
             		buffer.append(entry.getKey());
-            		//buffer.append(" #");
-            		//buffer.append(getPackageColor(packList.size()));
+            		buffer.append(" #");
+            		buffer.append(getPackageColor(packList.size()));
             		buffer.append(" {\n");
         		}
         	}
@@ -365,7 +350,6 @@ public class DataExtractor {
                     		StringBuilder link = new StringBuilder();
                         	link.append(className);
                         	link.append(" o-- ");
-                        	link.append("\"1..1\" ");
                         	link.append(fieldClass.getType().getCanonicalName());
                         	link.append("\n");
                         	links.add(link.toString());
@@ -383,7 +367,6 @@ public class DataExtractor {
             					StringBuilder link = new StringBuilder();
                             	link.append(className);
                             	link.append(" *-- ");
-                            	link.append("\"0..*\" ");
                             	link.append(getArrayName(fieldClass.getType().getCanonicalName()));
                             	link.append("\n");
                             	links.add(link.toString());
@@ -392,7 +375,7 @@ public class DataExtractor {
             			// идем дальше
             			continue;
             		}
-            		if (isCollection(fieldClass.getType())) {
+                	if (isCollection(fieldClass.getType())) {
             			// поле является коллекцией - проверим тип параметра            			
             			Type genericFieldType = fieldClass.getGenericType();
             			if(genericFieldType instanceof ParameterizedType){
@@ -406,7 +389,6 @@ public class DataExtractor {
                 					StringBuilder link = new StringBuilder();
                                 	link.append(className);
                                 	link.append(" *-- ");
-                                	link.append("\"0..*\" ");
                                 	link.append(argType);
                                 	link.append("\n");
                                 	links.add(link.toString());
@@ -435,124 +417,6 @@ public class DataExtractor {
             }
         }
         
-        // обработка полученных связей - 2 этапа..
-        List<String> genLinks = new ArrayList<>();  // список с новыми связями
-        List<String> oldLinks = new ArrayList<>();  // список старых связей, подлежащих удалению
-        
-        // этап 1: группировка связей
-        for (int i=0; i < links.size(); ++i) {
-        	int matches = 1;
-        	if (oldLinks.contains(links.get(i))) {
-        		continue;
-        	}
-        	String linkType = null;
-        	if (links.get(i).contains("o--") && links.get(i).contains("\"1..1\"")) {
-        		linkType = "o--";
-        	} else if (links.get(i).contains("*--") && links.get(i).contains("\"0..*\"")) {
-        		linkType = "*--";
-        	}
-        	
-        	if (linkType != null) {
-        		// начинаем группировку связей
-        		for (int j=0; j < links.size(); ++j) {
-            		if (i==j) {
-            			continue;
-            		}
-            		if (links.get(i).equals(links.get(j))) {
-            			matches++;
-            		}
-            	}
-        		if (matches > 1) {
-            		String link;
-            		String params[] = links.get(i).split("\\s");
-            		if (params.length >= 4) {
-            			// убеждаемся, что пар-ры правильно извлечены
-            			link = params[0].trim() + " " + linkType + " ";
-            			
-            			// мощность отношений
-            			String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
-            			String cmpMult = "\"0..* " + "(" + matches + ")\" " + params[3].trim() + "\n";
-            			
-            			link += (linkType.equals("o--")) ? agrMult : cmpMult;   
-            	        genLinks.add(link);
-            	        oldLinks.add(links.get(i));
-            		}
-            	}
-        	}
-        }
-        
-        // удаление откорректированных связей
-        for (String link : oldLinks) {
-        	while(links.contains(link)) {
-        		links.remove(link);
-        	}
-        }
-        // добавление сгруппированных связей
-        links.addAll(genLinks);
-        
-        
-        // этап 2: создание двусторонних связей
-        genLinks.clear();
-        oldLinks.clear();
-        for (int i=0; i < links.size(); ++i) {
-        	// извлечение имен классов в связи
-        	String[] params  = links.get(i).split("\\s");
-        	String cls1Left	 	= null;
-        	String cls1Right 	= null;
-        	String leftTypeLink = null; 
-        	if (params.length > 2) {
-        		cls1Left 		= params[0];
-        		cls1Right 		= params[params.length-1]; 
-        		leftTypeLink 	= params[1];
-        	}
-        	if (cls1Left == null || cls1Right == null || leftTypeLink == null) {
-        		continue;
-        	}
-        	if (!leftTypeLink.contains("o") && !leftTypeLink.contains("*")) {
-        		// двуторонняя связь допускается только для агрегации и композиции
-        		continue;
-        	}
-        	
-        	for (int j=0; j < links.size(); ++j) {
-            	// ищем зеркально отображеннные связи
-        		if (i==j || oldLinks.contains(links.get(j)) || !isSimlexLink(links.get(j))) {
-        			// связь задействована или не подходит - выходим
-        			continue;
-        		}
-        		String[] params2 = links.get(j).split("\\s");
-        		String cls2Left  	 = null;
-            	String cls2Right 	 = null;
-            	String rightTypeLink = null; 
-            	if (params2.length > 2) {
-            		cls2Left 		= params2[0];
-            		cls2Right 		= params2[params2.length-1]; 
-            		rightTypeLink 	= params2[1];
-            	}
-            	if (cls2Left == null || cls2Right == null || rightTypeLink == null) {
-            		continue;
-            	}
-            	if (!rightTypeLink.contains("o") && !rightTypeLink.contains("*")) {
-            		// двуторонняя связь допускается только для агрегации и композиции
-            		continue;
-            	}
-        		if (cls1Left.equals(cls2Right) && cls1Right.equals(cls2Left)) {
-        			// нашли зеркальную связь - можно создать двустороннюю связь
-        			String link = createDuplexLink(cls1Left, links.get(i), cls2Left, links.get(j));
-        			genLinks.add(link);
-        			oldLinks.add(links.get(i));
-        			oldLinks.add(links.get(j));	
-        		}
-            }
-        }
-        // удаление откорректированных связей
-        for (String link : oldLinks) {
-        	while(links.contains(link)) {
-        		links.remove(link);
-        	}
-        }
-        // добавление сгруппированных связей
-        links.addAll(genLinks);
-        
         // вывод связей
         for (String link : links) {
         	source.append(link);
@@ -566,34 +430,6 @@ public class DataExtractor {
         
         // сохраняем в файл
         return source.toString();
-    }
-    
-    /**
-     * Генерация диаграммы классов
-     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param source - исходный текст классов на языке plantuml
-     */
-    public static void generateFromSrting(final String source, final String fileName) {
-        try {
-            File file = new File(fileName);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            // поток вывода для диаграммы
-            OutputStream png = new FileOutputStream(file);
-
-            // генератор диаграмм
-            SourceStringReader reader = new SourceStringReader(source);
-
-            // генерация жиаграммы
-            String desc = reader.generateImage(png);
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
     
     /**
@@ -645,55 +481,31 @@ public class DataExtractor {
     }
     
     /**
-     * Построение двухсторонней связи из двух односторонних
+     * Генерация диаграммы классов
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param clsLeft	- полное имя левого класса
-     * @param firstLink - 1-ая связь
-     * @param clsRight  - полное имя правого класса
-     * @param secondLink - 2-ая связь
-     * @return String - код двусторонней связи или пустую строку
+     * @param source - исходный текст классов на языке plantuml
      */
-    private static String createDuplexLink(final String clsLeft, final String firstLink, 
-    		final String clsRight, final String secondLink) {
-    	String[] params1 = firstLink.split("\\s");
-    	String[] params2 = secondLink.split("\\s");
-		if (params1.length < 3 || params2.length < 3) {
-			// не хватает данных - выходим
-			return "";
-		}
-		// текущая связь
-		String leftLinkType 	= params1[1];
-		String rightLinkType 	= params2[1];
-		String rightMult	= (params1[2].contains("\"")) ? params1[2] : "";
-		String leftMult 	= (params2[2].contains("\"")) ? params2[2] : "";
-		
-		// убираем линию из связи
-		String[] conn = {"..", "--"};
-		for (String c : conn) {
-			if (leftLinkType.contains(c)) {
-				leftLinkType = leftLinkType.substring(0, leftLinkType.indexOf(c));
-			}
-			if (rightLinkType.contains(c)) {
-				rightLinkType = rightLinkType.substring(0, rightLinkType.indexOf(c));
-			}
-		}
-		// добавим в связь	
-		String link = clsLeft + " " + leftMult + " " + leftLinkType + ".." + rightLinkType + " " + rightMult + " " + clsRight + "\n";
-		return link;
-    }
-    
-    /**
-     * Проврека, является ли связь односоронней
-     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param link
-     * @return
-     */
-    private static boolean isSimlexLink(final String link) {
-    	if (link == null) {
-    		return false;
-    	}
-    	String[] params = link.split("\\s");
-    	return true;
+    public static void generateFromSrting(final String source, final String fileName) {
+        try {
+            File file = new File(fileName);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
+            // поток вывода для диаграммы
+            OutputStream png = new FileOutputStream(file);
+
+            // генератор диаграмм
+            SourceStringReader reader = new SourceStringReader(source);
+
+            // генерация жиаграммы
+            String desc = reader.generateImage(png);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     /**
