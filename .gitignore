@@ -17,3 +17,5 @@ src/com/github/java2uml/gui/whatIsUML.html
 classes.plantuml
 diagram.png
 src/com/.idea/uiDesigner.xml
+java2uml.iml
+test_data/java_1_7.jj
