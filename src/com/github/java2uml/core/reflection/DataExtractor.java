@@ -497,13 +497,19 @@ public class DataExtractor {
         for (int i=0; i < links.size(); ++i) {
         	// извлечение имен классов в связи
         	String[] params  = links.get(i).split("\\s");
-        	String cls1Left	 = null;
-        	String cls1Right = null;
+        	String cls1Left	 	= null;
+        	String cls1Right 	= null;
+        	String leftTypeLink = null; 
         	if (params.length > 2) {
-        		cls1Left 	= params[0];
-        		cls1Right 	= params[params.length-1]; 
+        		cls1Left 		= params[0];
+        		cls1Right 		= params[params.length-1]; 
+        		leftTypeLink 	= params[1];
         	}
-        	if (cls1Left == null || cls1Right == null) {
+        	if (cls1Left == null || cls1Right == null || leftTypeLink == null) {
+        		continue;
+        	}
+        	if (!leftTypeLink.contains("o") && !leftTypeLink.contains("*")) {
+        		// двуторонняя связь допускается только для агрегации и композиции
         		continue;
         	}
         	
@@ -514,13 +520,19 @@ public class DataExtractor {
         			continue;
         		}
         		String[] params2 = links.get(j).split("\\s");
-        		String cls2Left  = null;
-            	String cls2Right = null;
+        		String cls2Left  	 = null;
+            	String cls2Right 	 = null;
+            	String rightTypeLink = null; 
             	if (params2.length > 2) {
-            		cls2Left 	= params2[0];
-            		cls2Right 	= params2[params2.length-1]; 
+            		cls2Left 		= params2[0];
+            		cls2Right 		= params2[params2.length-1]; 
+            		rightTypeLink 	= params2[1];
             	}
-            	if (cls2Left == null || cls2Right == null) {
+            	if (cls2Left == null || cls2Right == null || rightTypeLink == null) {
+            		continue;
+            	}
+            	if (!rightTypeLink.contains("o") && !rightTypeLink.contains("*")) {
+            		// двуторонняя связь допускается только для агрегации и композиции
             		continue;
             	}
         		if (cls1Left.equals(cls2Right) && cls1Right.equals(cls2Left)) {
@@ -665,8 +677,9 @@ public class DataExtractor {
 				rightLinkType = rightLinkType.substring(0, rightLinkType.indexOf(c));
 			}
 		}
-		// добавим в связь		
-    	return clsLeft + " " + leftMult + " " + new StringBuffer(leftLinkType).reverse().toString() + ".." + new StringBuffer(rightLinkType).reverse().toString() + " " + rightMult + " " + clsRight + "\n";
+		// добавим в связь	
+		String link = clsLeft + " " + leftMult + " " + leftLinkType + ".." + rightLinkType + " " + rightMult + " " + clsRight + "\n";
+		return link;
     }
     
     /**
