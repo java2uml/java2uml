@@ -17,5 +17,11 @@ src/com/github/java2uml/gui/whatIsUML.html
 classes.plantuml
 diagram.png
 src/com/.idea/uiDesigner.xml
+<<<<<<< HEAD
+src/com/.idea/artifacts/src_jar.xml
+src/com/out/artifacts/src_jar/src.jar
+src/META-INF/MANIFEST.MF
+=======
 java2uml.iml
 test_data/java_1_7.jj
+>>>>>>> master_r1

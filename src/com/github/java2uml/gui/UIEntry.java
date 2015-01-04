@@ -16,6 +16,7 @@ import static java.lang.String.*;
 public class UIEntry {
     static UI ui;
     String[] args;
+    String plantUMLCode;
 
 
     private String[] gettingParametersFromUI() {
@@ -23,7 +24,7 @@ public class UIEntry {
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
         }
-
+        ui.increaseProgressBarForTwenty();
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
         args[1] = ui.getPath().getText().toString();
         args[2] = !ui.getShowHeader().getState() ? "" : "";
@@ -43,28 +44,19 @@ public class UIEntry {
 
 
     public void initUI() {
+        GenerateActionListener generateActionListener = new GenerateActionListener();
 
         ui = UI.getInstance();
         ui.initUI().setVisible(true);
-        ui.addActionListenerToChooseFile();
-        ui.getGeneratePlantUML().addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
-                try {
-                    Main.main(gettingParametersFromUI());
-                    generateDiagram(generatePlantUMLAndLoadToTextArea(Options.getOutputFile()), "diagram.png");
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-        });
+        ui.getGeneratePlantUML().addActionListener(generateActionListener);
+        ui.getGenerateItem().addActionListener(generateActionListener);
         ui.settingStateForAllOptions();
 
     }
 
     public static void main(String[] args) {
+
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -84,7 +76,7 @@ public class UIEntry {
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
-        String plantUMLCode = null;
+        plantUMLCode = null;
         try {
             plantUMLCode = FileUtils.readFile(new File(outputPath));
         } catch (IOException e) {
@@ -110,12 +102,64 @@ public class UIEntry {
             // генерация диаграммы
             String desc = reader.generateImage(png);
 
-            ui.showDiagram();
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public class GenerateActionListener implements ActionListener {
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+
+                ui.getLabelForDiagram().setIcon(null);
+                ui.getProgressBar().setValue(0);
+                ui.getProgressBar().setString("0%");
+                new SW().execute();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+        }
+    }
+    public class SW extends SwingWorker<String,String> {
+        @Override
+        protected String doInBackground() throws Exception {
+            File file = new File("classes.plantuml");
+            file.delete();
+            new File("diagram.png").delete();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+//                        ui.getProgressBar().setIndeterminate(true);
+                        ui.getProgressBar().setString("Loading files...");
+                        ui.increaseProgressBarForTwenty();
+                        Main.main(gettingParametersFromUI());
+                        ui.getProgressBar().setString("Code generation...");
+                        ui.increaseProgressBarForTwenty();
+                        generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                        ui.getProgressBar().setString("Loading diagram...");
+                        ui.increaseProgressBarForTwenty();
+                        generateDiagram(plantUMLCode, "diagram.png");
+                        ui.showDiagram("diagram.png");
+                        ui.setProgressBarComplete();
+                        ui.getProgressBar().setString("Complete");
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+
+
+
+
+            return "";
+        }
+    }
 }
