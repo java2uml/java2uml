@@ -67,12 +67,13 @@ public class UMLDiagramClasses {
                             else
                                 CreateUmlCode.connections.append(" <|-- ");
                             break;
-                        }else if(Options.isShowLollipop()){
+                        }else {
                             CreateUmlCode.connections.append(type.getName());
-                            CreateUmlCode.connections.append(" ()- ");
-                        }else
-                            CreateUmlCode.connections.append(" <|- ");
-
+                            if (Options.isShowLollipop()) {
+                                CreateUmlCode.connections.append(" ()- ");
+                            } else
+                                CreateUmlCode.connections.append(" <|- ");
+                        }
 
                     }
 
