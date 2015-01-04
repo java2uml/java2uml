@@ -24,7 +24,7 @@ public class UIEntry {
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
         }
-
+        ui.increaseProgressBarForTwenty();
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
         args[1] = ui.getPath().getText().toString();
         args[2] = !ui.getShowHeader().getState() ? "" : "";
@@ -113,19 +113,7 @@ public class UIEntry {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-
                 new SW().execute();
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-//
-//                        generateDiagram(plantUMLCode, "diagram.png");
-//                        ui.showDiagram();
-//                    }
-//                }).start();
-
-
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
@@ -138,10 +126,19 @@ public class UIEntry {
                 @Override
                 public void run() {
                     try {
+//                        ui.getProgressBar().setIndeterminate(true);
+                        ui.getProgressBar().setString("Loading files...");
+                        ui.increaseProgressBarForTwenty();
                         Main.main(gettingParametersFromUI());
+                        ui.getProgressBar().setString("Code generation...");
+                        ui.increaseProgressBarForTwenty();
                         generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                        ui.getProgressBar().setString("Loading diagram...");
+                        ui.increaseProgressBarForTwenty();
                         generateDiagram(plantUMLCode, "diagram.png");
                         ui.showDiagram();
+                        ui.setProgressBarComplete();
+                        ui.getProgressBar().setString("Complete");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

@@ -356,6 +356,7 @@ public class UI implements ExceptionListener {
 
 
         progressBar.setStringPainted(true);
+
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
 
