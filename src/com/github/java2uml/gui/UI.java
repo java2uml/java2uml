@@ -14,8 +14,8 @@ import java.io.IOException;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
-    private JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram;
+    private JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode;
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
@@ -37,7 +37,7 @@ public class UI implements ExceptionListener {
     ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
-    private JComboBox setDirectionOfDiagram, setTypeOfDiagram;
+
     private JTextField path;
 
     public JTextArea getGeneratedCode() {
@@ -234,12 +234,7 @@ public class UI implements ExceptionListener {
                 } else helpWindow = Help.getInstance();
             }
         });
-//todo: Вытащить параметры из комбобоксов
 
-        setTypeOfDiagram.addItem(classDiagramCheckboxItem.getText().toString());
-        setTypeOfDiagram.addItem(sequenceDiagramCheckboxItem.getText().toString());
-        setDirectionOfDiagram.addItem(verticalDirectionCheckboxItem.getText().toString());
-        setDirectionOfDiagram.addItem(horizontalDirectionCheckboxItem.getText().toString());
 
         return menu;
     }
@@ -252,7 +247,6 @@ public class UI implements ExceptionListener {
         sequenceDiagramCheckboxItem.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
         reflectionCheckboxItem.setState(true);
-        setTypeOfDiagram.setEnabled(false);
         showAggregation.setState(true);
         showAssociation.setState(true);
         showComposition.setState(true);
@@ -264,18 +258,30 @@ public class UI implements ExceptionListener {
 
     }
 
+    public JButton getCancelLoading() {
+        return cancelLoading;
+    }
+
+    public void setCancelLoading(JButton cancelLoading) {
+        this.cancelLoading = cancelLoading;
+    }
+
     public JFrame initUI() {
         mainFrame = new JFrame("Java2UML");
         panelForButtons = new JPanel();
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
-        browse = new JButton("Choose dir");
+        panelForClearAndCopyToClipboard = new JPanel();
+        panelForProgressBarAndCancel = new JPanel();
+        browse = new JButton("Select files");
         saveDiagram = new JButton("Save image as");
         generatePlantUML = new JButton("Generate");
+        cancelLoading = new JButton("Cancel");
         labelForDiagram = new JLabel();
-        setTypeOfDiagram = new JComboBox();
+        clearCode = new JButton("Clear");
+
         copyToClipboard = new JButton("Copy to clipboard");
-        setDirectionOfDiagram = new JComboBox();
+
         generatedCode = new JTextArea();
         path = new JTextField();
         panelForPath = new JPanel();
@@ -292,6 +298,13 @@ public class UI implements ExceptionListener {
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
 
+
+        clearCode.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                getGeneratedCode().setText("");
+            }
+        });
         browse.addActionListener(new ChooseFileActionListener());
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
@@ -311,20 +324,31 @@ public class UI implements ExceptionListener {
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
 
+        panelForPath.setLayout(new GridBagLayout());
+        panelForPath.add(browse, new GridBagConstraints(0,0,1,1,0,0.5,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0));
+        panelForPath.add(path, new GridBagConstraints(20,0,4,1,15,0.5,GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,3),0,0));
 
-        panelForButtons.add(browse);
-        panelForButtons.add(setTypeOfDiagram);
-        panelForButtons.add(setDirectionOfDiagram);
-        panelForButtons.add(generatePlantUML);
+
+
         panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
-        panelForPath.setLayout(new GridLayout(1, 1));
-        panelForPath.add(path);
+
+        panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
+
+
+        panelForProgressBarAndCancel.add(generatePlantUML);
+        panelForProgressBarAndCancel.add(progressBar);
+        panelForProgressBarAndCancel.add(cancelLoading);
+
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
+        panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
         panelForPathAndButtons.add(panelForButtons);
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
-        panelForPathAndButtons.add(progressBar);
+        panelForPathAndButtons.add(panelForProgressBarAndCancel);
+
+
+
 
         scrollPane = new JScrollPane(generatedCode);
 
@@ -333,7 +357,11 @@ public class UI implements ExceptionListener {
 
         panelForGeneratedCode.setLayout(new GridBagLayout());
         panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
-        panelForGeneratedCode.add(copyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
+
+        panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
+        panelForClearAndCopyToClipboard.add(clearCode);
+        panelForClearAndCopyToClipboard.add(copyToClipboard);
+        panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         mainFrame.setJMenuBar(initMenu());
@@ -342,7 +370,7 @@ public class UI implements ExceptionListener {
         mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        mainFrame.setBackground(new Color(143178153));
+
 
         return mainFrame;
     }
@@ -412,7 +440,7 @@ public class UI implements ExceptionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            getGeneratedCode().setText("");
+
             getProgressBar().setString("0%");
             getProgressBar().setValue(0);
 
