@@ -19,7 +19,7 @@ public class UI implements ExceptionListener {
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
-    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, saveItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
     showComposition, showAggregation;
@@ -270,6 +270,7 @@ public class UI implements ExceptionListener {
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         browse = new JButton("Choose dir");
+        saveDiagram = new JButton("Save image as");
         generatePlantUML = new JButton("Generate");
         labelForDiagram = new JLabel();
         setTypeOfDiagram = new JComboBox();
