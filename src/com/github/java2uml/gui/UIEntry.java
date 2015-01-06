@@ -127,15 +127,10 @@ public class UIEntry {
     public class SW extends SwingWorker<String,String> {
         @Override
         protected String doInBackground() throws Exception {
-            File file = new File("classes.plantuml");
-            file.delete();
-            new File("diagram.png").delete();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-
-//                        ui.getProgressBar().setIndeterminate(true);
                         ui.getProgressBar().setString("Loading files...");
                         ui.increaseProgressBarForTwenty();
                         Main.main(gettingParametersFromUI());
