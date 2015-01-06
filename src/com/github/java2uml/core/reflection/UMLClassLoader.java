@@ -1,20 +1,9 @@
 package com.github.java2uml.core.reflection;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -224,39 +213,6 @@ public class UMLClassLoader extends ClassLoader {
         Set<Class> classes = new HashSet<Class>();
         List<String> classNames = new ArrayList<String>();
 
-		if (path.matches(".+\\.jar$")) {
-			try {
-				// прислали jar - распакуем
-				JarFile jarfile = new JarFile(new File(path));
-				// выгружаем классы в папку с именем jar
-				String destdir = path.substring(0, path.indexOf(".jar"));
-				Enumeration<JarEntry> enu = jarfile.entries();
-				while (enu.hasMoreElements()) {
-					JarEntry je = enu.nextElement();
-					File fl = new File(destdir, je.getName());
-					if (je.isDirectory()) {
-						continue;
-					}
-					if (!fl.exists()) {
-						fl.getParentFile().mkdirs();
-						fl.getParentFile().createNewFile();
-						fl = new java.io.File(destdir, je.getName());
-					}
-					try (InputStream is = jarfile.getInputStream(je);
-							FileOutputStream fo = new FileOutputStream(fl);) {
-						// сохраняем файл
-						while (is.available() > 0) {
-							fo.write(is.read());
-						}
-					}
-				}
-				// меняем path
-				path = destdir;
-			} catch(IOException e) {
-				throw e;
-			}
-		}
-		
         // Добавляем путь к списку CLASSPATH, если такой в списке отсутствует.
         int index = paths.indexOf(path);
         if (index < 0) {
@@ -269,9 +225,35 @@ public class UMLClassLoader extends ClassLoader {
         // Загружаем классы в список классов.
         // Исключения пока выбрасываются вверх.
         for (String className : classNames) {
-            System.out.println("Загружается " + className);
-            Class c = loadClass(className);
-            classes.add(c);
+            // TODO убрать вывод после тестирования
+            System.out.print(
+                    "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
+            String loadingClassName = className;
+            String loadingFromPath = path;
+            boolean packetFound = false;
+            while (!packetFound) {
+                try {
+                    Class c = loadClass(loadingClassName);
+                    classes.add(c);
+                    // TODO убрать вывод после тестирования
+                    System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
+                    packetFound = true;
+                } catch (NoClassDefFoundError e) {
+                    int posSeparator = loadingClassName.indexOf(".");
+                    if (posSeparator == -1) {
+                        // TODO убрать вывод после тестирования
+                        System.out.println("Не найден пакет для класса " + loadingClassName);
+                        break;
+                    }
+                    loadingFromPath = loadingFromPath + System.getProperty("file.separator")
+                            + loadingClassName.substring(0, posSeparator);
+                    loadingClassName = loadingClassName.substring(posSeparator + 1);
+                    index = paths.indexOf(loadingFromPath);
+                    if (index < 0) {
+                        addClassPath(loadingFromPath);
+                    }
+                }
+            }
         }
 
         return classes;
@@ -308,15 +290,19 @@ public class UMLClassLoader extends ClassLoader {
         // иначе добавляем относительный путь. Получившееся полное имя класса заносим
         // в список имен.
         classPrefix = (classPrefix.isEmpty()) ? classPrefix : classPrefix + ".";
-        for (String fileName : files) {
-            classNames.add(classPrefix + fileName.split(CLASS_EXTENSION)[0]);
+        if (files != null) {
+            for (String fileName : files) {
+                classNames.add(classPrefix + fileName.split(CLASS_EXTENSION)[0]);
+            }
         }
 
         // Ищем классы в подпапках.
-        for (File subDir : children) {
-            if (subDir.isDirectory()) {
-                classNames = classList(subDir.getPath(), classPrefix + subDir.getName(),
-                        classNames);
+        if (children != null) {
+            for (File subDir : children) {
+                if (subDir.isDirectory()) {
+                    classNames = classList(subDir.getPath(), classPrefix + subDir.getName(),
+                            classNames);
+                }
             }
         }
 
