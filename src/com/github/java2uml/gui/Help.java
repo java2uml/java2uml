@@ -37,13 +37,8 @@ public class Help extends JFrame implements ActionListener {
 
     private Help(String _title){
         super(_title);
-        URL helpURL = null;
-        File file = new File("/src/com/github/java2uml/gui/help/help.html");
-        try {
-            helpURL = file.toURI().toURL();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+
+        URL helpURL = getClass().getClassLoader().getResource("help.html");
 
         editorPane = new JEditorPane();
         editorPane.setEditable(false);

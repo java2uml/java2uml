@@ -13,6 +13,9 @@ public class Main {
             throw new InvalidParameterException("Too few parameters (" + args.length + ").");
         }
 
+        // Инициализация класса Options значениями по умолчанию.
+        Options.init();
+
         // Проверяем первый параметр - тип исходных файлов. Параметр обязательный.
         int sourceFileType;
         int length2Param = args[0].length();
