@@ -2,6 +2,7 @@ package com.github.java2uml.core.reflection;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,6 +27,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sourceforge.plantuml.FileFormat;
+import net.sourceforge.plantuml.FileFormatOption;
+import net.sourceforge.plantuml.GeneratedImage;
+import net.sourceforge.plantuml.SourceFileReader;
 import net.sourceforge.plantuml.SourceStringReader;
 
 import com.github.java2uml.core.Options;
@@ -39,26 +44,27 @@ public class DataExtractor {
      * @return boolean
      */
     public static String extract(final Set<Class> classes) {
-
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
+        //source.append("' Split into 2 pages\n");
+        //source.append("page 2x1\n");
         //source.append("skinparam backgroundColor Snow\n");
         //source.append("skinparam monochrome true\n");
         source.append("skinparam classAttributeIconSize 0\n");
-//        source.append("skinparam classBorderColor MediumSeaGreen\n");
-//        source.append("skinparam classBackgroundColor Lavender\n");
-//        source.append("skinparam classFontSize 20\n");
-//        source.append("skinparam classAttributeFontSize 18\n");
-//        source.append("skinparam packageBorderColor DarkSlateGray\n");
-//        source.append("skinparam packageBackgroundColor GhostWhite\n");
-//        source.append("skinparam packageFontColor Black\n");
-//        source.append("skinparam packageFontStyle italic\n");
-//        source.append("skinparam packageFontSize 18\n");
-//        source.append("skinparam classArrowColor Black\n");
-//        source.append("skinparam classArrowFontSize 24\n");
-//        source.append("skinparam classArrowFontStyle bold\n");
-//        source.append("scale 1.0\n");
+        //source.append("skinparam classBorderColor MediumSeaGreen\n");
+        //source.append("skinparam classBackgroundColor Lavender\n");
+        //source.append("skinparam classFontSize 20\n");
+        //source.append("skinparam classAttributeFontSize 18\n");
+        //source.append("skinparam packageBorderColor DarkSlateGray\n");
+        //source.append("skinparam packageBackgroundColor GhostWhite\n");
+        //source.append("skinparam packageFontColor Black\n");
+        //source.append("skinparam packageFontStyle italic\n");
+        //source.append("skinparam packageFontSize 18\n");
+        //source.append("skinparam classArrowColor DarkBlue\n");
+        //source.append("skinparam classArrowFontSize 24\n");
+        //source.append("skinparam classArrowFontStyle bold\n");
+        source.append("scale 1.0\n");
         
         // список связей между классами
         List<String> links = new ArrayList<String>();
@@ -569,34 +575,6 @@ public class DataExtractor {
     }
     
     /**
-     * Генерация диаграммы классов
-     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param source - исходный текст классов на языке plantuml
-     */
-    public static void generateFromSrting(final String source, final String fileName) {
-        try {
-            File file = new File(fileName);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-
-            // поток вывода для диаграммы
-            OutputStream png = new FileOutputStream(file);
-
-            // генератор диаграмм
-            SourceStringReader reader = new SourceStringReader(source);
-
-            // генерация жиаграммы
-            String desc = reader.generateImage(png);
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    /**
      * Проверка, является ли указанный тип коллекцией
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param Class - входящий класс
@@ -697,35 +675,86 @@ public class DataExtractor {
     }
     
     /**
+     * Генерация диаграммы классов
+     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
+     * @param source 	- исходный текст классов на языке plantuml
+     * @param outPath 	- путь с именем выхондого файла
+     * @param type 		- тип выходного файла: png|svg
+     */
+    public static void generateFromSrting(final String source, final String outPath, final String type) 
+    		throws FileNotFoundException, IOException {
+    	try(OutputStream out = new FileOutputStream(new File(outPath));
+    			ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+            // проверка параметров
+    		if (source == null || outPath == null || type == null) {
+    			throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
+    		}
+    		
+            // генерация диаграммы
+    		SourceStringReader reader = new SourceStringReader(source);
+    		if (type.equalsIgnoreCase("svg")) {
+    				// генерация диаграммы и сохранение в файл classes.svg
+                    String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                    save(new String(os.toByteArray()), "classes.svg");
+                    
+    		} else if (type.equalsIgnoreCase("png")) {
+    			// генерация png диаграммы
+    			File file = new File(outPath);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                OutputStream png = new FileOutputStream(file);
+                String desc = reader.generateImage(png);	
+    		}
+        } catch (FileNotFoundException e) {
+            throw e;
+        } catch (IOException e) {
+            throw e;
+        }
+    }
+    
+    /**
      * Генерация диаграммы классов из файла в формате .plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param srcPath - путь с именем файла с исходным кодом диаграмм
      * @param outPath - путь с именем выхондого файла
+     * @param type - тип выходного файла: png|svg
      * @return void
      */
-    public static void generateFromFile(final String srcPath, final String outPath) 
+    public static void generateFromFile(final String srcPath, final String outPath, final String type) 
     		throws FileNotFoundException, IOException {
-    	try(BufferedReader srcReader = new BufferedReader(new FileReader(srcPath));
-    			OutputStream png = new FileOutputStream(new File(outPath))) {
-    		
-    		String line = null;
-    		StringBuilder source = new StringBuilder();
-    		while((line = srcReader.readLine()) != null) {
-    			// получаем код исходников
-    			source.append(line);
-    			// важно добавить перенос строки
-    			source.append("\n");
+    	try (BufferedReader srcReader = new BufferedReader(new FileReader(srcPath));
+    			ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+    		// проверка параметров
+    		if (srcPath == null || outPath == null || type == null) {
+    			throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
     		}
-    		
-            // генератор диаграммы           
-    		SourceStringReader reader = new SourceStringReader(source.toString());
-            reader.generateImage(png);
-
+    		// генерация диаграммы
+    		if (type.equalsIgnoreCase("svg")) {
+    			// извлечение исходников
+        		String line = null;
+        		StringBuilder source = new StringBuilder();
+        		while((line = srcReader.readLine()) != null) {
+        			source.append(line);
+        			source.append("\n"); // // важно! добавить перенос строки
+        		}
+    			// генерация диаграммы и сохранение в файл classes.svg
+        		SourceStringReader reader = new SourceStringReader(source.toString());
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                save(new String(os.toByteArray()), outPath);
+                    
+    		} else if (type.equalsIgnoreCase("png")) {
+    			// генерация png диаграммы
+    			SourceFileReader srcFileReader = new SourceFileReader(new File(srcPath));
+    			List<GeneratedImage> list = srcFileReader.getGeneratedImages();
+    			for (GeneratedImage img : list) {
+    				File png = img.getPngFile();
+    				png.createNewFile();
+    			}
+    		}
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
             throw e;
         } catch (IOException e) {
-            e.printStackTrace();
             throw e;
         }
     }
@@ -733,12 +762,13 @@ public class DataExtractor {
     /**
      * Сохранение сгенерированного кода в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param source - код описания ml диаграммы в формате plantuml
+     * @param source	- код описания ml диаграммы в формате plantuml
+     * @param path 		- путь с именем выходного файла
      * @return boolean
      */
-    public static boolean save(final String source) {
+    public static boolean save(final String source, final String path) {
     	try(Writer writer = new BufferedWriter(new OutputStreamWriter(
-    			new FileOutputStream("classes.plantuml"), "UTF-8"))) {
+    			new FileOutputStream(path), "UTF-8"))) {
     		writer.write(source);
     		return true;
     	} catch(IOException e) {
