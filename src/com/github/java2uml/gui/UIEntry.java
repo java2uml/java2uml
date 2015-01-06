@@ -56,6 +56,7 @@ public class UIEntry {
     }
 
     public static void main(String[] args) {
+
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -113,6 +114,7 @@ public class UIEntry {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
+
                 ui.getLabelForDiagram().setIcon(null);
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
@@ -125,10 +127,14 @@ public class UIEntry {
     public class SW extends SwingWorker<String,String> {
         @Override
         protected String doInBackground() throws Exception {
+            File file = new File("classes.plantuml");
+            file.delete();
+            new File("diagram.png").delete();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
+
 //                        ui.getProgressBar().setIndeterminate(true);
                         ui.getProgressBar().setString("Loading files...");
                         ui.increaseProgressBarForTwenty();
@@ -142,6 +148,7 @@ public class UIEntry {
                         ui.showDiagram("diagram.png");
                         ui.setProgressBarComplete();
                         ui.getProgressBar().setString("Complete");
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

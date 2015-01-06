@@ -250,7 +250,7 @@ public class UI implements ExceptionListener {
         classDiagramCheckboxItem.setEnabled(false);
         sequenceDiagramCheckboxItem.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
-
+        reflectionCheckboxItem.setState(true);
         setTypeOfDiagram.setEnabled(false);
         showAggregation.setState(true);
         showAssociation.setState(true);
