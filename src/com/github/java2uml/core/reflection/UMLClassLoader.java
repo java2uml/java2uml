@@ -213,6 +213,39 @@ public class UMLClassLoader extends ClassLoader {
         Set<Class> classes = new HashSet<Class>();
         List<String> classNames = new ArrayList<String>();
 
+        if (path.matches(".+\\.jar$")) {
+			try {
+				// прислали jar - распакуем
+				JarFile jarfile = new JarFile(new File(path));
+				// выгружаем классы в папку с именем jar
+				String destdir = path.substring(0, path.indexOf(".jar"));
+				Enumeration<JarEntry> enu = jarfile.entries();
+				while (enu.hasMoreElements()) {
+					JarEntry je = enu.nextElement();
+					File fl = new File(destdir, je.getName());
+					if (je.isDirectory()) {
+						continue;
+					}
+					if (!fl.exists()) {
+						fl.getParentFile().mkdirs();
+						fl.getParentFile().createNewFile();
+						fl = new java.io.File(destdir, je.getName());
+					}
+					try (InputStream is = jarfile.getInputStream(je);
+							FileOutputStream fo = new FileOutputStream(fl);) {
+						// сохраняем файл
+						while (is.available() > 0) {
+							fo.write(is.read());
+						}
+					}
+				}
+				// меняем path
+				path = destdir;
+			} catch(IOException e) {
+				throw e;
+			}
+		}
+        
         // Добавляем путь к списку CLASSPATH, если такой в списке отсутствует.
         int index = paths.indexOf(path);
         if (index < 0) {
