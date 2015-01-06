@@ -477,7 +477,7 @@ public class DataExtractor {
             			
             			// мощность отношений
             			String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
-            			String cmpMult = "\"0..* " + "(" + matches + ")\" " + params[3].trim() + "\n";
+            			String cmpMult = "\"0..*_" + "(" + matches + ")\" " + params[3].trim() + "\n";
             			
             			link += (linkType.equals("o--")) ? agrMult : cmpMult;   
             	        genLinks.add(link);
