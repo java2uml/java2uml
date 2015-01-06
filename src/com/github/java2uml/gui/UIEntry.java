@@ -11,12 +11,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 
-import static java.lang.String.*;
-
 public class UIEntry {
     static UI ui;
     String[] args;
     String plantUMLCode;
+    SwingWorkerForBackgroundGenerating swingWorker;
+    static ExceptionListener exceptionListener;
 
 
     private String[] gettingParametersFromUI() {
@@ -45,10 +45,23 @@ public class UIEntry {
 
     public void initUI() {
         GenerateActionListener generateActionListener = new GenerateActionListener();
-
         ui = UI.getInstance();
+        exceptionListener = ui;
         ui.initUI().setVisible(true);
-
+        ui.getCancelLoading().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ui.getLabelForDiagram().setIcon(null);
+                try {
+                    swingWorker.cancel(true);
+                } catch (Exception ex){
+                    exceptionListener.handleExceptionAndShowDialog(ex);
+                }
+                ui.getGeneratePlantUML().setEnabled(true);
+                ui.getProgressBar().setString("0%");
+                ui.getProgressBar().setValue(0);
+            }
+        });
         ui.getGeneratePlantUML().addActionListener(generateActionListener);
         ui.getGenerateItem().addActionListener(generateActionListener);
         ui.settingStateForAllOptions();
@@ -68,8 +81,11 @@ public class UIEntry {
             });
         } catch (InterruptedException e) {
             e.printStackTrace();
+            exceptionListener.handleExceptionAndShowDialog(e);
+
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+            exceptionListener.handleExceptionAndShowDialog(e);
         }
 
         
@@ -104,8 +120,9 @@ public class UIEntry {
 
 
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            exceptionListener.handleExceptionAndShowDialog(e);
         }
     }
 
@@ -117,43 +134,46 @@ public class UIEntry {
                 ui.getLabelForDiagram().setIcon(null);
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
-                new SW().execute();
+                swingWorker = new SwingWorkerForBackgroundGenerating();
+                swingWorker.execute();
+
             } catch (Exception e1) {
                 e1.printStackTrace();
+                exceptionListener.handleExceptionAndShowDialog(e1);
             }
         }
     }
-    public class SW extends SwingWorker<String,String> {
+    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String,String> {
         @Override
         protected String doInBackground() throws Exception {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
+
                     try {
-                        ui.getProgressBar().setString("Loading files...");
-                        ui.increaseProgressBarForTwenty();
-                        Main.main(gettingParametersFromUI());
-                        ui.getProgressBar().setString("Code generation...");
-                        ui.increaseProgressBarForTwenty();
-                        generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-                        ui.getProgressBar().setString("Loading diagram...");
-                        ui.increaseProgressBarForTwenty();
-                        generateDiagram(plantUMLCode, "diagram.png");
-                        ui.showDiagram("diagram.png");
-                        ui.setProgressBarComplete();
-                        ui.getProgressBar().setString("Complete");
+                        while (!isCancelled()) {
+                            ui.getGeneratePlantUML().setEnabled(false);
+                            ui.getProgressBar().setString("Loading files...");
+                            ui.increaseProgressBarForTwenty();
+                            Main.main(gettingParametersFromUI());
+                            ui.getProgressBar().setString("Code generation...");
+                            ui.increaseProgressBarForTwenty();
+                            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                            ui.getProgressBar().setString("Loading diagram...");
+                            ui.increaseProgressBarForTwenty();
+                            generateDiagram(plantUMLCode, "diagram.png");
+                            ui.showDiagram("diagram.png");
+                            ui.setProgressBarComplete();
+                            ui.getProgressBar().setString("Complete");
+                            ui.getGeneratePlantUML().setEnabled(true);
+                        }
 
                     } catch (Exception e) {
                         e.printStackTrace();
+                        ui.getProgressBar().setString("0%");
+                        ui.getProgressBar().setValue(0);
+                        exceptionListener.handleExceptionAndShowDialog(e);
+                        ui.getGeneratePlantUML().setEnabled(true);
                     }
-                }
-            }).start();
-
-
-
-
-
             return "";
         }
+
     }
 }
