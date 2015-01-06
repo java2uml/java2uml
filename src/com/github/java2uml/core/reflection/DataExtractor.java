@@ -52,19 +52,19 @@ public class DataExtractor {
         //source.append("skinparam backgroundColor Snow\n");
         //source.append("skinparam monochrome true\n");
         source.append("skinparam classAttributeIconSize 0\n");
-//        source.append("skinparam classBorderColor MediumSeaGreen\n");
-//        source.append("skinparam classBackgroundColor Lavender\n");
-//        source.append("skinparam classFontSize 20\n");
-//        source.append("skinparam classAttributeFontSize 18\n");
-//        source.append("skinparam packageBorderColor DarkSlateGray\n");
-//        source.append("skinparam packageBackgroundColor GhostWhite\n");
-//        source.append("skinparam packageFontColor Black\n");
-//        source.append("skinparam packageFontStyle italic\n");
-//        source.append("skinparam packageFontSize 18\n");
-//        source.append("skinparam classArrowColor Black\n");
-//        source.append("skinparam classArrowFontSize 24\n");
-//        source.append("skinparam classArrowFontStyle bold\n");
-        source.append("scale 0.8\n");
+        //source.append("skinparam classBorderColor MediumSeaGreen\n");
+        //source.append("skinparam classBackgroundColor Lavender\n");
+        //source.append("skinparam classFontSize 20\n");
+        //source.append("skinparam classAttributeFontSize 18\n");
+        //source.append("skinparam packageBorderColor DarkSlateGray\n");
+        //source.append("skinparam packageBackgroundColor GhostWhite\n");
+        //source.append("skinparam packageFontColor Black\n");
+        //source.append("skinparam packageFontStyle italic\n");
+        //source.append("skinparam packageFontSize 18\n");
+        //source.append("skinparam classArrowColor DarkBlue\n");
+        //source.append("skinparam classArrowFontSize 24\n");
+        //source.append("skinparam classArrowFontStyle bold\n");
+        source.append("scale 1.0\n");
         
         // список связей между классами
         List<String> links = new ArrayList<String>();
@@ -741,7 +741,7 @@ public class DataExtractor {
     			// генерация диаграммы и сохранение в файл classes.svg
         		SourceStringReader reader = new SourceStringReader(source.toString());
                 String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
-                save(new String(os.toByteArray()), "classes.svg");
+                save(new String(os.toByteArray()), outPath);
                     
     		} else if (type.equalsIgnoreCase("png")) {
     			// генерация png диаграммы
@@ -749,7 +749,6 @@ public class DataExtractor {
     			List<GeneratedImage> list = srcFileReader.getGeneratedImages();
     			for (GeneratedImage img : list) {
     				File png = img.getPngFile();
-    				System.out.println("PNG: " + png.getName());
     				png.createNewFile();
     			}
     		}
