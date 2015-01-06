@@ -53,7 +53,13 @@ public class UIEntry {
             public void actionPerformed(ActionEvent e) {
                 ui.getLabelForDiagram().setIcon(null);
                 try {
-                    swingWorker.cancel(true);
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            swingWorker.cancel(true);
+                        }
+                    }).start();
+
                 } catch (Exception ex){
                     exceptionListener.handleExceptionAndShowDialog(ex);
                 }
@@ -148,22 +154,28 @@ public class UIEntry {
         protected String doInBackground() throws Exception {
 
                     try {
-                        while (!isCancelled()) {
+
                             ui.getGeneratePlantUML().setEnabled(false);
                             ui.getProgressBar().setString("Loading files...");
                             ui.increaseProgressBarForTwenty();
+                        if (isCancelled()) return null;
                             Main.main(gettingParametersFromUI());
+                        if (isCancelled()) return null;
                             ui.getProgressBar().setString("Code generation...");
                             ui.increaseProgressBarForTwenty();
                             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                        if (isCancelled()) return null;
                             ui.getProgressBar().setString("Loading diagram...");
                             ui.increaseProgressBarForTwenty();
                             generateDiagram(plantUMLCode, "diagram.png");
+                        if (isCancelled()) return null;
                             ui.showDiagram("diagram.png");
+                        if (isCancelled()) return null;
                             ui.setProgressBarComplete();
                             ui.getProgressBar().setString("Complete");
                             ui.getGeneratePlantUML().setEnabled(true);
-                        }
+
+
 
                     } catch (Exception e) {
                         e.printStackTrace();
