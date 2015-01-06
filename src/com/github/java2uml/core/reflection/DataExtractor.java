@@ -117,7 +117,6 @@ public class DataExtractor {
                 res.append(" {\n"); 
             }
             
-            
             // буфер статических членов класса
             StringBuilder staticMembers = new StringBuilder();
             
@@ -561,9 +560,17 @@ public class DataExtractor {
         
         // вывод связей
         for (String link : links) {
+        	if (link.contains("$")) {
+        		// связи с $ пока игнорируем
+        		continue;
+        	}
         	source.append(link);
         }
         for (String link : throwLinks) {
+        	if (link.contains("$")) {
+        		// связи с $ пока игнорируем
+        		continue;
+        	}
         	source.append(link);
         }
                 
