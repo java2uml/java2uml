@@ -3,6 +3,7 @@ package com.github.java2uml.gui;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -293,6 +294,10 @@ public class UI implements ExceptionListener {
         separatorBetweenPathAndButtons = new JSeparator();
         separatorBetweenButtonsAndProgressBar = new JSeparator();
         fileChooser = new JFileChooser();
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
+
 
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
@@ -321,7 +326,7 @@ public class UI implements ExceptionListener {
         tabs.addTab("Diagram", panelForDiagram);
         path.setToolTipText("Enter path here");
 
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 
         panelForPath.setLayout(new GridBagLayout());
