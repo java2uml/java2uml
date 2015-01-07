@@ -183,8 +183,8 @@ public class UI implements ExceptionListener {
         russianLangItem.setText(localeLabels.getString("russianLanguage"));
 
         showAssociation.setText(localeLabels.getString("associationMenuLabel"));
-        showAggregation.setText("aggregationMenuLabel");
-        showComposition.setText("compositionMenuLabel");
+        showAggregation.setText(localeLabels.getString("aggregationMenuLabel"));
+        showComposition.setText(localeLabels.getString("compositionMenuLabel"));
         showHeader.setText(localeLabels.getString("chooseHeaderMenuLabel"));
         showLollipops.setText(localeLabels.getString("showLollipopMenuLabel"));
         helpItem.setText(localeLabels.getString("helpMenuLabel"));
