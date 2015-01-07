@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
@@ -27,26 +29,7 @@ public class UI implements ExceptionListener {
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
 
-    public JProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    public void setProgressBar(JProgressBar progressBar) {
-        this.progressBar = progressBar;
-    }
-
-    ButtonGroup parsingMethod;
-
-    private JScrollPane scrollPane, scrollPaneForDiagram;
-
-    private JTextField path;
-
-    public JTextArea getGeneratedCode() {
-        return generatedCode;
-    }
-
-
-
+    private static Help helpWindow;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
     private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
@@ -55,6 +38,14 @@ public class UI implements ExceptionListener {
     private BufferedImage diagram;
     private JLabel labelForDiagram;
 
+    ButtonGroup parsingMethod;
+
+    private JScrollPane scrollPane, scrollPaneForDiagram;
+
+    private JTextField path;
+
+    ResourceBundle localeLabels;
+
     public static final String VERTICAL_DIRECTION = "Vertical";
     public static final String HORIZONTAL_DIRECTION = "Horizontal";
     public static final String CLASS_DIAGRAM = "Class Dia";
@@ -62,8 +53,20 @@ public class UI implements ExceptionListener {
 
 
 
-    private static Help helpWindow;
 
+    public JProgressBar getProgressBar() {
+        return progressBar;
+    }
+
+    public void setProgressBar(JProgressBar progressBar) {
+        this.progressBar = progressBar;
+    }
+
+
+
+    public JTextArea getGeneratedCode() {
+        return generatedCode;
+    }
     public JTextField getPath() {
         return path;
     }
@@ -136,52 +139,86 @@ public class UI implements ExceptionListener {
         this.generateItem = generateItem;
     }
 
+
+
+    public void settingStateForAllOptions(){
+
+        classDiagramCheckboxItem.setState(true);
+        verticalDirectionCheckboxItem.setState(true);
+        classDiagramCheckboxItem.setEnabled(false);
+        sequenceDiagramCheckboxItem.setEnabled(false);
+        classDiagramCheckboxItem.setState(true);
+        reflectionCheckboxItem.setState(true);
+        showAggregation.setState(true);
+        showAssociation.setState(true);
+        showComposition.setState(true);
+        showLollipops.setState(true);
+
+
+
+
+
+    }
+
+    public JButton getCancelLoading() {
+        return cancelLoading;
+    }
+
+    public void setCancelLoading(JButton cancelLoading) {
+        this.cancelLoading = cancelLoading;
+    }
+
+    public void settingLocaleLabels(){
+        localeLabels = ResourceBundle.getBundle("GUILabels", new Locale("ru"));
+
+    }
+
     private JMenuBar initMenu(){
         menu = new JMenuBar();
 
-        file = new JMenu("File");
-        help = new JMenu("Help");
-        typeOfDiagramMenu = new JMenu("Type will be...");
+        file = new JMenu(localeLabels.getString("fileMenuLabel"));
+        help = new JMenu(localeLabels.getString("helpMenuLabel"));
+        typeOfDiagramMenu = new JMenu(localeLabels.getString("typeOfDiagramMenuLabel"));
 
-        options = new JMenu("Options");
-        direction = new JMenu("Direction will be...");
-        diagramGeneratingMethods = new JMenu("I want to parse...");
-        whichRelationsAreShown = new JMenu("Relations to be shown...");
+        options = new JMenu(localeLabels.getString("optionsMenuLabel"));
+        direction = new JMenu(localeLabels.getString("directionWillBeMenuLabel"));
+        diagramGeneratingMethods = new JMenu(localeLabels.getString("iWantToParseMenuLabel"));
+        whichRelationsAreShown = new JMenu(localeLabels.getString("relationsMenuLabel"));
 
-        showAssociation = new StayOpenCheckBoxMenuItem("Association");
+        showAssociation = new StayOpenCheckBoxMenuItem(localeLabels.getString("associationMenuLabel"));
         showAssociation.setState(true);
-        showAggregation = new StayOpenCheckBoxMenuItem("Aggregation");
-        showComposition = new StayOpenCheckBoxMenuItem("Composition");
+        showAggregation = new StayOpenCheckBoxMenuItem(localeLabels.getString("aggregationMenuLabel"));
+        showComposition = new StayOpenCheckBoxMenuItem(localeLabels.getString("compositionMenuLabel"));
 
-        showHeader = new StayOpenCheckBoxMenuItem("Show header");
-        showLollipops = new StayOpenCheckBoxMenuItem("Show lollipop interfaces");
+        showHeader = new StayOpenCheckBoxMenuItem(localeLabels.getString("chooseHeaderMenuLabel"));
+        showLollipops = new StayOpenCheckBoxMenuItem(localeLabels.getString("showLollipopMenuLabel"));
 
-        helpItem = new JMenuItem("Help");
-        exitItem = new JMenuItem("Exit");
+        helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
+        exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
 
-        aboutItem = new JMenuItem("About");
-        generateItem = new JMenuItem("Generate");
-        chooseItem = new JMenuItem("Choose dir");
+        aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
+        generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
+        chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
 
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
 
-        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(".class files");
-        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(".java files");
+        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
+        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
         parsingMethod.add(reflectionCheckboxItem);
         parsingMethod.add(parsingCheckboxItem);
 
 
-        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Horizontal");
+        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionHorizontalLabel"));
 
-        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Vertical");
+        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionVerticalLabel"));
 
         directionGroup.add(horizontalDirectionCheckboxItem);
         directionGroup.add(verticalDirectionCheckboxItem);
 
-        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Class");
-        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Sequence");
+        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classDiagramLabel"));
+        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("sequenceDiagramLabel"));
         typeOfDiagramGroup.add(classDiagramCheckboxItem);
         typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
 
@@ -240,48 +277,22 @@ public class UI implements ExceptionListener {
         return menu;
     }
 
-    public void settingStateForAllOptions(){
-
-        classDiagramCheckboxItem.setState(true);
-        verticalDirectionCheckboxItem.setState(true);
-        classDiagramCheckboxItem.setEnabled(false);
-        sequenceDiagramCheckboxItem.setEnabled(false);
-        classDiagramCheckboxItem.setState(true);
-        reflectionCheckboxItem.setState(true);
-        showAggregation.setState(true);
-        showAssociation.setState(true);
-        showComposition.setState(true);
-        showLollipops.setState(true);
-
-
-
-
-
-    }
-
-    public JButton getCancelLoading() {
-        return cancelLoading;
-    }
-
-    public void setCancelLoading(JButton cancelLoading) {
-        this.cancelLoading = cancelLoading;
-    }
-
     public JFrame initUI() {
-        mainFrame = new JFrame("Java2UML");
+        settingLocaleLabels();
+        mainFrame = new JFrame(localeLabels.getString("titleLabel"));
         panelForButtons = new JPanel();
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         panelForClearAndCopyToClipboard = new JPanel();
         panelForProgressBarAndCancel = new JPanel();
-        browse = new JButton("Select files");
-        saveDiagram = new JButton("Save image as");
-        generatePlantUML = new JButton("Generate");
-        cancelLoading = new JButton("Cancel");
+        browse = new JButton(localeLabels.getString("chooseDirLabel"));
+        saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
+        generatePlantUML = new JButton(localeLabels.getString("generateLabel"));
+        cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
-        clearCode = new JButton("Clear");
+        clearCode = new JButton(localeLabels.getString("clearLabel"));
 
-        copyToClipboard = new JButton("Copy to clipboard");
+        copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
 
         generatedCode = new JTextArea();
         path = new JTextField();
@@ -322,9 +333,8 @@ public class UI implements ExceptionListener {
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-        tabs.addTab("PlantUML code", panelForGeneratedCode);
-        tabs.addTab("Diagram", panelForDiagram);
-        path.setToolTipText("Enter path here");
+        tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
+        tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
 
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -339,10 +349,9 @@ public class UI implements ExceptionListener {
 
         panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
 
-
-        panelForProgressBarAndCancel.add(generatePlantUML);
-        panelForProgressBarAndCancel.add(progressBar);
         panelForProgressBarAndCancel.add(cancelLoading);
+        panelForProgressBarAndCancel.add(progressBar);
+        panelForProgressBarAndCancel.add(generatePlantUML);
 
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
