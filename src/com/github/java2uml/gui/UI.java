@@ -21,13 +21,14 @@ public class UI implements ExceptionListener {
     private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode;
     private JTabbedPane tabs;
     private JMenuBar menu;
-    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, saveItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-    showComposition, showAggregation;
+    showComposition, showAggregation, russianLangItem, englishLangItem;
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
+    ButtonGroup languageGroup;
 
     private static Help helpWindow;
     private JTextArea generatedCode;
@@ -168,8 +169,47 @@ public class UI implements ExceptionListener {
         this.cancelLoading = cancelLoading;
     }
 
-    public void settingLocaleLabels(){
-        localeLabels = ResourceBundle.getBundle("GUILabels", new Locale("ru"));
+    public void settingLocaleLabels(ResourceBundle localeLabels){
+
+        file.setText(localeLabels.getString("fileMenuLabel"));
+        help.setText(localeLabels.getString("helpMenuLabel"));
+        typeOfDiagramMenu.setText(localeLabels.getString("typeOfDiagramMenuLabel"));
+        languageMenu.setText(localeLabels.getString("languageMenu"));
+        options.setText(localeLabels.getString("optionsMenuLabel"));
+        direction.setText(localeLabels.getString("directionWillBeMenuLabel"));
+        diagramGeneratingMethods.setText(localeLabels.getString("iWantToParseMenuLabel"));
+        whichRelationsAreShown.setText(localeLabels.getString("relationsMenuLabel"));
+        englishLangItem.setText(localeLabels.getString("englishLanguage"));
+        russianLangItem.setText(localeLabels.getString("russianLanguage"));
+
+        showAssociation.setText(localeLabels.getString("associationMenuLabel"));
+        showAggregation.setText("aggregationMenuLabel");
+        showComposition.setText("compositionMenuLabel");
+        showHeader.setText(localeLabels.getString("chooseHeaderMenuLabel"));
+        showLollipops.setText(localeLabels.getString("showLollipopMenuLabel"));
+        helpItem.setText(localeLabels.getString("helpMenuLabel"));
+        exitItem.setText(localeLabels.getString("exitMenuLabel"));
+        aboutItem.setText(localeLabels.getString("aboutMenuLabel"));
+        generateItem.setText(localeLabels.getString("generateLabel"));
+        chooseItem.setText(localeLabels.getString("chooseDirLabel"));
+        reflectionCheckboxItem.setText(localeLabels.getString("classFilesMenuLabel"));
+        parsingCheckboxItem.setText(localeLabels.getString("javaFilesMenuLabel"));
+        horizontalDirectionCheckboxItem.setText(localeLabels.getString("directionHorizontalLabel"));
+        verticalDirectionCheckboxItem.setText(localeLabels.getString("directionVerticalLabel"));
+        classDiagramCheckboxItem.setText(localeLabels.getString("classDiagramLabel"));
+        sequenceDiagramCheckboxItem.setText(localeLabels.getString("sequenceDiagramLabel"));
+
+        browse.setText(localeLabels.getString("chooseDirLabel"));
+        saveDiagram.setText(localeLabels.getString("saveMenuLabel"));
+        generatePlantUML.setText(localeLabels.getString("generateLabel"));
+        cancelLoading.setText(localeLabels.getString("cancelLabel"));
+        clearCode.setText(localeLabels.getString("clearLabel"));
+
+        copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
+
+        tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
+        tabs.setTitleAt(1,localeLabels.getString("diagramTabLabel"));
+
 
     }
 
@@ -179,11 +219,14 @@ public class UI implements ExceptionListener {
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
         typeOfDiagramMenu = new JMenu(localeLabels.getString("typeOfDiagramMenuLabel"));
-
+        languageMenu = new JMenu(localeLabels.getString("languageMenu"));
         options = new JMenu(localeLabels.getString("optionsMenuLabel"));
         direction = new JMenu(localeLabels.getString("directionWillBeMenuLabel"));
         diagramGeneratingMethods = new JMenu(localeLabels.getString("iWantToParseMenuLabel"));
         whichRelationsAreShown = new JMenu(localeLabels.getString("relationsMenuLabel"));
+
+        englishLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("englishLanguage"));
+        russianLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("russianLanguage"));
 
         showAssociation = new StayOpenCheckBoxMenuItem(localeLabels.getString("associationMenuLabel"));
         showAssociation.setState(true);
@@ -203,12 +246,15 @@ public class UI implements ExceptionListener {
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
+        languageGroup = new ButtonGroup();
 
         reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
         parsingMethod.add(reflectionCheckboxItem);
         parsingMethod.add(parsingCheckboxItem);
 
+        languageGroup.add(englishLangItem);
+        languageGroup.add(russianLangItem);
 
         horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionHorizontalLabel"));
 
@@ -238,6 +284,10 @@ public class UI implements ExceptionListener {
         whichRelationsAreShown.add(showAssociation);
         whichRelationsAreShown.add(showComposition);
 
+        languageMenu.add(englishLangItem);
+        languageMenu.add(russianLangItem);
+
+        options.add(languageMenu);
         options.add(direction);
         options.add(diagramGeneratingMethods);
         options.add(whichRelationsAreShown);
@@ -257,6 +307,20 @@ public class UI implements ExceptionListener {
         menu.add(file);
         menu.add(options);
         menu.add(help);
+
+        englishLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("")));
+            }
+        });
+
+        russianLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("ru")));
+            }
+        });
 
         helpItem.addActionListener(new ActionListener() {
             @Override
@@ -278,7 +342,7 @@ public class UI implements ExceptionListener {
     }
 
     public JFrame initUI() {
-        settingLocaleLabels();
+        localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
         panelForButtons = new JPanel();
         panelForGeneratedCode = new JPanel();
