@@ -21,3 +21,6 @@ src/com/.idea/uiDesigner.xml
 src/com/.idea/artifacts/src_jar.xml
 src/com/out/artifacts/src_jar/src.jar
 src/META-INF/MANIFEST.MF
+
+.idea
+!.idea/J2UML.iml
