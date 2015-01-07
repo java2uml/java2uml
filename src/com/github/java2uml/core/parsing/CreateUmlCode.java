@@ -68,7 +68,7 @@ public class CreateUmlCode {
 
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
-                
+
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
                     System.out.println(folder[i].toString());
                     level++;
@@ -192,7 +192,28 @@ public class CreateUmlCode {
 
     public static String endAfterLastPoint(String string, String separator){
         String[] str = string.split(separator);
+        if(inArray(str, "src"))
+            return str[getIndexProjectName(str, "src")];
         return str.length > 1 ? str[str.length-1] : string;
+    }
+    
+    private static boolean inArray(String[] arr, String str){
+        for (int i = 0; i < arr.length; i++){
+            if(str.equals(arr[i]))
+                return true;
+            
+        }
+        return false;
+    }
+    
+    private static int getIndexProjectName(String[] arr, String str){
+        for (int i = 0; i < arr.length; i++){
+            if(str.equals(arr[i]))
+                return i - 1;
+
+        }
+        return 0;
+        
     }
 
     private String getNamePackage(String path){

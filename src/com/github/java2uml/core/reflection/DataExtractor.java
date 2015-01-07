@@ -117,7 +117,6 @@ public class DataExtractor {
                 res.append(" {\n"); 
             }
             
-            
             // буфер статических членов класса
             StringBuilder staticMembers = new StringBuilder();
             
@@ -477,7 +476,7 @@ public class DataExtractor {
             			
             			// мощность отношений
             			String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
-            			String cmpMult = "\"0..* " + "(" + matches + ")\" " + params[3].trim() + "\n";
+            			String cmpMult = "\"0..*_" + "(" + matches + ")\" " + params[3].trim() + "\n";
             			
             			link += (linkType.equals("o--")) ? agrMult : cmpMult;   
             	        genLinks.add(link);
@@ -561,9 +560,17 @@ public class DataExtractor {
         
         // вывод связей
         for (String link : links) {
+        	if (link.contains("$")) {
+        		// связи с $ пока игнорируем
+        		continue;
+        	}
         	source.append(link);
         }
         for (String link : throwLinks) {
+        	if (link.contains("$")) {
+        		// связи с $ пока игнорируем
+        		continue;
+        	}
         	source.append(link);
         }
                 
