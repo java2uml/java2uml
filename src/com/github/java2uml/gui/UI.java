@@ -12,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
@@ -19,13 +21,39 @@ public class UI implements ExceptionListener {
     private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode;
     private JTabbedPane tabs;
     private JMenuBar menu;
-    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, saveItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-    showComposition, showAggregation;
+    showComposition, showAggregation, russianLangItem, englishLangItem;
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
+    ButtonGroup languageGroup;
+
+    private static Help helpWindow;
+    private JTextArea generatedCode;
+    private JProgressBar progressBar;
+    private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
+    private JFileChooser fileChooser;
+    private File chosenDirectory;
+    private BufferedImage diagram;
+    private JLabel labelForDiagram;
+
+    ButtonGroup parsingMethod;
+
+    private JScrollPane scrollPane, scrollPaneForDiagram;
+
+    private JTextField path;
+
+    ResourceBundle localeLabels;
+
+    public static final String VERTICAL_DIRECTION = "Vertical";
+    public static final String HORIZONTAL_DIRECTION = "Horizontal";
+    public static final String CLASS_DIAGRAM = "Class Dia";
+    public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
+
+
+
 
     public JProgressBar getProgressBar() {
         return progressBar;
@@ -35,35 +63,11 @@ public class UI implements ExceptionListener {
         this.progressBar = progressBar;
     }
 
-    ButtonGroup parsingMethod;
 
-    private JScrollPane scrollPane, scrollPaneForDiagram;
-
-    private JTextField path;
 
     public JTextArea getGeneratedCode() {
         return generatedCode;
     }
-
-
-
-    private JTextArea generatedCode;
-    private JProgressBar progressBar;
-    private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
-    private JFileChooser fileChooser;
-    private File chosenDirectory;
-    private BufferedImage diagram;
-    private JLabel labelForDiagram;
-
-    public static final String VERTICAL_DIRECTION = "Vertical";
-    public static final String HORIZONTAL_DIRECTION = "Horizontal";
-    public static final String CLASS_DIAGRAM = "Class Dia";
-    public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
-
-
-
-    private static Help helpWindow;
-
     public JTextField getPath() {
         return path;
     }
@@ -136,109 +140,7 @@ public class UI implements ExceptionListener {
         this.generateItem = generateItem;
     }
 
-    private JMenuBar initMenu(){
-        menu = new JMenuBar();
 
-        file = new JMenu("File");
-        help = new JMenu("Help");
-        typeOfDiagramMenu = new JMenu("Type will be...");
-
-        options = new JMenu("Options");
-        direction = new JMenu("Direction will be...");
-        diagramGeneratingMethods = new JMenu("I want to parse...");
-        whichRelationsAreShown = new JMenu("Relations to be shown...");
-
-        showAssociation = new StayOpenCheckBoxMenuItem("Association");
-        showAssociation.setState(true);
-        showAggregation = new StayOpenCheckBoxMenuItem("Aggregation");
-        showComposition = new StayOpenCheckBoxMenuItem("Composition");
-
-        showHeader = new StayOpenCheckBoxMenuItem("Show header");
-        showLollipops = new StayOpenCheckBoxMenuItem("Show lollipop interfaces");
-
-        helpItem = new JMenuItem("Help");
-        exitItem = new JMenuItem("Exit");
-
-        aboutItem = new JMenuItem("About");
-        generateItem = new JMenuItem("Generate");
-        chooseItem = new JMenuItem("Choose dir");
-
-        parsingMethod = new ButtonGroup();
-        directionGroup = new ButtonGroup();
-        typeOfDiagramGroup = new ButtonGroup();
-
-        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(".class files");
-        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(".java files");
-        parsingMethod.add(reflectionCheckboxItem);
-        parsingMethod.add(parsingCheckboxItem);
-
-
-        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Horizontal");
-
-        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem("Vertical");
-
-        directionGroup.add(horizontalDirectionCheckboxItem);
-        directionGroup.add(verticalDirectionCheckboxItem);
-
-        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Class");
-        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem("Sequence");
-        typeOfDiagramGroup.add(classDiagramCheckboxItem);
-        typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
-
-        chooseItem.addActionListener(new ChooseFileActionListener());
-        exitItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        file.add(chooseItem);
-        file.add(generateItem);
-
-        file.add(exitItem);
-
-        whichRelationsAreShown.add(showAggregation);
-        whichRelationsAreShown.add(showAssociation);
-        whichRelationsAreShown.add(showComposition);
-
-        options.add(direction);
-        options.add(diagramGeneratingMethods);
-        options.add(whichRelationsAreShown);
-        diagramGeneratingMethods.add(parsingCheckboxItem);
-        diagramGeneratingMethods.add(reflectionCheckboxItem);
-        direction.add(horizontalDirectionCheckboxItem);
-        direction.add(verticalDirectionCheckboxItem);
-        options.add(typeOfDiagramMenu);
-        typeOfDiagramMenu.add(classDiagramCheckboxItem);
-        typeOfDiagramMenu.add(sequenceDiagramCheckboxItem);
-        options.add(showHeader);
-        options.add(showLollipops);
-
-        help.add(helpItem);
-        help.add(aboutItem);
-
-        menu.add(file);
-        menu.add(options);
-        menu.add(help);
-
-        helpItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
-                if (!Help.helpIsNull()) {
-                    if (!helpWindow.isVisible()) {
-                        helpWindow.setVisible(true);
-                    } else {
-                        helpWindow.toFront();
-                        helpWindow.repaint();
-                    }
-                } else helpWindow = Help.getInstance();
-            }
-        });
-
-
-        return menu;
-    }
 
     public void settingStateForAllOptions(){
 
@@ -267,21 +169,194 @@ public class UI implements ExceptionListener {
         this.cancelLoading = cancelLoading;
     }
 
+    public void settingLocaleLabels(ResourceBundle localeLabels){
+
+        file.setText(localeLabels.getString("fileMenuLabel"));
+        help.setText(localeLabels.getString("helpMenuLabel"));
+        typeOfDiagramMenu.setText(localeLabels.getString("typeOfDiagramMenuLabel"));
+        languageMenu.setText(localeLabels.getString("languageMenu"));
+        options.setText(localeLabels.getString("optionsMenuLabel"));
+        direction.setText(localeLabels.getString("directionWillBeMenuLabel"));
+        diagramGeneratingMethods.setText(localeLabels.getString("iWantToParseMenuLabel"));
+        whichRelationsAreShown.setText(localeLabels.getString("relationsMenuLabel"));
+        englishLangItem.setText(localeLabels.getString("englishLanguage"));
+        russianLangItem.setText(localeLabels.getString("russianLanguage"));
+
+        showAssociation.setText(localeLabels.getString("associationMenuLabel"));
+        showAggregation.setText(localeLabels.getString("aggregationMenuLabel"));
+        showComposition.setText(localeLabels.getString("compositionMenuLabel"));
+        showHeader.setText(localeLabels.getString("chooseHeaderMenuLabel"));
+        showLollipops.setText(localeLabels.getString("showLollipopMenuLabel"));
+        helpItem.setText(localeLabels.getString("helpMenuLabel"));
+        exitItem.setText(localeLabels.getString("exitMenuLabel"));
+        aboutItem.setText(localeLabels.getString("aboutMenuLabel"));
+        generateItem.setText(localeLabels.getString("generateLabel"));
+        chooseItem.setText(localeLabels.getString("chooseDirLabel"));
+        reflectionCheckboxItem.setText(localeLabels.getString("classFilesMenuLabel"));
+        parsingCheckboxItem.setText(localeLabels.getString("javaFilesMenuLabel"));
+        horizontalDirectionCheckboxItem.setText(localeLabels.getString("directionHorizontalLabel"));
+        verticalDirectionCheckboxItem.setText(localeLabels.getString("directionVerticalLabel"));
+        classDiagramCheckboxItem.setText(localeLabels.getString("classDiagramLabel"));
+        sequenceDiagramCheckboxItem.setText(localeLabels.getString("sequenceDiagramLabel"));
+
+        browse.setText(localeLabels.getString("chooseDirLabel"));
+        saveDiagram.setText(localeLabels.getString("saveMenuLabel"));
+        generatePlantUML.setText(localeLabels.getString("generateLabel"));
+        cancelLoading.setText(localeLabels.getString("cancelLabel"));
+        clearCode.setText(localeLabels.getString("clearLabel"));
+
+        copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
+
+        tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
+        tabs.setTitleAt(1,localeLabels.getString("diagramTabLabel"));
+
+
+    }
+
+    private JMenuBar initMenu(){
+        menu = new JMenuBar();
+
+        file = new JMenu(localeLabels.getString("fileMenuLabel"));
+        help = new JMenu(localeLabels.getString("helpMenuLabel"));
+        typeOfDiagramMenu = new JMenu(localeLabels.getString("typeOfDiagramMenuLabel"));
+        languageMenu = new JMenu(localeLabels.getString("languageMenu"));
+        options = new JMenu(localeLabels.getString("optionsMenuLabel"));
+        direction = new JMenu(localeLabels.getString("directionWillBeMenuLabel"));
+        diagramGeneratingMethods = new JMenu(localeLabels.getString("iWantToParseMenuLabel"));
+        whichRelationsAreShown = new JMenu(localeLabels.getString("relationsMenuLabel"));
+
+        englishLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("englishLanguage"));
+        russianLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("russianLanguage"));
+
+        showAssociation = new StayOpenCheckBoxMenuItem(localeLabels.getString("associationMenuLabel"));
+        showAssociation.setState(true);
+        showAggregation = new StayOpenCheckBoxMenuItem(localeLabels.getString("aggregationMenuLabel"));
+        showComposition = new StayOpenCheckBoxMenuItem(localeLabels.getString("compositionMenuLabel"));
+
+        showHeader = new StayOpenCheckBoxMenuItem(localeLabels.getString("chooseHeaderMenuLabel"));
+        showLollipops = new StayOpenCheckBoxMenuItem(localeLabels.getString("showLollipopMenuLabel"));
+
+        helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
+        exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
+
+        aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
+        generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
+        chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
+
+        parsingMethod = new ButtonGroup();
+        directionGroup = new ButtonGroup();
+        typeOfDiagramGroup = new ButtonGroup();
+        languageGroup = new ButtonGroup();
+
+        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
+        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
+        parsingMethod.add(reflectionCheckboxItem);
+        parsingMethod.add(parsingCheckboxItem);
+
+        languageGroup.add(englishLangItem);
+        languageGroup.add(russianLangItem);
+
+        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionHorizontalLabel"));
+
+        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionVerticalLabel"));
+
+        directionGroup.add(horizontalDirectionCheckboxItem);
+        directionGroup.add(verticalDirectionCheckboxItem);
+
+        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classDiagramLabel"));
+        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("sequenceDiagramLabel"));
+        typeOfDiagramGroup.add(classDiagramCheckboxItem);
+        typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
+
+        chooseItem.addActionListener(new ChooseFileActionListener());
+        exitItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        file.add(chooseItem);
+        file.add(generateItem);
+
+        file.add(exitItem);
+
+        whichRelationsAreShown.add(showAggregation);
+        whichRelationsAreShown.add(showAssociation);
+        whichRelationsAreShown.add(showComposition);
+
+        languageMenu.add(englishLangItem);
+        languageMenu.add(russianLangItem);
+
+        options.add(languageMenu);
+        options.add(direction);
+        options.add(diagramGeneratingMethods);
+        options.add(whichRelationsAreShown);
+        diagramGeneratingMethods.add(parsingCheckboxItem);
+        diagramGeneratingMethods.add(reflectionCheckboxItem);
+        direction.add(horizontalDirectionCheckboxItem);
+        direction.add(verticalDirectionCheckboxItem);
+        options.add(typeOfDiagramMenu);
+        typeOfDiagramMenu.add(classDiagramCheckboxItem);
+        typeOfDiagramMenu.add(sequenceDiagramCheckboxItem);
+        options.add(showHeader);
+        options.add(showLollipops);
+
+        help.add(helpItem);
+        help.add(aboutItem);
+
+        menu.add(file);
+        menu.add(options);
+        menu.add(help);
+
+        englishLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("")));
+            }
+        });
+
+        russianLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("ru")));
+            }
+        });
+
+        helpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                if (!Help.helpIsNull()) {
+                    if (!helpWindow.isVisible()) {
+                        helpWindow.setVisible(true);
+                    } else {
+                        helpWindow.toFront();
+                        helpWindow.repaint();
+                    }
+                } else helpWindow = Help.getInstance();
+            }
+        });
+
+
+        return menu;
+    }
+
     public JFrame initUI() {
-        mainFrame = new JFrame("Java2UML");
+        localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+        mainFrame = new JFrame(localeLabels.getString("titleLabel"));
         panelForButtons = new JPanel();
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         panelForClearAndCopyToClipboard = new JPanel();
         panelForProgressBarAndCancel = new JPanel();
-        browse = new JButton("Select files");
-        saveDiagram = new JButton("Save image as");
-        generatePlantUML = new JButton("Generate");
-        cancelLoading = new JButton("Cancel");
+        browse = new JButton(localeLabels.getString("chooseDirLabel"));
+        saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
+        generatePlantUML = new JButton(localeLabels.getString("generateLabel"));
+        cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
-        clearCode = new JButton("Clear");
+        clearCode = new JButton(localeLabels.getString("clearLabel"));
 
-        copyToClipboard = new JButton("Copy to clipboard");
+        copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
 
         generatedCode = new JTextArea();
         path = new JTextField();
@@ -322,9 +397,8 @@ public class UI implements ExceptionListener {
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-        tabs.addTab("PlantUML code", panelForGeneratedCode);
-        tabs.addTab("Diagram", panelForDiagram);
-        path.setToolTipText("Enter path here");
+        tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
+        tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
 
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -339,10 +413,9 @@ public class UI implements ExceptionListener {
 
         panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
 
-
-        panelForProgressBarAndCancel.add(generatePlantUML);
-        panelForProgressBarAndCancel.add(progressBar);
         panelForProgressBarAndCancel.add(cancelLoading);
+        panelForProgressBarAndCancel.add(progressBar);
+        panelForProgressBarAndCancel.add(generatePlantUML);
 
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));

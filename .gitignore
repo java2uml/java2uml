@@ -1,5 +1,6 @@
 .gitignore
 /.idea
+!/.idea/J2UML.iml
 /out
 master_r1_affect205/src/com/github/java2uml/Main.java~44e141a5e37cbd256abc2da66af500f877e67274
 src/src.iml
@@ -20,3 +21,6 @@ src/com/.idea/uiDesigner.xml
 src/com/.idea/artifacts/src_jar.xml
 src/com/out/artifacts/src_jar/src.jar
 src/META-INF/MANIFEST.MF
+
+.idea
+!.idea/J2UML.iml

@@ -122,36 +122,42 @@ public class DataExtractor {
             
             // получение информации о полях
             Field[] fields = clazz.getDeclaredFields();
-            res.append(".. Fields  ..\n");
-            for (Field field : fields) {
-            	if (field.isSynthetic()) {
-                	// выводим только объявленные структуры
-                	continue;
+            if(fields.length > 0) {
+            	res.append(".. Fields  ..\n");
+                for (Field field : fields) {
+                	if (field.isSynthetic()) {
+                    	// выводим только объявленные структуры
+                    	continue;
+                    }
+                	if (Modifier.isStatic(field.getModifiers())) {
+                		// статические члены в конец объявления
+                		staticMembers.append(getMemberModifiers(field.getModifiers()));
+                		staticMembers.append(field.getName());
+                		staticMembers.append(" : ");
+                		staticMembers.append(field.getType().getSimpleName());
+                		staticMembers.append("\n");
+                		continue;
+                	}
+                	res.append(getMemberModifiers(field.getModifiers()));
+                	res.append(field.getName());
+                	res.append(" : ");
+                	res.append(field.getType().getSimpleName());
+                	res.append("\n");
                 }
-            	if (Modifier.isStatic(field.getModifiers())) {
-            		// статические члены в конец объявления
-            		staticMembers.append(getMemberModifiers(field.getModifiers()));
-            		staticMembers.append(field.getName());
-            		staticMembers.append(" : ");
-            		staticMembers.append(field.getType().getSimpleName());
-            		staticMembers.append("\n");
-            		continue;
-            	}
-            	res.append(getMemberModifiers(field.getModifiers()));
-            	res.append(field.getName());
-            	res.append(" : ");
-            	res.append(field.getType().getSimpleName());
-            	res.append("\n");
             }
-
+            
             // получение информации методах
             Method[] methods = clazz.getDeclaredMethods();
-            res.append(".. Methods ..\n");
+            final boolean showMethodArgs = Options.isShowMethodArgs();
+            if (methods.length > 0) {
+            	res.append(".. Methods ..\n");
+            }
             for (Method method : methods) {
             	if (method.isSynthetic()) {
             		// выводим только объявленные структуры
             		continue;
             	}
+            	
             	if (Modifier.isStatic(method.getModifiers())) {
             		// статические члены в конец объявления
             		staticMembers.append(getMemberModifiers(method.getModifiers()));
@@ -169,7 +175,21 @@ public class DataExtractor {
             	}
             	res.append(getMemberModifiers(method.getModifiers()));
                 res.append(method.getName());
-                res.append("()");
+                res.append("(");
+                // аргументы функций
+                String args = "";
+                if (showMethodArgs) {
+                	for (Class arg : method.getParameterTypes()) {
+                		if (!arg.getSimpleName().isEmpty()) {
+                			args += arg.getSimpleName() + ", "; 
+                		}
+                	}
+                	if (args.contains(",")) {
+                		args = args.substring(0, args.lastIndexOf(","));
+                	}
+                }
+                res.append(args);
+                res.append(")");
                 res.append(" : ");
                 res.append(method.getReturnType().getSimpleName());
                 res.append("\n");
@@ -190,8 +210,38 @@ public class DataExtractor {
             }
             
             // инфорация о статике
-            res.append(".. Static ..\n");
-            res.append(staticMembers.toString());
+            if (!staticMembers.toString().isEmpty()) {
+            	res.append(".. Static ..\n");
+                res.append(staticMembers.toString());
+            }
+            
+            // информация о внутренних структурах
+            if (!Options.isShowClassInterior()) {
+            	// множество структур, объявленных внутри класса
+                Set<Class> declaredClasses = new HashSet<Class>();
+                declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
+                
+            	if (declaredClasses.size() > 0) {
+            		res.append(".. Interiors ..\n");	
+                    for (Class declared : declaredClasses) {
+                    	String modStr = getMemberModifiers(declared.getModifiers());
+                    	String desc = "class ";
+                    	if (declared.isInterface()) {
+                    		desc = "interface ";
+                    	}
+                    	if (declared.isAnnotation()) {
+                    		desc = "annotation ";
+                    	}
+                    	if (declared.isEnum()) {
+                    		desc = "enum ";
+                    	}
+                    	res.append(modStr);
+                    	res.append(desc);
+                    	res.append(declared.getSimpleName());
+                    	res.append("\n");
+                    }
+                }
+            }
             
             // закрываем класс
             res.append("}\n");
@@ -425,18 +475,20 @@ public class DataExtractor {
             }
             
             // получение внутренних классов, объявленных внутри clazz
-            for ( Class declaredClass : declaredClasses ) {
-            	if (classes.contains(declaredClass)) {
-            		// связь через композицию
-            		if (Options.isShowComposition()) {
-            			StringBuilder link = new StringBuilder();
-                    	link.append(className);
-                    	link.append(" *-- ");
-                    	link.append(declaredClass.getCanonicalName());
-                    	link.append("\n");
-                    	links.add(link.toString());
-            		}
-            	}
+            if (Options.isShowClassInterior()) {
+            	for ( Class declaredClass : declaredClasses ) {
+                	if (classes.contains(declaredClass)) {
+                		// связь через ассоциацию
+                		if (Options.isShowAssociation()) {
+                			StringBuilder link = new StringBuilder();
+                        	link.append(className);
+                        	link.append(" +--> ");
+                        	link.append(declaredClass.getCanonicalName());
+                        	link.append("\n");
+                        	links.add(link.toString());
+                		}
+                	}
+                }
             }
         }
         
@@ -476,7 +528,7 @@ public class DataExtractor {
             			
             			// мощность отношений
             			String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
-            			String cmpMult = "\"0..*_" + "(" + matches + ")\" " + params[3].trim() + "\n";
+            			String cmpMult = "\"0..*(" + matches + ")\" " + params[3].trim() + "\n";
             			
             			link += (linkType.equals("o--")) ? agrMult : cmpMult;   
             	        genLinks.add(link);

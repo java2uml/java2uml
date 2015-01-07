@@ -18,6 +18,12 @@ public final class Options {
     private static boolean showImplementation = true;
 
     private static boolean isVertical = true;
+    
+    // отображение внутренних структур класса
+    private static boolean showClassInterior = false;
+    
+    // отображение аргументов функций
+    private static boolean showMethodArgs = true;
 
     private Options() {
     }
@@ -36,6 +42,9 @@ public final class Options {
         showImplementation = true;
 
         isVertical = true;
+
+        showClassInterior	= false;
+        showMethodArgs 		= true;
     }
 
     public static String getPath() {
@@ -132,5 +141,21 @@ public final class Options {
 
     public static void setHorizontal() {
         isVertical = false;
+    }
+
+    public static boolean isShowClassInterior() {
+        return showClassInterior;
+    }
+
+    public static void setShowClassInterior(boolean showClassInterior) {
+        Options.showClassInterior = showClassInterior;
+    }
+
+    public static boolean isShowMethodArgs() {
+        return showMethodArgs;
+    }
+
+    public static void setShowMethodArgs(boolean showMethodArgs) {
+        Options.showMethodArgs = showMethodArgs;
     }
 }
