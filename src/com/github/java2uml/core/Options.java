@@ -1,7 +1,4 @@
 package com.github.java2uml.core;
-
-import com.github.java2uml.core.Options;
-
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
@@ -14,17 +11,40 @@ public final class Options {
 
     private static boolean isClassDiagram = true;
 
-    private static boolean showComposition 	= true;
-    private static boolean showAggregation 	= true;
-    private static boolean showAssociation 	= true;
-    private static boolean showLollipop 		= true;
-    private static boolean showImplementation 	= true;
+    private static boolean showComposition = true;
+    private static boolean showAggregation = true;
+    private static boolean showAssociation = true;
+    private static boolean showLollipop = true;
+    private static boolean showImplementation = true;
 
     private static boolean isVertical = true;
     
-    private static boolean showMethodArgs = false;
+    // отображение внутренних структур класса
+    private static boolean showClassInterior = false;
+    
+    // отображение аргументов функций
+    private static boolean showMethodArgs = true;
 
     private Options() {
+    }
+
+    public static void init() {
+        path = null;
+        outputFile = "classes.plantuml";
+        header = null;
+
+        isClassDiagram = true;
+
+        showComposition = true;
+        showAggregation = true;
+        showAssociation = true;
+        showLollipop = true;
+        showImplementation = true;
+
+        isVertical = true;
+        
+        showClassInterior	= false;
+        showMethodArgs 		= true;
     }
 
     public static String getPath() {
@@ -123,11 +143,19 @@ public final class Options {
         isVertical = false;
     }
     
-    public static boolean getShowMethodArgs() {
-    	return showMethodArgs;
+    public static boolean isShowClassInterior() {
+        return showClassInterior;
     }
-    
+
+    public static void setShowClassInterior(boolean showClassInterior) {
+        Options.showClassInterior = showClassInterior;
+    }
+
+    public static boolean isShowMethodArgs() {
+        return showMethodArgs;
+    }
+
     public static void setShowMethodArgs(boolean showMethodArgs) {
-    	Options.showMethodArgs = showMethodArgs;
+        Options.showMethodArgs = showMethodArgs;
     }
 }
