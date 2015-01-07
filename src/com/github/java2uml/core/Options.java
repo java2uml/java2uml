@@ -1,4 +1,7 @@
 package com.github.java2uml.core;
+
+import com.github.java2uml.core.Options;
+
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
