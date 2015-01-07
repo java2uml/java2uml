@@ -19,6 +19,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +49,8 @@ public class DataExtractor {
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
+        source.append("skinparam headerFontSize 50\n");
+        source.append("skinparam headerFontStyle bold\n");
         //source.append("' Split into 2 pages\n");
         //source.append("page 2x1\n");
         //source.append("skinparam backgroundColor Snow\n");
@@ -65,6 +69,15 @@ public class DataExtractor {
         //source.append("skinparam classArrowFontSize 24\n");
         //source.append("skinparam classArrowFontStyle bold\n");
         source.append("scale 1.0\n");
+        
+        // заголовок диаграммы
+        String header = Options.getHeader();
+        if(header != null) {
+        	source.append("center header\n");
+        	source.append(header);
+        	source.append("\n");
+        	source.append("endheader\n");
+        }
         
         // список связей между классами
         List<String> links = new ArrayList<String>();
@@ -88,6 +101,20 @@ public class DataExtractor {
         	// анонимные классы и классы, доюавленные компилятором, пока игнорируем
         	if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
         		continue;
+        	}
+        	
+        	// проверка, является ли данный класс внутренней структурой
+        	if (!Options.isShowClassInterior()) {
+        		boolean interior = false;
+        		for(Class cls : classes) {
+        			if (isDeclared(cls, clazz)) {
+        				interior = true;
+        				break;
+        			}
+        		}
+        		if (interior) {
+        			continue;
+        		}
         	}
         	
         	// получение информации о классе
@@ -124,6 +151,14 @@ public class DataExtractor {
             Field[] fields = clazz.getDeclaredFields();
             if(fields.length > 0) {
             	res.append(".. Fields  ..\n");
+            	// сортировка полей по афлавиту
+            	Arrays.sort(fields, new Comparator<Field>() {
+            		@Override
+            		public int compare(Field fld1, Field fld2) {
+            			return fld1.getName().compareTo(fld2.getName());
+            		}
+            	});
+            	
                 for (Field field : fields) {
                 	if (field.isSynthetic()) {
                     	// выводим только объявленные структуры
@@ -151,6 +186,13 @@ public class DataExtractor {
             final boolean showMethodArgs = Options.isShowMethodArgs();
             if (methods.length > 0) {
             	res.append(".. Methods ..\n");
+            	// сортировка методов по афлавиту
+            	Arrays.sort(methods, new Comparator<Method>() {
+            		@Override
+            		public int compare(Method m1, Method m2) {
+            			return m1.getName().compareTo(m2.getName());
+            		}
+            	});
             }
             for (Method method : methods) {
             	if (method.isSynthetic()) {
@@ -212,15 +254,32 @@ public class DataExtractor {
             // инфорация о статике
             if (!staticMembers.toString().isEmpty()) {
             	res.append(".. Static ..\n");
-                res.append(staticMembers.toString());
+            	String[] stat = staticMembers.toString().split("\n");
+            	// сортировка статики по афлавиту
+            	Arrays.sort(stat, new Comparator<String>() {
+            		@Override
+            		public int compare(String str1, String str2) {
+            			return str1.compareTo(str2);
+            		}
+            	});
+            	for (String str : stat) {
+            		res.append(str);
+            		res.append("\n");
+            	}
             }
             
             // информация о внутренних структурах
             if (!Options.isShowClassInterior()) {
-            	// множество структур, объявленных внутри класса
-                Set<Class> declaredClasses = new HashSet<Class>();
+            	// список структур, объявленных внутри класса
+                List<Class> declaredClasses = new ArrayList<Class>();
                 declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
-                
+                // сортировка структур по афлавиту
+            	Collections.sort(declaredClasses, new Comparator<Class>() {
+            		@Override
+            		public int compare(Class cls1, Class cls2) {
+            			return cls1.getSimpleName().compareTo(cls2.getSimpleName());
+            		}
+            	});
             	if (declaredClasses.size() > 0) {
             		res.append(".. Interiors ..\n");	
                     for (Class declared : declaredClasses) {
