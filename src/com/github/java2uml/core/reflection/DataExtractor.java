@@ -125,7 +125,15 @@ public class DataExtractor {
             StringBuilder res = new StringBuilder();
             res.append(getClassModifiers(classes, clazz));
             
+            // если есть наследуемый класс, укажем
+            Class superCls = clazz.getSuperclass();
+            if (superCls != null && classes.contains(superCls)) {
+            	res.append(String.format(" <? extends %s> ", superCls.getSimpleName()));
+            }
+            
             // реализуемые интерфейсы, не попавшие во входное множество
+            String classStyle	= getClassStyle(clazz);
+            String classImpl 	= "";
             if (Options.isShowLollipop()) {
             	StringBuilder outerInterfaces = new StringBuilder();
                 for (Class inter : clazz.getInterfaces()) {
@@ -136,13 +144,18 @@ public class DataExtractor {
                 	}
                 }
                 if (!outerInterfaces.toString().isEmpty()) {
-                	String impl = outerInterfaces.toString(); 
-                	res.append(" <<");
-                	res.append(impl.substring(0, impl.length()-2));
-                	res.append(">> ");
-                }
-                res.append(" {\n"); 
+                	classImpl = outerInterfaces.toString();
+                	classImpl = classImpl.substring(0, classImpl.lastIndexOf(",")); 
+                } 
             }
+            if (!classStyle.isEmpty() || !classImpl.isEmpty()) {
+            	// добавим стиль и внешние интерфейсы
+            	res.append(" <<");
+            	res.append(classStyle);
+            	res.append(classImpl);
+            	res.append(">> ");
+            }
+            res.append(" {\n");
             
             // буфер статических членов класса
             StringBuilder staticMembers = new StringBuilder();
@@ -995,11 +1008,23 @@ public class DataExtractor {
         if (clazz.isEnum()) {
         	modStr = "enum " + className + " ";
         }
-        if (className.toLowerCase().contains("exception")) {
-        	// исключения получают особый вид
-        	modStr = "class " + className + " << (E,yellow) >> ";
-        }
         return modStr;
+    }
+    
+    /**
+     * Добавление стиля в описание класса
+     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
+     * @param clazz
+     */
+    private static String getClassStyle(final Class clazz) {
+    	String style = "";
+    	if (clazz == null) {
+    		return "";
+    	}
+    	if (clazz.getSimpleName().toLowerCase().contains("exception")) {
+    		style = " (E,yellow) ";
+    	}
+    	return style;
     }
     
     /**
