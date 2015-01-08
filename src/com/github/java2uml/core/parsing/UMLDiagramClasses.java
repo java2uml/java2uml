@@ -165,12 +165,13 @@ public class UMLDiagramClasses {
         new VoidVisitorAdapter() {
             @Override
             public void visit(FieldDeclaration n, Object arg) {
-                if (n != null)
+                if (n != null && !Modifier.toString(n.getModifiers()).contains("static"))
                     typeFields.add(n.getType().toString());
             }
         }.visit(n, null);
 
         for (String item : typeFields) {
+            
             for (String cl : CreateUmlCode.classes) {
                 if ((item.equals(cl) || containsClass(item, cl))
                         && !nameWithPath(cl).equals(nameClass) 
@@ -370,7 +371,7 @@ public class UMLDiagramClasses {
                 if (n != null) {
                     CreateUmlCode.source.append("enum " + n.getName());
                     CreateUmlCode.source.append("{\n");
-                    if (n.getMembers() != null && n.getMembers().size() > 0) {
+                    if (n.getMembers() != null || n.getEntries() != null) {
 
                         // Вытягиваем константы
                         if (n.getEntries() != null) {
@@ -378,7 +379,7 @@ public class UMLDiagramClasses {
                                 CreateUmlCode.source.append(constant.getName() + "\n");
                         }
                         // Вытягиваем поля и методы
-                        if (n.getMembers().size() > 0) {
+                        if (n.getMembers() != null && n.getMembers().size() > 0) {
                             setEnumFields(n);
                             setEnumMethods(n);
                         }
