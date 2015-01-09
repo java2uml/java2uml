@@ -1,7 +1,8 @@
 package com.github.java2uml.core;
+
 /**
  * Вспомогательный класс для передачи параметров запуска.
- *
+ * <p/>
  * Created by Игорь Акимов on 28.12.2014.
  */
 public final class Options {
@@ -18,10 +19,10 @@ public final class Options {
     private static boolean showImplementation = true;
 
     private static boolean isVertical = true;
-    
+
     // отображение внутренних структур класса
     private static boolean showClassInterior = false;
-    
+
     // отображение аргументов функций
     private static boolean showMethodArgs = true;
 
@@ -43,8 +44,8 @@ public final class Options {
 
         isVertical = true;
 
-        showClassInterior	= false;
-        showMethodArgs 		= true;
+        showClassInterior = false;
+        showMethodArgs = true;
     }
 
     public static String getPath() {

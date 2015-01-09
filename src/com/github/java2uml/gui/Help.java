@@ -7,10 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -24,18 +21,18 @@ public class Help extends JFrame implements ActionListener {
     private URL helpURL;
     private static Help help;
 
-    public static boolean helpIsNull(){
+    public static boolean helpIsNull() {
         return help == null;
     }
 
-    public static Help getInstance(){
-        if (help == null){
+    public static Help getInstance() {
+        if (help == null) {
             help = new Help("Java2UML Help");
         }
         return help;
     }
 
-    private Help(String _title){
+    private Help(String _title) {
         super(_title);
 
         URL helpURL = getClass().getClassLoader().getResource("help.html");
@@ -52,7 +49,7 @@ public class Help extends JFrame implements ActionListener {
         editorPane.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         if (!e.getURL().toString().contains("graph") && !e.getURL().toString().contains("wikipedia") &&
                                 !e.getURL().toString().contains("plantuml")) {
@@ -87,13 +84,12 @@ public class Help extends JFrame implements ActionListener {
                 tempURL = editorPane.getPage();
                 editorPane.setPage(tempURL);
             }
-            if (strAction == "Close"){
+            if (strAction == "Close") {
                 processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             }
-        } catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-
 
 }

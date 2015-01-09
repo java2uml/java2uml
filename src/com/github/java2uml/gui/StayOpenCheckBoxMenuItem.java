@@ -1,18 +1,13 @@
 package com.github.java2uml.gui;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.MenuElement;
-import javax.swing.MenuSelectionManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.*;
 
 /**
  * Created by mac on 29.12.14.
  */
-public class StayOpenCheckBoxMenuItem extends JCheckBoxMenuItem{
+public class StayOpenCheckBoxMenuItem extends JCheckBoxMenuItem {
     private static MenuElement[] path;
 
     {

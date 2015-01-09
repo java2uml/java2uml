@@ -5,5 +5,6 @@ package com.github.java2uml.gui;
  */
 public interface ExceptionListener {
     public void handleExceptionAndShowDialog(Exception exception);
+
     public void handleExceptionAndDisplayItInCodeArea(Exception exception);
 }

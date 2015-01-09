@@ -1,7 +1,6 @@
 package com.github.java2uml.gui;
 
 import org.imgscalr.Scalr;
-import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -16,7 +15,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -30,7 +28,7 @@ public class UI implements ExceptionListener {
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, saveItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-    showComposition, showAggregation, russianLangItem, englishLangItem;
+            showComposition, showAggregation, russianLangItem, englishLangItem;
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
     ButtonGroup languageGroup;
@@ -59,8 +57,6 @@ public class UI implements ExceptionListener {
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
 
 
-
-
     public JProgressBar getProgressBar() {
         return progressBar;
     }
@@ -78,6 +74,7 @@ public class UI implements ExceptionListener {
     public JTextArea getGeneratedCode() {
         return generatedCode;
     }
+
     public JTextField getPath() {
         return path;
     }
@@ -90,11 +87,11 @@ public class UI implements ExceptionListener {
         static final UI UI_INSTANCE = new UI();
     }
 
-    private UI(){
+    private UI() {
 
     }
 
-    public static UI getInstance(){
+    public static UI getInstance() {
         return UIHolder.UI_INSTANCE;
     }
 
@@ -151,8 +148,7 @@ public class UI implements ExceptionListener {
     }
 
 
-
-    public void settingStateForAllOptions(){
+    public void settingStateForAllOptions() {
 
         classDiagramCheckboxItem.setState(true);
         verticalDirectionCheckboxItem.setState(true);
@@ -165,10 +161,6 @@ public class UI implements ExceptionListener {
         showComposition.setState(true);
         showLollipops.setState(true);
 
-
-
-
-
     }
 
     public JButton getCancelLoading() {
@@ -179,7 +171,7 @@ public class UI implements ExceptionListener {
         this.cancelLoading = cancelLoading;
     }
 
-    public void settingLocaleLabels(ResourceBundle localeLabels){
+    public void settingLocaleLabels(ResourceBundle localeLabels) {
         file.setText(localeLabels.getString("fileMenuLabel"));
         help.setText(localeLabels.getString("helpMenuLabel"));
         typeOfDiagramMenu.setText(localeLabels.getString("typeOfDiagramMenuLabel"));
@@ -217,12 +209,11 @@ public class UI implements ExceptionListener {
         copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
 
         tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
-        tabs.setTitleAt(1,localeLabels.getString("diagramTabLabel"));
-
+        tabs.setTitleAt(1, localeLabels.getString("diagramTabLabel"));
 
     }
 
-    private JMenuBar initMenu(){
+    private JMenuBar initMenu() {
         menu = new JMenuBar();
 
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
@@ -347,7 +338,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-
         return menu;
     }
 
@@ -383,7 +373,6 @@ public class UI implements ExceptionListener {
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
 
-
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
@@ -413,15 +402,13 @@ public class UI implements ExceptionListener {
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Clipboard clipboard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
-                clipboard.setContents (new StringSelection(getGeneratedCode().getText()), null);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
         });
 
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-
 
         tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
         tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
@@ -429,12 +416,9 @@ public class UI implements ExceptionListener {
         panelForDiagram.setLayout(new GridBagLayout());
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
-
         panelForPath.setLayout(new GridBagLayout());
-        panelForPath.add(browse, new GridBagConstraints(0,0,1,1,0,0.5,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0));
-        panelForPath.add(path, new GridBagConstraints(1,0,5,1,30,0.5,GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,3),0,0));
-
-
+        panelForPath.add(browse, new GridBagConstraints(0, 0, 1, 1, 0, 0.5, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        panelForPath.add(path, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
 
         panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
 
@@ -460,21 +444,18 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-
-
-
         scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panelForGeneratedCode.setLayout(new GridBagLayout());
-        panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
+        panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
 
         panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
         panelForClearAndCopyToClipboard.add(clearCode);
         panelForClearAndCopyToClipboard.add(copyToClipboard);
-        panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
+        panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         mainFrame.setJMenuBar(initMenu());
@@ -484,12 +465,11 @@ public class UI implements ExceptionListener {
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-
         return mainFrame;
     }
 
 
-    public int increaseProgressBarForTwenty(){
+    public int increaseProgressBarForTwenty() {
         int value = progressBar.getValue() + 20;
         int maximum = progressBar.getMaximum();
         if (value > maximum) value = maximum;
@@ -498,7 +478,7 @@ public class UI implements ExceptionListener {
         return value;
     }
 
-    public void setProgressBarComplete(){
+    public void setProgressBarComplete() {
         progressBar.setValue(100);
     }
 
@@ -510,7 +490,7 @@ public class UI implements ExceptionListener {
         this.labelForDiagram = labelForDiagram;
     }
 
-    public void showDiagram(String diagramName){
+    public void showDiagram(String diagramName) {
         try {
             diagram = ImageIO.read(new File(diagramName));
 //            System.out.println(diagram.getWidth() + "" + "" + diagram.getHeight());
@@ -521,18 +501,12 @@ public class UI implements ExceptionListener {
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
-            panelForDiagram.add(scrollPaneForDiagram, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
-            panelForDiagram.add(saveDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
-
+            panelForDiagram.add(scrollPaneForDiagram, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
+            panelForDiagram.add(saveDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
 
             tabs.removeTabAt(1);
 
-
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
-
-
-
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -563,10 +537,9 @@ public class UI implements ExceptionListener {
             getProgressBar().setValue(0);
 
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
-            if (resultOfChoice == JFileChooser.APPROVE_OPTION){
+            if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
                 chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
                 path.setText(chosenDirectory.toString());
-
 
             }
         }

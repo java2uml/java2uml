@@ -8,7 +8,10 @@ import org.stathissideris.ascii2image.core.FileUtils;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 
 public class UIEntry {
@@ -35,9 +38,7 @@ public class UIEntry {
         args[7] = !ui.getShowAssociation().getState() ? "noassociation" : "";
         args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : "";
 
-
         for (String str : args) System.out.println(str);
-
 
         return args;
     }
@@ -60,7 +61,7 @@ public class UIEntry {
                         }
                     }).start();
 
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     exceptionListener.handleExceptionAndShowDialog(ex);
                 }
                 ui.getGeneratePlantUML().setEnabled(true);
@@ -94,7 +95,6 @@ public class UIEntry {
             exceptionListener.handleExceptionAndShowDialog(e);
         }
 
-        
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
@@ -124,8 +124,6 @@ public class UIEntry {
             // генерация диаграммы
             String desc = reader.generateImage(png);
 
-
-
         } catch (Exception e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
@@ -149,41 +147,40 @@ public class UIEntry {
             }
         }
     }
-    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String,String> {
+
+    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
         @Override
         protected String doInBackground() throws Exception {
 
-                    try {
+            try {
 
-                            ui.getGeneratePlantUML().setEnabled(false);
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
-                            ui.increaseProgressBarForTwenty();
-                        if (isCancelled()) return null;
-                            Main.main(gettingParametersFromUI());
-                        if (isCancelled()) return null;
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
-                            ui.increaseProgressBarForTwenty();
-                            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-                        if (isCancelled()) return null;
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
-                            ui.increaseProgressBarForTwenty();
-                            generateDiagram(plantUMLCode, "diagram.png");
-                        if (isCancelled()) return null;
-                            ui.showDiagram("diagram.png");
-                        if (isCancelled()) return null;
-                            ui.setProgressBarComplete();
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
-                            ui.getGeneratePlantUML().setEnabled(true);
+                ui.getGeneratePlantUML().setEnabled(false);
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
+                ui.increaseProgressBarForTwenty();
+                if (isCancelled()) return null;
+                Main.main(gettingParametersFromUI());
+                if (isCancelled()) return null;
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
+                ui.increaseProgressBarForTwenty();
+                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+                if (isCancelled()) return null;
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
+                ui.increaseProgressBarForTwenty();
+                generateDiagram(plantUMLCode, "diagram.png");
+                if (isCancelled()) return null;
+                ui.showDiagram("diagram.png");
+                if (isCancelled()) return null;
+                ui.setProgressBarComplete();
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
+                ui.getGeneratePlantUML().setEnabled(true);
 
-
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ui.getProgressBar().setString("0%");
-                        ui.getProgressBar().setValue(0);
-                        exceptionListener.handleExceptionAndShowDialog(e);
-                        ui.getGeneratePlantUML().setEnabled(true);
-                    }
+            } catch (Exception e) {
+                e.printStackTrace();
+                ui.getProgressBar().setString("0%");
+                ui.getProgressBar().setValue(0);
+                exceptionListener.handleExceptionAndShowDialog(e);
+                ui.getGeneratePlantUML().setEnabled(true);
+            }
             return "";
         }
 

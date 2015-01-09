@@ -1,11 +1,6 @@
 package com.github.java2uml.gui;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by mac on 01.01.15.
@@ -14,11 +9,8 @@ public class About extends JFrame {
     JLabel logo, version, team;
     JPanel versionPanel, logoPanel, teamPanel, logoAndVersionPanel;
 
-    public About(String title){
+    public About(String title) {
         super(title);
-
-
-
 
         version = new JLabel("Java2UML \n v.1.0");
         team = new JLabel();
@@ -29,7 +21,7 @@ public class About extends JFrame {
 
         logoAndVersionPanel = new JPanel();
 
-        logoAndVersionPanel.setLayout(new BoxLayout(logoAndVersionPanel ,BoxLayout.X_AXIS));
+        logoAndVersionPanel.setLayout(new BoxLayout(logoAndVersionPanel, BoxLayout.X_AXIS));
         versionPanel.add(version);
         logoPanel.add(logo);
         logoAndVersionPanel.add(logoPanel);
