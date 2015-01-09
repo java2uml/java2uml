@@ -156,23 +156,23 @@ public class UIEntry {
                     try {
 
                             ui.getGeneratePlantUML().setEnabled(false);
-                            ui.getProgressBar().setString("Loading files...");
+                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
                             ui.increaseProgressBarForTwenty();
                         if (isCancelled()) return null;
                             Main.main(gettingParametersFromUI());
                         if (isCancelled()) return null;
-                            ui.getProgressBar().setString("Code generation...");
+                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
                             ui.increaseProgressBarForTwenty();
                             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
                         if (isCancelled()) return null;
-                            ui.getProgressBar().setString("Loading diagram...");
+                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
                             ui.increaseProgressBarForTwenty();
                             generateDiagram(plantUMLCode, "diagram.png");
                         if (isCancelled()) return null;
                             ui.showDiagram("diagram.png");
                         if (isCancelled()) return null;
                             ui.setProgressBarComplete();
-                            ui.getProgressBar().setString("Complete");
+                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
                             ui.getGeneratePlantUML().setEnabled(true);
 
 
