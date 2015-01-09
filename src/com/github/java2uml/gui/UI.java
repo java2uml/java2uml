@@ -12,18 +12,21 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
-    private JPanel panelForButtons, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode;
+    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram;
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
@@ -354,17 +357,19 @@ public class UI implements ExceptionListener {
     public JFrame initUI() {
         localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
-        panelForButtons = new JPanel();
+        panelForOptions = new JPanel();
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         panelForClearAndCopyToClipboard = new JPanel();
         panelForProgressBarAndCancel = new JPanel();
+        panelForSaveAndOpenDiagram = new JPanel();
         browse = new JButton(localeLabels.getString("chooseDirLabel"));
         saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
         generatePlantUML = new JButton(localeLabels.getString("generateLabel"));
         cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
         clearCode = new JButton(localeLabels.getString("clearLabel"));
+        openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
 
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
 
@@ -392,10 +397,13 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 fileChooser.setSelectedFile(new File("diagram.png"));
+                CopyOption[] options = new CopyOption[]{
+                        StandardCopyOption.REPLACE_EXISTING,
+                };
                 if (fileChooser.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
                     File file = fileChooser.getSelectedFile();
                     try {
-                        Files.copy(new File("diagram.png").toPath(), file.toPath());
+                        Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -413,8 +421,8 @@ public class UI implements ExceptionListener {
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Clipboard clipboard = Toolkit.getDefaultToolkit ().getSystemClipboard ();
-                clipboard.setContents (new StringSelection(getGeneratedCode().getText()), null);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
         });
 
@@ -436,7 +444,7 @@ public class UI implements ExceptionListener {
 
 
 
-        panelForButtons.setLayout(new BoxLayout(panelForButtons, BoxLayout.X_AXIS));
+        panelForOptions.setLayout(new BoxLayout(panelForOptions, BoxLayout.X_AXIS));
 
         panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
 
@@ -449,6 +457,7 @@ public class UI implements ExceptionListener {
 //        JLabel jLabel = null;
 //        try {
 //            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
+//            bufferedImage = Scalr.resize(bufferedImage,500);
 //            jLabel = new JLabel(new ImageIcon(bufferedImage));
 //        } catch (IOException e) {
 //            e.printStackTrace();
@@ -456,7 +465,7 @@ public class UI implements ExceptionListener {
 //        panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
-        panelForPathAndButtons.add(panelForButtons);
+        panelForPathAndButtons.add(panelForOptions);
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
@@ -476,6 +485,12 @@ public class UI implements ExceptionListener {
         panelForClearAndCopyToClipboard.add(copyToClipboard);
         panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
+
+        panelForSaveAndOpenDiagram.setLayout(new BoxLayout(panelForSaveAndOpenDiagram, BoxLayout.X_AXIS));
+        panelForSaveAndOpenDiagram.add(saveDiagram);
+        panelForSaveAndOpenDiagram.add(openDiagram);
+
+        openDiagram.addMouseListener(new MouseListenerForDiagram());
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
@@ -513,16 +528,14 @@ public class UI implements ExceptionListener {
     public void showDiagram(String diagramName){
         try {
             diagram = ImageIO.read(new File(diagramName));
-//            System.out.println(diagram.getWidth() + "" + "" + diagram.getHeight());
             diagram = Scalr.resize(diagram, 500);
-//
             labelForDiagram = new JLabel(new ImageIcon(diagram));
-
+            labelForDiagram.addMouseListener(new MouseListenerForDiagram());
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
             panelForDiagram.add(scrollPaneForDiagram, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
-            panelForDiagram.add(saveDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
+            panelForDiagram.add(panelForSaveAndOpenDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
 
 
             tabs.removeTabAt(1);
