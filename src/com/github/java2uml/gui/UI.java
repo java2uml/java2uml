@@ -1,5 +1,8 @@
 package com.github.java2uml.gui;
 
+import org.imgscalr.Scalr;
+import org.stathissideris.ascii2image.core.FileUtils;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,6 +15,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -33,6 +38,7 @@ public class UI implements ExceptionListener {
     private static Help helpWindow;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
+
     private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
     private JFileChooser fileChooser;
     private File chosenDirectory;
@@ -59,10 +65,14 @@ public class UI implements ExceptionListener {
         return progressBar;
     }
 
-    public void setProgressBar(JProgressBar progressBar) {
-        this.progressBar = progressBar;
-    }
+    public ResourceBundle getLocaleLabels() {
+        if (russianLangItem.getState()) {
+            return ResourceBundle.getBundle("GUILabels", new Locale("ru"));
+        } else if (englishLangItem.getState()) {
+            return ResourceBundle.getBundle("GUILabels", new Locale(""));
+        } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
 
+    }
 
 
     public JTextArea getGeneratedCode() {
@@ -170,7 +180,6 @@ public class UI implements ExceptionListener {
     }
 
     public void settingLocaleLabels(ResourceBundle localeLabels){
-
         file.setText(localeLabels.getString("fileMenuLabel"));
         help.setText(localeLabels.getString("helpMenuLabel"));
         typeOfDiagramMenu.setText(localeLabels.getString("typeOfDiagramMenuLabel"));
@@ -242,6 +251,7 @@ public class UI implements ExceptionListener {
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
         chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
+        saveItem = new JMenuItem(localeLabels.getString("saveMenuLabel"));
 
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
@@ -378,6 +388,20 @@ public class UI implements ExceptionListener {
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
 
+        saveDiagram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fileChooser.setSelectedFile(new File("diagram.png"));
+                if (fileChooser.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    try {
+                        Files.copy(new File("diagram.png").toPath(), file.toPath());
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
 
         clearCode.addActionListener(new ActionListener() {
             @Override
@@ -397,15 +421,18 @@ public class UI implements ExceptionListener {
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
+
+
         tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
         tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
 
+        panelForDiagram.setLayout(new GridBagLayout());
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
 
         panelForPath.setLayout(new GridBagLayout());
         panelForPath.add(browse, new GridBagConstraints(0,0,1,1,0,0.5,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0),0,0));
-        panelForPath.add(path, new GridBagConstraints(20,0,4,1,15,0.5,GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,3),0,0));
+        panelForPath.add(path, new GridBagConstraints(1,0,5,1,30,0.5,GridBagConstraints.EAST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,3),0,0));
 
 
 
@@ -419,6 +446,14 @@ public class UI implements ExceptionListener {
 
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
+//        JLabel jLabel = null;
+//        try {
+//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
+//            jLabel = new JLabel(new ImageIcon(bufferedImage));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
         panelForPathAndButtons.add(panelForButtons);
@@ -479,18 +514,23 @@ public class UI implements ExceptionListener {
         try {
             diagram = ImageIO.read(new File(diagramName));
 //            System.out.println(diagram.getWidth() + "" + "" + diagram.getHeight());
+            diagram = Scalr.resize(diagram, 500);
 //
             labelForDiagram = new JLabel(new ImageIcon(diagram));
 
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
-            panelForDiagram.add(scrollPaneForDiagram);
+            panelForDiagram.add(scrollPaneForDiagram, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2,2,2,2), 0, 0));
+            panelForDiagram.add(saveDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2,2,2,2), 0, 0));
+
 
             tabs.removeTabAt(1);
 
 
-            tabs.addTab("Diagram", scrollPaneForDiagram);
+            tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
+
+
 
 
 
