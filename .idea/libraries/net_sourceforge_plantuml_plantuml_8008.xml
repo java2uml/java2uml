@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="net.sourceforge.plantuml:plantuml:8008" type="repository">
+    <properties maven-id="net.sourceforge.plantuml:plantuml:8008" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/plantuml-8008.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ant-1.8.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/ant-launcher-1.8.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/plantuml-8008-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
