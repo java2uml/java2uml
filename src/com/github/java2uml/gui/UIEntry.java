@@ -12,7 +12,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 
 public class UIEntry {
     static UI ui;
@@ -176,7 +175,6 @@ public class UIEntry {
                 ui.setProgressBarComplete();
                 ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
                 ui.getGeneratePlantUML().setEnabled(true);
-
 
             } catch (Throwable e) {
                 e.printStackTrace();

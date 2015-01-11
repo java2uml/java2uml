@@ -31,24 +31,11 @@ public class UI implements ExceptionListener {
     private JButton cancelLoading;
     private JButton clearCode;
     private JTabbedPane tabs;
-//<<<<<<< HEAD
-//    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
-//    private JMenuItem helpItem;
-//    private JMenuItem exitItem;
-//    private JMenuItem aboutItem;
-//    private JMenuItem generateItem;
-//    private JMenuItem chooseItem;
-//    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
-//            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-//            showComposition, showAggregation, russianLangItem, englishLangItem;
-//=======
-    private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
             showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
-//>>>>>>> r1_igor_popov_localization_and_save_diagram
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
     ButtonGroup languageGroup;
@@ -73,7 +60,6 @@ public class UI implements ExceptionListener {
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
     private JButton openDiagram;
-    private JScrollPane scrollPane;
 
 
     public JProgressBar getProgressBar() {
@@ -244,7 +230,7 @@ public class UI implements ExceptionListener {
     }
 
     private JMenuBar initMenu() {
-        menu = new JMenuBar();
+        JMenuBar menu = new JMenuBar();
 
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
@@ -275,11 +261,6 @@ public class UI implements ExceptionListener {
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
         chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
-//<<<<<<< HEAD
-//        JMenuItem saveItem = new JMenuItem(localeLabels.getString("saveMenuLabel"));
-//
-//=======
-//>>>>>>> r1_igor_popov_localization_and_save_diagram
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
@@ -327,7 +308,6 @@ public class UI implements ExceptionListener {
         diagramExtension.add(pngExtensionItem);
         diagramExtension.add(svgExtensionItem);
 
-
         options.add(languageMenu);
         options.add(direction);
         options.add(diagramGeneratingMethods);
@@ -343,7 +323,6 @@ public class UI implements ExceptionListener {
         options.add(showHeader);
         options.add(showLollipops);
         options.add(enableDiagramItem);
-
 
         help.add(helpItem);
         help.add(aboutItem);
@@ -492,7 +471,7 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-        scrollPane = new JScrollPane(generatedCode);
+        JScrollPane scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
