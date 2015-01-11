@@ -382,9 +382,7 @@ public class UI implements ExceptionListener {
         labelForDiagram = new JLabel();
         clearCode = new JButton(localeLabels.getString("clearLabel"));
         openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
-
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
-
         generatedCode = new JTextArea();
         path = new JTextField();
         panelForPath = new JPanel();
@@ -399,12 +397,9 @@ public class UI implements ExceptionListener {
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
-
-
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
-
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -437,31 +432,20 @@ public class UI implements ExceptionListener {
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
         });
-
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
-
-
         tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
         tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
-
         panelForDiagram.setLayout(new GridBagLayout());
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-
-
         panelForPath.setLayout(new GridBagLayout());
         panelForPath.add(browse, new GridBagConstraints(0, 0, 1, 1, 0, 0.5, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         panelForPath.add(path, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-
-
         panelForOptions.setLayout(new BoxLayout(panelForOptions, BoxLayout.X_AXIS));
-
         panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
-
         panelForProgressBarAndCancel.add(cancelLoading);
         panelForProgressBarAndCancel.add(progressBar);
         panelForProgressBarAndCancel.add(generatePlantUML);
-
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
         JLabel jLabel = null;
