@@ -31,15 +31,24 @@ public class UI implements ExceptionListener {
     private JButton cancelLoading;
     private JButton clearCode;
     private JTabbedPane tabs;
-    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
-    private JMenuItem helpItem;
-    private JMenuItem exitItem;
-    private JMenuItem aboutItem;
-    private JMenuItem generateItem;
-    private JMenuItem chooseItem;
+//<<<<<<< HEAD
+//    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu;
+//    private JMenuItem helpItem;
+//    private JMenuItem exitItem;
+//    private JMenuItem aboutItem;
+//    private JMenuItem generateItem;
+//    private JMenuItem chooseItem;
+//    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
+//            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
+//            showComposition, showAggregation, russianLangItem, englishLangItem;
+//=======
+    private JMenuBar menu;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
     JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-            showComposition, showAggregation, russianLangItem, englishLangItem;
+            showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
+//>>>>>>> r1_igor_popov_localization_and_save_diagram
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
     ButtonGroup languageGroup;
@@ -63,6 +72,8 @@ public class UI implements ExceptionListener {
     public static final String HORIZONTAL_DIRECTION = "Horizontal";
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
+    private JButton openDiagram;
+    private JScrollPane scrollPane;
 
 
     public JProgressBar getProgressBar() {
@@ -168,6 +179,8 @@ public class UI implements ExceptionListener {
         showAssociation.setState(true);
         showComposition.setState(true);
         showLollipops.setState(true);
+        enableDiagramItem.setState(true);
+        pngExtensionItem.setState(true);
 
     }
 
@@ -177,6 +190,10 @@ public class UI implements ExceptionListener {
 
     public void setCancelLoading(JButton cancelLoading) {
         this.cancelLoading = cancelLoading;
+    }
+
+    public JCheckBoxMenuItem getEnableDiagramItem() {
+        return enableDiagramItem;
     }
 
     public void settingLocaleLabels(ResourceBundle localeLabels) {
@@ -207,9 +224,14 @@ public class UI implements ExceptionListener {
         verticalDirectionCheckboxItem.setText(localeLabels.getString("directionVerticalLabel"));
         classDiagramCheckboxItem.setText(localeLabels.getString("classDiagramLabel"));
         sequenceDiagramCheckboxItem.setText(localeLabels.getString("sequenceDiagramLabel"));
+        diagramExtension.setText(localeLabels.getString("diagramExtensionLabel"));
+        pngExtensionItem.setText(localeLabels.getString("pngExtensionLabel"));
+        svgExtensionItem.setText(localeLabels.getString("svgExtensionLabel"));
+        enableDiagramItem.setText(localeLabels.getString("enableDiagramLabel"));
 
         browse.setText(localeLabels.getString("chooseDirLabel"));
         saveDiagram.setText(localeLabels.getString("saveMenuLabel"));
+        openDiagram.setText(localeLabels.getString("openDiagramLabel"));
         generatePlantUML.setText(localeLabels.getString("generateLabel"));
         cancelLoading.setText(localeLabels.getString("cancelLabel"));
         clearCode.setText(localeLabels.getString("clearLabel"));
@@ -222,7 +244,7 @@ public class UI implements ExceptionListener {
     }
 
     private JMenuBar initMenu() {
-        JMenuBar menu = new JMenuBar();
+        menu = new JMenuBar();
 
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
@@ -232,7 +254,11 @@ public class UI implements ExceptionListener {
         direction = new JMenu(localeLabels.getString("directionWillBeMenuLabel"));
         diagramGeneratingMethods = new JMenu(localeLabels.getString("iWantToParseMenuLabel"));
         whichRelationsAreShown = new JMenu(localeLabels.getString("relationsMenuLabel"));
+        diagramExtension = new JMenu(localeLabels.getString("diagramExtensionLabel"));
 
+        pngExtensionItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("pngExtensionLabel"));
+        svgExtensionItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("svgExtensionLabel"));
+        enableDiagramItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("enableDiagramLabel"));
         englishLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("englishLanguage"));
         russianLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("russianLanguage"));
 
@@ -246,12 +272,14 @@ public class UI implements ExceptionListener {
 
         helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
         exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
-
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
         chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
-        JMenuItem saveItem = new JMenuItem(localeLabels.getString("saveMenuLabel"));
-
+//<<<<<<< HEAD
+//        JMenuItem saveItem = new JMenuItem(localeLabels.getString("saveMenuLabel"));
+//
+//=======
+//>>>>>>> r1_igor_popov_localization_and_save_diagram
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
@@ -296,6 +324,10 @@ public class UI implements ExceptionListener {
         languageMenu.add(englishLangItem);
         languageMenu.add(russianLangItem);
 
+        diagramExtension.add(pngExtensionItem);
+        diagramExtension.add(svgExtensionItem);
+
+
         options.add(languageMenu);
         options.add(direction);
         options.add(diagramGeneratingMethods);
@@ -307,12 +339,14 @@ public class UI implements ExceptionListener {
         options.add(typeOfDiagramMenu);
         typeOfDiagramMenu.add(classDiagramCheckboxItem);
         typeOfDiagramMenu.add(sequenceDiagramCheckboxItem);
+        options.add(diagramExtension);
         options.add(showHeader);
         options.add(showLollipops);
+        options.add(enableDiagramItem);
+
 
         help.add(helpItem);
         help.add(aboutItem);
-
         menu.add(file);
         menu.add(options);
         menu.add(help);
@@ -443,22 +477,22 @@ public class UI implements ExceptionListener {
 
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
-//        JLabel jLabel = null;
-//        try {
-//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
-//            bufferedImage = Scalr.resize(bufferedImage,500);
-//            jLabel = new JLabel(new ImageIcon(bufferedImage));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        panelForPathAndButtons.add(jLabel);
+        JLabel jLabel = null;
+        try {
+            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
+            bufferedImage = Scalr.resize(bufferedImage, 300);
+            jLabel = new JLabel(new ImageIcon(bufferedImage));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
         panelForPathAndButtons.add(panelForOptions);
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-        JScrollPane scrollPane = new JScrollPane(generatedCode);
+        scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -515,7 +549,6 @@ public class UI implements ExceptionListener {
             BufferedImage diagram = ImageIO.read(new File(diagramName));
             diagram = Scalr.resize(diagram, 500);
             labelForDiagram = new JLabel(new ImageIcon(diagram));
-            labelForDiagram.addMouseListener(new MouseListenerForDiagram());
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
@@ -526,16 +559,17 @@ public class UI implements ExceptionListener {
 
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            this.getInstance().handleExceptionAndShowDialog(throwable);
         }
 
     }
 
     @Override
-    public void handleExceptionAndShowDialog(Exception exception) {
+    public void handleExceptionAndShowDialog(Throwable throwable) {
+        JOptionPane.showMessageDialog(mainFrame, throwable.getMessage(), "It's an error, breathe deeply", JOptionPane.ERROR_MESSAGE);
 
-        JOptionPane.showMessageDialog(mainFrame, exception.getMessage(), "It's an error, breathe deeply", JOptionPane.ERROR_MESSAGE);
     }
 
 
