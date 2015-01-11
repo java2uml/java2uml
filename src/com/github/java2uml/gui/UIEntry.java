@@ -52,17 +52,17 @@ public class UIEntry {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ui.getLabelForDiagram().setIcon(null);
-                try {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            swingWorker.cancel(true);
-                        }
-                    }).start();
 
-                } catch (Exception ex){
-                    exceptionListener.handleExceptionAndShowDialog(ex);
-                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            swingWorker.cancel(true);
+                        } catch (NullPointerException ex) {
+                            exceptionListener.handleExceptionAndShowDialog(ex);
+                        }
+                    }
+                }).start();
                 ui.getGeneratePlantUML().setEnabled(true);
                 ui.getProgressBar().setString("0%");
                 ui.getProgressBar().setValue(0);
@@ -85,16 +85,13 @@ public class UIEntry {
 
                 }
             });
-        } catch (InterruptedException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
 
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-            exceptionListener.handleExceptionAndShowDialog(e);
         }
 
-        
+
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
@@ -125,8 +122,7 @@ public class UIEntry {
             String desc = reader.generateImage(png);
 
 
-
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
         }
@@ -143,47 +139,53 @@ public class UIEntry {
                 swingWorker = new SwingWorkerForBackgroundGenerating();
                 swingWorker.execute();
 
-            } catch (Exception e1) {
+            } catch (Throwable e1) {
                 e1.printStackTrace();
                 exceptionListener.handleExceptionAndShowDialog(e1);
             }
         }
     }
-    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String,String> {
+
+    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
         @Override
         protected String doInBackground() throws Exception {
 
-                    try {
+            try {
+                ui.getGeneratePlantUML().setEnabled(false);
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
+                ui.increaseProgressBarForTwenty();
+                if (isCancelled()) return null;
 
-                            ui.getGeneratePlantUML().setEnabled(false);
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
-                            ui.increaseProgressBarForTwenty();
-                        if (isCancelled()) return null;
-                            Main.main(gettingParametersFromUI());
-                        if (isCancelled()) return null;
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
-                            ui.increaseProgressBarForTwenty();
-                            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-                        if (isCancelled()) return null;
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
-                            ui.increaseProgressBarForTwenty();
-                            generateDiagram(plantUMLCode, "diagram.png");
-                        if (isCancelled()) return null;
-                            ui.showDiagram("diagram.png");
-                        if (isCancelled()) return null;
-                            ui.setProgressBarComplete();
-                            ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
-                            ui.getGeneratePlantUML().setEnabled(true);
+                Main.main(gettingParametersFromUI());
+
+                if (isCancelled()) return null;
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
+                ui.increaseProgressBarForTwenty();
+                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+
+                if (isCancelled()) return null;
+
+                if (ui.getEnableDiagramItem().getState()) {
+                    ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
+                    ui.increaseProgressBarForTwenty();
+                    generateDiagram(plantUMLCode, "diagram.png");
+                    if (isCancelled()) return null;
+                    ui.showDiagram("diagram.png");
+                }
+
+                if (isCancelled()) return null;
+                ui.setProgressBarComplete();
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
+                ui.getGeneratePlantUML().setEnabled(true);
 
 
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        ui.getProgressBar().setString("0%");
-                        ui.getProgressBar().setValue(0);
-                        exceptionListener.handleExceptionAndShowDialog(e);
-                        ui.getGeneratePlantUML().setEnabled(true);
-                    }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                ui.getProgressBar().setString("0%");
+                ui.getProgressBar().setValue(0);
+                exceptionListener.handleExceptionAndShowDialog(e);
+                ui.getGeneratePlantUML().setEnabled(true);
+            }
             return "";
         }
 
