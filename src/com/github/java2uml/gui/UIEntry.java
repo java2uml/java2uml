@@ -2,6 +2,7 @@ package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
+import com.github.java2uml.core.reflection.DataExtractor;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.stathissideris.ascii2image.core.FileUtils;
 
@@ -125,6 +126,12 @@ public class UIEntry {
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
+        }
+
+        try {
+            DataExtractor.generateFromFile(source, fileName, "png");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
