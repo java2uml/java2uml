@@ -1,11 +1,13 @@
 package com.github.java2uml.gui;
 
+import com.apple.eawt.Application;
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
 import net.sourceforge.plantuml.SourceStringReader;
 import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -75,7 +77,6 @@ public class UIEntry {
     }
 
     public static void main(String[] args) {
-
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
