@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class UIEntry {
     static UI ui;
@@ -46,6 +47,9 @@ public class UIEntry {
 
 
     public void initUI() {
+        if (System.getProperty("os.name").equals("Mac OS X")) {
+            settingDockIcon();
+        }
         GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UI.getInstance();
         exceptionListener = ui;
@@ -190,5 +194,24 @@ public class UIEntry {
             return "";
         }
 
+    }
+
+    public void settingDockIcon(){
+        try {
+            Class c = Class.forName("com.apple.eawt.Application");
+            Method m = c.getMethod("getApplication");
+            Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
+            Object applicationInstance = m.invoke(null);
+            m = applicationInstance.getClass().getMethod("setDockIconImage", java.awt.Image.class);
+            m.invoke(applicationInstance,image);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 }

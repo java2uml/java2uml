@@ -17,6 +17,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -509,11 +511,6 @@ public class UI implements ExceptionListener {
 
         openDiagram.addMouseListener(new MouseListenerForDiagram());
 
-        if (System.getProperty("os.name").equals("Mac OS X")) {
-            Application application = Application.getApplication();
-            Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
-            application.setDockIconImage(image);
-        }
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
