@@ -5,6 +5,16 @@ import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
 import com.github.java2uml.core.reflection.DataExtractor;
 import net.sourceforge.plantuml.SourceStringReader;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.swing.*;
@@ -13,6 +23,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class UIEntry {
     static UI ui;
@@ -108,6 +121,12 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
+//        createAndShowPng(source, fileName);
+        sendRequestAndShowSvg(source);
+
+    }
+
+    private void createAndShowPng(String source, String fileName) {
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -134,6 +153,54 @@ public class UIEntry {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendRequestAndShowSvg(String source) {
+        String result = executePost(source);
+
+//        Using http://jsoup.org
+//        Ищем id=diagram <img src="">
+        Document document = Jsoup.parse(result);
+
+        Elements els = document.select("#diagram");
+        for (Element el : els) {
+//            System.out.println(el.toString());
+//            System.out.println(el.select("img[src]").attr("src"));
+
+            try {
+                String s = el.select("img[src]").attr("src");
+                s = s.replace("/png/", "/svg/");
+                URI uri = new URL(s).toURI();
+                Desktop.getDesktop().browse(uri);
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String executePost(String source) {
+        source = "text=" + source;
+
+        final String url = "http://www.plantuml.com/plantuml/form";
+
+        HttpClient client = new DefaultHttpClient();
+        HttpPost post = new HttpPost(url);
+
+        String result = "";
+
+        try {
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            StringEntity entity = new StringEntity(source);
+            post.setEntity(entity);
+            HttpResponse response = client.execute(post);
+            result = EntityUtils.toString(response.getEntity());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     public class GenerateActionListener implements ActionListener {
