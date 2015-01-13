@@ -2,16 +2,22 @@ package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
+import com.github.java2uml.core.reflection.DataExtractor;
 import net.sourceforge.plantuml.SourceStringReader;
+import net.sourceforge.plantuml.code.Transcoder;
+import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class UIEntry {
     static UI ui;
@@ -75,7 +81,6 @@ public class UIEntry {
     }
 
     public static void main(String[] args) {
-
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -105,6 +110,12 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
+//        createAndShowPng(source, fileName);
+        sendRequestAndShowSvg(source);
+
+    }
+
+    private void createAndShowPng(String source, String fileName) {
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -124,6 +135,30 @@ public class UIEntry {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
         }
+
+        try {
+            DataExtractor.generateFromFile(source, fileName, "png");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendRequestAndShowSvg(String source) {
+
+        Transcoder t = TranscoderUtil.getDefaultTranscoder();
+        String url = null;
+        try {
+            url = t.encode(source);
+            url = "http://www.plantuml.com/plantuml/svg/" + url;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            Desktop.getDesktop().browse(new URL(url).toURI());
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        System.err.println(url);
     }
 
     public class GenerateActionListener implements ActionListener {

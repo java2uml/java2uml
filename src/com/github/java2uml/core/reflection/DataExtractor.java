@@ -678,8 +678,8 @@ public class DataExtractor {
 
     /**
      * Проверка, является ли указанный тип коллекцией
-     *
-     * @param Class - входящий класс
+     * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
+     * @param clazz - входящий класс
      * @return boolean
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      */
