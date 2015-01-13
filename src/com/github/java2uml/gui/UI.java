@@ -509,9 +509,11 @@ public class UI implements ExceptionListener {
 
         openDiagram.addMouseListener(new MouseListenerForDiagram());
 
-        Application application = Application.getApplication();
-        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
-        application.setDockIconImage(image);
+        if (System.getProperty("os.name").equals("Mac OS X")) {
+            Application application = Application.getApplication();
+            Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
+            application.setDockIconImage(image);
+        }
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
