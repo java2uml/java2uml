@@ -41,6 +41,7 @@ public class UI implements ExceptionListener {
     ButtonGroup typeOfDiagramGroup;
     ButtonGroup languageGroup;
     About about;
+    private ButtonGroup extensionDiagram;
 
     public JCheckBoxMenuItem getSvgExtensionItem() {
         return svgExtensionItem;
@@ -282,6 +283,7 @@ public class UI implements ExceptionListener {
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
         languageGroup = new ButtonGroup();
+        extensionDiagram = new ButtonGroup();
 
         reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
@@ -290,6 +292,9 @@ public class UI implements ExceptionListener {
 
         languageGroup.add(englishLangItem);
         languageGroup.add(russianLangItem);
+
+        extensionDiagram.add(pngExtensionItem);
+        extensionDiagram.add(svgExtensionItem);
 
         aboutItem.addActionListener(new ActionListener() {
             @Override

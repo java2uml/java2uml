@@ -2,7 +2,6 @@ package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
-import com.github.java2uml.core.reflection.DataExtractor;
 import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
@@ -110,8 +109,11 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
-//        createAndShowPng(source, fileName);
-        sendRequestAndShowSvg(source);
+        if (ui.getSvgExtensionItem().getState()) {
+            sendRequestAndShowSvg(source);
+        } else {
+            createAndShowPng(source, fileName);
+        }
 
     }
 
@@ -135,12 +137,6 @@ public class UIEntry {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
         }
-
-        try {
-            DataExtractor.generateFromFile(source, fileName, "png");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void sendRequestAndShowSvg(String source) {
@@ -150,10 +146,6 @@ public class UIEntry {
         try {
             url = t.encode(source);
             url = "http://www.plantuml.com/plantuml/svg/" + url;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             Desktop.getDesktop().browse(new URL(url).toURI());
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
