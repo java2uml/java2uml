@@ -478,13 +478,10 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
         JLabel jLabel = null;
-        try {
-            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
-            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
-            jLabel = new JLabel(new ImageIcon(bufferedImage));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
+//            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
+            jLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("logo.png")));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
