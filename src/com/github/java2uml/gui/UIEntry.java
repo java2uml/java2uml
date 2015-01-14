@@ -1,9 +1,10 @@
 package com.github.java2uml.gui;
 
-import com.apple.eawt.Application;
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
 import net.sourceforge.plantuml.SourceStringReader;
+import net.sourceforge.plantuml.code.Transcoder;
+import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.swing.*;
@@ -13,6 +14,8 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class UIEntry {
     static UI ui;
@@ -76,6 +79,15 @@ public class UIEntry {
         });
         ui.getGeneratePlantUML().addActionListener(generateActionListener);
         ui.getGenerateItem().addActionListener(generateActionListener);
+        ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (plantUMLCode != null && !plantUMLCode.equals(""))
+                    sendRequestAndShowSvg(plantUMLCode);
+
+
+            }
+        });
         ui.settingStateForAllOptions();
 
     }
@@ -211,6 +223,23 @@ public class UIEntry {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendRequestAndShowSvg(String source) {
+
+        Transcoder t = TranscoderUtil.getDefaultTranscoder();
+        String url = null;
+        try {
+            url = t.encode(source);
+            url = "http://www.plantuml.com/plantuml/svg/" + url;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            Desktop.getDesktop().browse(new URL(url).toURI());
+        } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
     }

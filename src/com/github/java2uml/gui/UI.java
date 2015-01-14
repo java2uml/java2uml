@@ -1,8 +1,6 @@
 package com.github.java2uml.gui;
 
-import com.apple.eawt.Application;
 import org.imgscalr.Scalr;
-import org.stathissideris.ascii2image.core.FileUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -29,7 +27,7 @@ import java.util.ResourceBundle;
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
     private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
@@ -40,23 +38,8 @@ public class UI implements ExceptionListener {
     ButtonGroup directionGroup;
     ButtonGroup typeOfDiagramGroup;
     ButtonGroup languageGroup;
+    ButtonGroup diagramExtensionGroup;
     About about;
-
-    public JCheckBoxMenuItem getSvgExtensionItem() {
-        return svgExtensionItem;
-    }
-
-    public void setSvgExtensionItem(JCheckBoxMenuItem svgExtensionItem) {
-        this.svgExtensionItem = svgExtensionItem;
-    }
-
-    public JCheckBoxMenuItem getPngExtensionItem() {
-        return pngExtensionItem;
-    }
-
-    public void setPngExtensionItem(JCheckBoxMenuItem pngExtensionItem) {
-        this.pngExtensionItem = pngExtensionItem;
-    }
 
     private static Help helpWindow;
     private JTextArea generatedCode;
@@ -80,7 +63,6 @@ public class UI implements ExceptionListener {
     public static final String HORIZONTAL_DIRECTION = "Horizontal";
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
-
 
     public JProgressBar getProgressBar() {
         return progressBar;
@@ -243,6 +225,7 @@ public class UI implements ExceptionListener {
         clearCode.setText(localeLabels.getString("clearLabel"));
 
         copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
+        openOnPlantUMLServer.setText(localeLabels.getString("showOnPlantUMLSite"));
 
         tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
         tabs.setTitleAt(1, localeLabels.getString("diagramTabLabel"));
@@ -284,6 +267,7 @@ public class UI implements ExceptionListener {
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
         languageGroup = new ButtonGroup();
+        diagramExtensionGroup = new ButtonGroup();
 
         reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
@@ -337,6 +321,9 @@ public class UI implements ExceptionListener {
 
         diagramExtension.add(pngExtensionItem);
         diagramExtension.add(svgExtensionItem);
+
+        diagramExtensionGroup.add(pngExtensionItem);
+        diagramExtensionGroup.add(svgExtensionItem);
 
         options.add(languageMenu);
         options.add(direction);
@@ -397,6 +384,10 @@ public class UI implements ExceptionListener {
         return menu;
     }
 
+    public JButton getOpenOnPlantUMLServer() {
+        return openOnPlantUMLServer;
+    }
+
     public JFrame initUI() {
         localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
@@ -412,6 +403,7 @@ public class UI implements ExceptionListener {
         cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
         clearCode = new JButton(localeLabels.getString("clearLabel"));
+        openOnPlantUMLServer = new JButton(localeLabels.getString("showOnPlantUMLSite"));
         openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
         generatedCode = new JTextArea();
@@ -448,6 +440,7 @@ public class UI implements ExceptionListener {
                 }
             }
         });
+
 
         clearCode.addActionListener(new ActionListener() {
             @Override
@@ -502,6 +495,7 @@ public class UI implements ExceptionListener {
         panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
         panelForClearAndCopyToClipboard.add(clearCode);
         panelForClearAndCopyToClipboard.add(copyToClipboard);
+        panelForClearAndCopyToClipboard.add(openOnPlantUMLServer);
         panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
