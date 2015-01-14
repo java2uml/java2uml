@@ -2,6 +2,8 @@ package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
+import net.sourceforge.plantuml.FileFormat;
+import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
@@ -140,6 +142,24 @@ public class UIEntry {
                 String desc = reader.generateImage(image);
             } else {
                 System.out.println("Your code is so bad, you don't deserve to see this diagram");
+                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+// Write the first image to "os"
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                os.close();
+
+// The XML is stored into svg
+                final String svg = new String(os.toByteArray());
+                System.out.println(svg);
+
+                try {
+                    FileWriter fw = new FileWriter(file);
+                    fw.write(svg);
+                    fw.close();
+
+                } catch (IOException iox) {
+                    //do stuff with exception
+                    iox.printStackTrace();
+                }
             }
 
 
@@ -197,7 +217,9 @@ public class UIEntry {
                     } else {
                         generateDiagram(plantUMLCode, "diagram.svg");
                         if (isCancelled()) return null;
-                        ui.showDiagram(null);
+//                        TODO
+//                        отобразить svg
+//                        ui.showDiagram(null);
                     }
                 }
 
