@@ -27,6 +27,19 @@ import java.util.ResourceBundle;
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
 
+    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
+    private JTabbedPane tabs;
+    private JMenuBar menu;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
+    private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
+            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
+            showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
+    private ButtonGroup directionGroup;
+    private ButtonGroup typeOfDiagramGroup;
+    private ButtonGroup languageGroup;
+
     public JCheckBoxMenuItem getPngExtensionItem() {
         return pngExtensionItem;
     }
@@ -35,22 +48,12 @@ public class UI implements ExceptionListener {
         return svgExtensionItem;
     }
 
-    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
-    private JTabbedPane tabs;
-    private JMenuBar menu;
-    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
-    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
-    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
-            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-            showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
-    ButtonGroup directionGroup;
-    ButtonGroup typeOfDiagramGroup;
-    ButtonGroup languageGroup;
-    ButtonGroup diagramExtensionGroup;
-    About about;
+    private ButtonGroup diagramExtensionGroup;
+    private ButtonGroup parsingMethod;
+    private About about;
 
     private static Help helpWindow;
+    private static HelpRu helpRu;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
 
@@ -60,7 +63,6 @@ public class UI implements ExceptionListener {
     private BufferedImage diagram;
     private JLabel labelForDiagram;
 
-    ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
 
@@ -84,6 +86,14 @@ public class UI implements ExceptionListener {
             return ResourceBundle.getBundle("GUILabels", new Locale(""));
         } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
 
+    }
+
+    public JCheckBoxMenuItem getEnglishLangItem() {
+        return englishLangItem;
+    }
+
+    public JCheckBoxMenuItem getRussianLangItem() {
+        return russianLangItem;
     }
 
 
@@ -380,14 +390,25 @@ public class UI implements ExceptionListener {
         helpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!Help.helpIsNull()) {
-                    if (!helpWindow.isVisible()) {
-                        helpWindow.setVisible(true);
-                    } else {
-                        helpWindow.toFront();
-                        helpWindow.repaint();
-                    }
-                } else helpWindow = Help.getInstance();
+                if (englishLangItem.getState()) {
+                    if (!Help.helpIsNull()) {
+                        if (!helpWindow.isVisible()) {
+                            helpWindow.setVisible(true);
+                        } else {
+                            helpWindow.toFront();
+                            helpWindow.repaint();
+                        }
+                    } else helpWindow = Help.getInstance();
+                } else {
+                    if (!HelpRu.helpIsNull()) {
+                        if (!helpRu.isVisible()) {
+                            helpRu.setVisible(true);
+                        } else {
+                            helpRu.toFront();
+                            helpRu.repaint();
+                        }
+                    } else helpRu = HelpRu.getInstance();
+                }
             }
         });
         return menu;

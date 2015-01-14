@@ -14,31 +14,29 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-/**
- * Created by mac on 29.12.14.
- */
-public class Help extends JFrame implements ActionListener {
+public class HelpRu extends JFrame implements ActionListener {
+
     private final int WIDTH = 600;
     private final int HEIGHT = 400;
     private JEditorPane editorPane;
     private URL helpURL;
-    private static Help help;
+    private static HelpRu helpRu;
 
-    public static boolean helpIsNull(){
-        return help == null;
+    public static boolean helpIsNull() {
+        return helpRu == null;
     }
 
-    public static Help getInstance(){
-        if (help == null){
-            help = new Help("Java2UML Help");
+    public static HelpRu getInstance() {
+        if (helpRu == null) {
+            helpRu = new HelpRu("Java2UML Помощь");
         }
-        return help;
+        return helpRu;
     }
 
-    private Help(String _title){
+    private HelpRu(String _title) {
         super(_title);
 
-        URL helpURL = getClass().getClassLoader().getResource("enHelp/help.html");
+        URL helpURL = getClass().getClassLoader().getResource("ruHelp/help.html");
 
         editorPane = new JEditorPane();
         editorPane.setEditable(false);
@@ -52,7 +50,7 @@ public class Help extends JFrame implements ActionListener {
         editorPane.addHyperlinkListener(new HyperlinkListener() {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         if (!e.getURL().toString().contains("graph") && !e.getURL().toString().contains("wikipedia") &&
                                 !e.getURL().toString().contains("plantuml") && !e.getURL().toString().contains("referal")) {
@@ -87,13 +85,13 @@ public class Help extends JFrame implements ActionListener {
                 tempURL = editorPane.getPage();
                 editorPane.setPage(tempURL);
             }
-            if (strAction == "Close"){
+            if (strAction == "Close") {
                 processWindowEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
             }
-        } catch (IOException ex){
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
-
-
 }
+
+
