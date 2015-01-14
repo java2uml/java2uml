@@ -150,6 +150,16 @@ public class UIEntry {
 // The XML is stored into svg
                 final String svg = new String(os.toByteArray());
                 System.out.println(svg);
+
+                try {
+                    FileWriter fw = new FileWriter(file);
+                    fw.write(svg);
+                    fw.close();
+
+                } catch (IOException iox) {
+                    //do stuff with exception
+                    iox.printStackTrace();
+                }
             }
 
 
