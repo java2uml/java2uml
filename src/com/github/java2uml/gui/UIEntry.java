@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -217,6 +218,7 @@ public class UIEntry {
                     } else {
                         generateDiagram(plantUMLCode, "diagram.svg");
                         if (isCancelled()) return null;
+                        Desktop.getDesktop().browse(new URI("file://$MODULE_DIR$/diagram.svg"));
 //                        TODO
 //                        отобразить svg
 //                        ui.showDiagram(null);
