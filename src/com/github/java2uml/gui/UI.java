@@ -26,6 +26,15 @@ import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
+
+    public JCheckBoxMenuItem getPngExtensionItem() {
+        return pngExtensionItem;
+    }
+
+    public JCheckBoxMenuItem getSvgExtensionItem() {
+        return svgExtensionItem;
+    }
+
     private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
     private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
     private JTabbedPane tabs;
@@ -46,7 +55,7 @@ public class UI implements ExceptionListener {
     private JProgressBar progressBar;
 
     private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
-    private JFileChooser fileChooser;
+    private JFileChooser fileChooser, fileSaver;
     private File chosenDirectory;
     private BufferedImage diagram;
     private JLabel labelForDiagram;
@@ -420,20 +429,33 @@ public class UI implements ExceptionListener {
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
+        fileSaver = new JFileChooser();
+
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fileChooser.setSelectedFile(new File("diagram.png"));
+                if (pngExtensionItem.getState()) {
+                    fileSaver.setSelectedFile(new File("diagram.png"));
+                    fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
+                } else {
+                    fileSaver.setSelectedFile(new File("diagram.svg"));
+                    fileSaver.setFileFilter(new FileNameExtensionFilter("SVG image", "svg"));
+                }
+
                 CopyOption[] options = new CopyOption[]{
                         StandardCopyOption.REPLACE_EXISTING,
                 };
-                if (fileChooser.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
+                if (fileSaver.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileSaver.getSelectedFile();
                     try {
-                        Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
+                        if (pngExtensionItem.getState()) {
+                            Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
+                        } else {
+                            Files.copy(new File("diagram.svg").toPath(), file.toPath(), options);
+                        }
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }

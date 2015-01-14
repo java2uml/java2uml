@@ -130,13 +130,17 @@ public class UIEntry {
             }
 
             // поток вывода для диаграммы
-            OutputStream png = new FileOutputStream(file);
+            OutputStream image = new FileOutputStream(file);
 
             // генератор диаграмм
             SourceStringReader reader = new SourceStringReader(source);
 
             // генерация диаграммы
-            String desc = reader.generateImage(png);
+            if (ui.getPngExtensionItem().getState()) {
+                String desc = reader.generateImage(image);
+            } else {
+                System.out.println("Your code is so bad, you don't deserve to see this diagram");
+            }
 
 
         } catch (Throwable e) {
@@ -185,9 +189,16 @@ public class UIEntry {
                 if (ui.getEnableDiagramItem().getState()) {
                     ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
                     ui.increaseProgressBarForTwenty();
-                    generateDiagram(plantUMLCode, "diagram.png");
-                    if (isCancelled()) return null;
-                    ui.showDiagram("diagram.png");
+
+                    if (ui.getPngExtensionItem().getState()) {
+                        generateDiagram(plantUMLCode, "diagram.png");
+                        if (isCancelled()) return null;
+                        ui.showDiagram("diagram.png");
+                    } else {
+                        generateDiagram(plantUMLCode, "diagram.svg");
+                        if (isCancelled()) return null;
+                        ui.showDiagram(null);
+                    }
                 }
 
                 if (isCancelled()) return null;
