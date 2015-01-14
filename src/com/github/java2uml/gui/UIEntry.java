@@ -218,7 +218,7 @@ public class UIEntry {
                     } else {
                         generateDiagram(plantUMLCode, "diagram.svg");
                         if (isCancelled()) return null;
-                        Desktop.getDesktop().browse(new URI("file://$MODULE_DIR$/diagram.svg"));
+                        Desktop.getDesktop().open(new File("diagram.svg"));
 //                        TODO
 //                        отобразить svg
 //                        ui.showDiagram(null);
