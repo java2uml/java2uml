@@ -174,6 +174,10 @@ public class UIEntry {
                 ui.getLabelForDiagram().setIcon(null);
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
+                ui.getGeneratePlantUML().setEnabled(false);
+
+                Main.main(gettingParametersFromUI());
+
                 swingWorker = new SwingWorkerForBackgroundGenerating();
                 swingWorker.execute();
 
@@ -193,12 +197,6 @@ public class UIEntry {
         private boolean isPngExtensionItem;
 
         public SwingWorkerForBackgroundGenerating() {
-            ui.getGeneratePlantUML().setEnabled(false);
-            try {
-                Main.main(gettingParametersFromUI());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             isEnableDiagramItem = ui.getEnableDiagramItem().getState();
             isPngExtensionItem = ui.getPngExtensionItem().getState();
             path = isPngExtensionItem ? dpng : dsvg;
