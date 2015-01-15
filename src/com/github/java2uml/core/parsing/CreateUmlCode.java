@@ -221,7 +221,7 @@ public class CreateUmlCode {
         String[] subString = path.split("src");
         if (subString.length > 1 && (subString[1].contains(".") || subString[1].contains("-")))
             return null;
-        String namePackage = subString.length > 1 ? subString[1].replace("/", ".").substring(1) : null;
+        String namePackage = subString.length > 1 ? subString[1].replace(System.getProperty("file.separator"), ".").substring(1) : null;
         return namePackage;
     }
 
@@ -240,7 +240,7 @@ public class CreateUmlCode {
     }
 
     private String getNameClass(String file){
-        String[] subString = file.split("/");
+        String[] subString = file.split(System.getProperty("file.separator"));
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
     }
