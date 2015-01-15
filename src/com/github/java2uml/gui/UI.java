@@ -519,7 +519,8 @@ public class UI implements ExceptionListener {
 
 //            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
 //            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
-            jLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("logo.png")));
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("logo.png"));
+            jLabel = new JLabel(new ImageIcon(image));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);

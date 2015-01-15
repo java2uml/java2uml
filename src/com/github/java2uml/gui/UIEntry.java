@@ -219,7 +219,7 @@ public class UIEntry {
                         if (isCancelled()) return null;
 //                        TODO
 //                        отобразить svg
-//                        ui.showDiagram(null);
+                        ui.showDiagram(null);
                     }
                 }
 
