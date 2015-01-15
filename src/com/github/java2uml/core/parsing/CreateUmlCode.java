@@ -69,7 +69,7 @@ public class CreateUmlCode {
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
 
-                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
                     System.out.println("Reading folder... " + folder[i].toString());
                     level++;
 
@@ -78,12 +78,12 @@ public class CreateUmlCode {
                     source.append(getNamePackage(folder[i].toString()) + " " + color + " {\n");
                 }
                 readPackage(folder[i]);
-                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("}\n");
                     level--;
                 }
             }
-            else if (folder[i].toString().toLowerCase().endsWith(".java") && folder[i].toString().contains(projectName + "/src")) {
+            else if (folder[i].toString().toLowerCase().endsWith(".java") && folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src")) {
                 System.out.println("Reading file... " + folder[i].toString());
                 createCU(folder[i]);
             }

@@ -274,12 +274,15 @@ public class UMLDiagramClasses {
     }
     
     private boolean isClass(BodyDeclaration body){
-        String string = body.getComment() != null ? body.toString().replace(body.getComment().toString(), "") : body.toString();
-        if(string.startsWith("protected ")
+        String lines = body.getComment() != null ? body.toString().replace(body.getComment().toString(), "") : body.toString();
+        String[] strings = lines.split(System.getProperty("line.separator"));
+        String string = strings[0];
+        if((string.startsWith("protected ")
                 || string.startsWith("private ")
                 || string.startsWith("class ")
                 || string.startsWith("abstract")
                 || string.startsWith("static"))
+                && string.contains(" class "))
             return true;
         return false;
         
