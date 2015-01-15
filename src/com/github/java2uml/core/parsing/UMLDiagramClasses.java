@@ -35,29 +35,41 @@ public class UMLDiagramClasses {
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                
+
+                if (n.isInterface())
+                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+
+                else
+                    CreateUmlCode.source.append("class ");
+                
+                CreateUmlCode.source.append(n.getName());
+
                 // Если класс имплементирует интерфейсы создаем связь
                 if (n.getImplements() != null) {
                     for (ClassOrInterfaceType type : n.getImplements()) {
-                            // Отделяем сторонние интерфейсы
-                            if(availability(type.getName())){
-                                // Если внутри пакета связь делаем короткую
-                                CreateUmlCode.connections.append(nameWithPath(type.getName()));
-                                // Если внутри пакета связь делаем короткую
-                                if (genericPackage(cu.getImports(), cu.getPackage()))
-                                    CreateUmlCode.connections.append(" <|. ");
-                                else
-                                    CreateUmlCode.connections.append(" <|.. ");
+                        // Отделяем сторонние интерфейсы
+                        if(availability(type.getName())){
+                            // Если внутри пакета связь делаем короткую
+                            CreateUmlCode.connections.append(nameWithPath(type.getName()));
+                            // Если внутри пакета связь делаем короткую
+                            if (genericPackage(cu.getImports(), cu.getPackage()))
+                                CreateUmlCode.connections.append(" <|. ");
+                            else
+                                CreateUmlCode.connections.append(" <|.. ");
 
-                                CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
-                            }else if(Options.isShowLollipop()){
-                                CreateUmlCode.connections.append(type.getName());
-                                CreateUmlCode.connections.append(" ()- ");
-                                CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
-                            }
+                            CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
+                        }else if(Options.isShowLollipop()){
+                            CreateUmlCode.source.append(" <<");
+                            CreateUmlCode.source.append(type.getName());
+                            if(n.getImplements().size() > 1)
+                                CreateUmlCode.source.append(",");
+                            CreateUmlCode.source.append(">> ");
+                        }
                     }
                 }
                 // Если класс наследует другой класс создаем связь
-                if (n.getExtends() != null) {
+                if (n.getExtends() != null && !n.getName().toLowerCase().contains("exception")) {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
                         if(availability(type.getName())) {
@@ -67,7 +79,7 @@ public class UMLDiagramClasses {
                             else
                                 CreateUmlCode.connections.append(" <|-- ");
                             break;
-                        }else {
+                        }else if(!n.getName().toLowerCase().contains("exception")){
                             CreateUmlCode.connections.append(type.getName());
                             if (Options.isShowLollipop()) {
                                 CreateUmlCode.connections.append(" ()- ");
@@ -80,13 +92,10 @@ public class UMLDiagramClasses {
 
                     CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
                 }
-
-                if (n.isInterface())
-                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
-
-                else
-                    CreateUmlCode.source.append("class ");
-                CreateUmlCode.source.append(n.getName());
+                
+                // Определяем класс наследуемый exceptions
+                if(n.getName().toLowerCase().contains("exception"))
+                    CreateUmlCode.source.append(" << (E,yellow) >> ");
                 // Определяем точку входа
                 if (n.getMembers().toString().contains("public static void main(String[] args)") && !n.getName().equals("UMLDiagramClasses"))
                     CreateUmlCode.source.append(" << start >> ");
@@ -96,12 +105,12 @@ public class UMLDiagramClasses {
 
                     // Вытягиваем поля
                     setFields(n);
-                    
+                    List<String> allThrows = new ArrayList<String>();
                     // Вытягиваем конструкторы
-                    setConstructors(n, nameWithPath(n.getName()));
+                    setConstructors(n, nameWithPath(n.getName()), allThrows);
 
                     // Вытягиваем методы
-                    setMethods(n);
+                    setMethods(n, allThrows);
 
                     CreateUmlCode.source.append("}\n");
                     // Вытягиваем внутренние классы
@@ -121,16 +130,24 @@ public class UMLDiagramClasses {
 
     }
     
-    private void setConstructors(ClassOrInterfaceDeclaration n, final String nameClass){
+    private void setConstructors(ClassOrInterfaceDeclaration n, final String nameClass, final List allThrows){
         new VoidVisitorAdapter() {
             @Override
             public void visit(ConstructorDeclaration n, Object arg) {
                 if(n.getThrows() != null)
                     for (NameExpr expr : n.getThrows()){
-                        CreateUmlCode.association.append(nameWithPath(expr.toString()));
-                        CreateUmlCode.association.append(" <.. ");
-                        CreateUmlCode.association.append(nameClass + "\n");
-                        
+                        String throwName = (expr.getComment() != null
+                                ?
+                                expr.toString().replace(expr.getComment().toString(), "")
+                                :
+                                expr.toString());
+                        if(allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
+
+                            CreateUmlCode.association.append(nameWithPath(throwName));
+                            CreateUmlCode.association.append(" <.. ");
+                            CreateUmlCode.association.append(nameClass + "\n");
+                            allThrows.add(throwName);
+                        }
                     }
 
             }
@@ -257,11 +274,12 @@ public class UMLDiagramClasses {
     }
     
     private boolean isClass(BodyDeclaration body){
-        if(body.toString().startsWith("protected ")
-                || body.toString().startsWith("private ")
-                || body.toString().startsWith("class ")
-                || body.toString().startsWith("abstract") 
-                || body.toString().startsWith("static"))
+        String string = body.getComment() != null ? body.toString().replace(body.getComment().toString(), "") : body.toString();
+        if(string.startsWith("protected ")
+                || string.startsWith("private ")
+                || string.startsWith("class ")
+                || string.startsWith("abstract")
+                || string.startsWith("static"))
             return true;
         return false;
         
@@ -277,6 +295,13 @@ public class UMLDiagramClasses {
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                               
+                if (n.isInterface())
+                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
+                else
+                    CreateUmlCode.source.append("class ");
+                CreateUmlCode.source.append(n.getName()+"_"+parentClass);
+
                 // Если класс имплементирует интерфейсы создаем связь
                 if (n.getImplements() != null) {
                     for (ClassOrInterfaceType type : n.getImplements()) {
@@ -290,19 +315,19 @@ public class UMLDiagramClasses {
                             else
                                 CreateUmlCode.connections.append(" <|.. ");
 
-                            CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
-                        }else{
-                            CreateUmlCode.connections.append(type.getName());
-                            CreateUmlCode.connections.append(" ()- ");
-                            CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                            CreateUmlCode.connections.append(nameWithPath(n.getName()) + "_");
+                            CreateUmlCode.connections.append(parentClass + "\n");
+                        }else if(Options.isShowLollipop()){
+                            CreateUmlCode.source.append(" <<");
+                            CreateUmlCode.source.append(type.getName());
+                            if(n.getImplements().size() > 1)
+                                CreateUmlCode.source.append(",");
+                            CreateUmlCode.source.append(">> ");
                         }
-
-
-
                     }
                 }
                 // Если класс наследует другой класс создаем связь
-                if (n.getExtends() != null) {
+                if (n.getExtends() != null && !n.getName().toLowerCase().contains("exception")) {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
                         if(availability(type.getName())) {
@@ -312,22 +337,25 @@ public class UMLDiagramClasses {
                             else
                                 CreateUmlCode.connections.append(" <|-- ");
                             break;
-                        }else{
+                        }else if(!n.getName().toLowerCase().contains("exception")){
                             CreateUmlCode.connections.append(type.getName());
-                            CreateUmlCode.connections.append(" ()- ");
+                            if (Options.isShowLollipop()) {
+                                CreateUmlCode.connections.append(" ()- ");
+                            } else
+                                CreateUmlCode.connections.append(" <|- ");
                         }
+
                     }
 
 
-                    CreateUmlCode.connections.append(cu.getPackage().getName() + "." + n.getName() + "\n");
+                    CreateUmlCode.connections.append(nameWithPath(n.getName()) + "_");
+                    CreateUmlCode.connections.append(parentClass + "\n");
                 }
-                
-                if (n.isInterface())
-                    CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
-                else
-                    CreateUmlCode.source.append("class ");
-                CreateUmlCode.source.append(n.getName());
-                CreateUmlCode.source.append(" << inner >> ");
+
+                // Определяем класс наследуемый exceptions
+                if(n.getName().toLowerCase().contains("exception"))
+                    CreateUmlCode.source.append(" << (E,yellow) >> ");
+
                 if (n.getMembers().size() > 0) {
                     CreateUmlCode.source.append("{\n");
 
@@ -335,12 +363,12 @@ public class UMLDiagramClasses {
                     setFields(n);
 
                     // Вытягиваем методы
-                    setMethods(n);
+                    setMethods(n, null);
 
                     CreateUmlCode.source.append("}\n");
 
                     // Добавляем связь - композицию
-                    setComposition(cu.getPackage().getName() + "." + n.getName(), parentClass);
+                    setComposition(getPackage() + n.getName() + "_" + parentClass, parentClass);
                 } else
                     CreateUmlCode.source.append("\n");
             }
@@ -357,7 +385,7 @@ public class UMLDiagramClasses {
 
         CreateUmlCode.composition.append(innerClass);
         CreateUmlCode.composition.append(" *- ");
-        CreateUmlCode.composition.append(cu.getPackage().getName() + "." + parentClass + "\n");
+        CreateUmlCode.composition.append(getPackage() + parentClass + "\n");
     }
 
     /**
@@ -467,7 +495,8 @@ public class UMLDiagramClasses {
      * @author - Nadchuk Andrei navikom11@mail.ru  
      * @param clazz
      */
-    public void setMethods(ClassOrInterfaceDeclaration clazz) {
+    public void setMethods(final ClassOrInterfaceDeclaration clazz, final List allThrows) {
+        
         new VoidVisitorAdapter() {
             @Override
             public void visit(MethodDeclaration n, Object arg) {
@@ -480,6 +509,25 @@ public class UMLDiagramClasses {
                     setParameters(n.getParameters());
                 }
                 CreateUmlCode.source.append(")\n");
+
+                if(n.getThrows() != null) {
+
+                    for (NameExpr expr : n.getThrows()){
+                        String throwName = (expr.getComment() != null
+                                ?
+                                expr.toString().replace(expr.getComment().toString(), "")
+                                :
+                                expr.toString());
+                        if(allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
+
+                            CreateUmlCode.association.append(nameWithPath(throwName));
+                            CreateUmlCode.association.append(" <.. ");
+                            CreateUmlCode.association.append(nameWithPath(clazz.getName()) + "\n");
+                            allThrows.add(throwName);
+                        }
+                    }
+
+                }
             }
         }.visit(clazz, null);
 
@@ -507,11 +555,11 @@ public class UMLDiagramClasses {
                 if (imp.getName().toString().toLowerCase().endsWith("." + nameClass.toLowerCase()))
                     return imp.getName().toString();
             }
-        return (cu.getPackage() == null ? "" : cu.getPackage().getName() + ".") + nameClass;
+        return getPackage() + nameClass;
     }
 
     private boolean genericPackage(List<ImportDeclaration> imports, PackageDeclaration pack) {
-        if (imports != null && imports.size() > 0)
+        if (imports != null && imports.size() > 0 && pack != null)
             for (ImportDeclaration imp : imports) {
                 if (imp.getName().toString().contains(pack.getName().toString()))
                     return true;
@@ -523,6 +571,12 @@ public class UMLDiagramClasses {
         if(where.contains("<" + what + ">") || where.contains(what + "["))
             return true;
         return false;
+        
+    }
+    
+    private String getPackage(){
+        
+        return (cu.getPackage() == null ? "" : cu.getPackage().getName().toString() + ".");
         
     }
 
