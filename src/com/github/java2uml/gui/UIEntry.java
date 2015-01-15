@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 public class UIEntry {
     static UI ui;
@@ -44,9 +45,7 @@ public class UIEntry {
         args[7] = !ui.getShowAssociation().getState() ? "noassociation" : "";
         args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : "";
 
-
         for (String str : args) System.out.println(str);
-
 
         return args;
     }
@@ -88,7 +87,6 @@ public class UIEntry {
                 if (plantUMLCode != null && !plantUMLCode.equals(""))
                     sendRequestAndShowSvg(plantUMLCode);
 
-
             }
         });
         ui.settingStateForAllOptions();
@@ -110,7 +108,6 @@ public class UIEntry {
             exceptionListener.handleExceptionAndShowDialog(e);
 
         }
-
 
     }
 
@@ -163,7 +160,6 @@ public class UIEntry {
                 }
             }
 
-
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
@@ -189,68 +185,88 @@ public class UIEntry {
     }
 
     public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
+        private final String dpng = "diagram.png";
+        private final String dsvg = "diagram.svg";
+
+        private String path;
+        private boolean isEnableDiagramItem;
+        private boolean isPngExtensionItem;
+
+        public SwingWorkerForBackgroundGenerating() {
+            ui.getGeneratePlantUML().setEnabled(false);
+            try {
+                Main.main(gettingParametersFromUI());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            isEnableDiagramItem = ui.getEnableDiagramItem().getState();
+            isPngExtensionItem = ui.getPngExtensionItem().getState();
+            path = isPngExtensionItem ? dpng : dsvg;
+        }
+
         @Override
         protected String doInBackground() throws Exception {
 
-            try {
-                ui.getGeneratePlantUML().setEnabled(false);
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
-                ui.increaseProgressBarForTwenty();
-                if (isCancelled()) return null;
+            publish("loadingFilesLabel");
+            if (isCancelled()) return null;
 
-                Main.main(gettingParametersFromUI());
+            publish("codeGenerationLabel");
+            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
-                if (isCancelled()) return null;
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
-                ui.increaseProgressBarForTwenty();
-                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+            if (isCancelled()) return null;
 
-                if (isCancelled()) return null;
-
-                if (ui.getEnableDiagramItem().getState()) {
-                    ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
-                    ui.increaseProgressBarForTwenty();
-
-                    if (ui.getPngExtensionItem().getState()) {
-                        generateDiagram(plantUMLCode, "diagram.png");
-                        if (isCancelled()) return null;
-                        ui.showDiagram("diagram.png");
-                    } else {
-                        generateDiagram(plantUMLCode, "diagram.svg");
-                        if (isCancelled()) return null;
-                        Desktop.getDesktop().open(new File("diagram.svg"));
-//                        TODO
-//                        отобразить svg
-//                        ui.showDiagram(null);
-                    }
-                }
-
-                if (isCancelled()) return null;
-                ui.setProgressBarComplete();
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
-                ui.getGeneratePlantUML().setEnabled(true);
-
-
-            } catch (Throwable e) {
-                e.printStackTrace();
-                ui.getProgressBar().setString("0%");
-                ui.getProgressBar().setValue(0);
-                exceptionListener.handleExceptionAndShowDialog(e);
-                ui.getGeneratePlantUML().setEnabled(true);
+            if (isEnableDiagramItem) {
+                publish("loadingDiagramLabel");
+                generateDiagram(plantUMLCode, path);
             }
+
+            if (isCancelled()) return null;
+            publish("completeLabel");
+
             return "";
         }
 
+        @Override
+        protected void process(List<String> chunks) {
+//            super.process(chunks);
+            ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunks.get(0)));
+            ui.increaseProgressBarForTwenty();
+        }
+
+        @Override
+        protected void done() {
+//            super.done();
+            if (isCancelled()) {
+                ui.getProgressBar().setString("0%");
+                ui.getProgressBar().setValue(0);
+                ui.getGeneratePlantUML().setEnabled(true);
+            }
+
+            ui.setProgressBarComplete();
+            ui.getGeneratePlantUML().setEnabled(true);
+
+            if (isPngExtensionItem) {
+                ui.showDiagram(dpng);
+            } else {
+//                Desktop.getDesktop().open(new File(dsvg));
+                String userDir = System.getProperty("user.dir", "unknown");
+                try {
+                    Desktop.getDesktop().browse(new URI("file://" + userDir + "/" + dsvg));
+                } catch (IOException | URISyntaxException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
-    public void settingDockIcon(){
+    public void settingDockIcon() {
         try {
             Class c = Class.forName("com.apple.eawt.Application");
             Method m = c.getMethod("getApplication");
             Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
             Object applicationInstance = m.invoke(null);
             m = applicationInstance.getClass().getMethod("setDockIconImage", java.awt.Image.class);
-            m.invoke(applicationInstance,image);
+            m.invoke(applicationInstance, image);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -269,10 +285,6 @@ public class UIEntry {
         try {
             url = t.encode(source);
             url = "http://www.plantuml.com/plantuml/svg/" + url;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             Desktop.getDesktop().browse(new URL(url).toURI());
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
