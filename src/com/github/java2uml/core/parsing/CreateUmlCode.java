@@ -7,6 +7,7 @@ import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -240,7 +241,7 @@ public class CreateUmlCode {
     }
 
     private String getNameClass(String file){
-        String[] subString = file.split(System.getProperty("file.separator"));
+        String[] subString = file.split(Pattern.quote(System.getProperty("file.separator")));
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
     }
