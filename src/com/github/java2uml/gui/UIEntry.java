@@ -229,7 +229,9 @@ public class UIEntry {
         @Override
         protected void process(List<String> chunks) {
 //            super.process(chunks);
-            ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunks.get(0)));
+            for (String chunk : chunks) {
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
+            }
             ui.increaseProgressBarForTwenty();
         }
 
