@@ -8,6 +8,8 @@ import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
 import javax.swing.*;
 import java.awt.*;
@@ -258,6 +260,20 @@ public class UIEntry {
                     e.printStackTrace();
                 }
             }
+            Thread soundThread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String generateSound = "finishGeneration.mp3";
+                    try (InputStream soundStream = getClass().getResourceAsStream(generateSound);) {
+                        AudioStream audioStream = new AudioStream(soundStream);
+                        AudioPlayer.player.start(audioStream);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+            soundThread.start();
+
         }
     }
 

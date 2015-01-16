@@ -1,6 +1,8 @@
 package com.github.java2uml.gui;
 
 import org.imgscalr.Scalr;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -13,8 +15,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.CopyOption;
@@ -26,15 +27,6 @@ import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
-
-    public JCheckBoxMenuItem getPngExtensionItem() {
-        return pngExtensionItem;
-    }
-
-    public JCheckBoxMenuItem getSvgExtensionItem() {
-        return svgExtensionItem;
-    }
-
     private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
     private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
     private JTabbedPane tabs;
@@ -109,6 +101,15 @@ public class UI implements ExceptionListener {
 
     public static UI getInstance() {
         return UIHolder.UI_INSTANCE;
+    }
+
+
+    public JCheckBoxMenuItem getPngExtensionItem() {
+        return pngExtensionItem;
+    }
+
+    public JCheckBoxMenuItem getSvgExtensionItem() {
+        return svgExtensionItem;
     }
 
     public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
@@ -468,12 +469,39 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getGeneratedCode().setText("");
+                Thread soundThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String clearSound = "clearCode.mp3";
+                        try (InputStream soundStream = getClass().getResourceAsStream(clearSound);) {
+                            AudioStream audioStream = new AudioStream(soundStream);
+                            AudioPlayer.player.start(audioStream);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                soundThread.start();
+
             }
         });
         browse.addActionListener(new ChooseFileActionListener());
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                Thread soundThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String copySound = "copy.mp3";
+                        try (InputStream soundStream = getClass().getResourceAsStream(copySound);) {
+                            AudioStream audioStream = new AudioStream(soundStream);
+                            AudioPlayer.player.start(audioStream);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                soundThread.start();
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
