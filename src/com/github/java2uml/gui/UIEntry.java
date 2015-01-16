@@ -8,7 +8,10 @@ import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -211,6 +214,31 @@ public class UIEntry {
             publish("codeGenerationLabel");
             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
+
+                if (isCancelled()) return null;
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
+                ui.increaseProgressBarForTwenty();
+                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+
+                if (isCancelled()) return null;
+
+                if (ui.getEnableDiagramItem().getState()) {
+                    ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
+                    ui.increaseProgressBarForTwenty();
+
+                    if (ui.getPngExtensionItem().getState()) {
+                        generateDiagram(plantUMLCode, "diagram.png");
+                        if (isCancelled()) return null;
+                        ui.showDiagram("diagram.png");
+                    } else {
+                        generateDiagram(plantUMLCode, "diagram.svg");
+                        if (isCancelled()) return null;
+//                        TODO
+//                        отобразить svg
+                        ui.showDiagram(null);
+                    }
+                }
+
             if (isCancelled()) return null;
 
             if (isEnableDiagramItem) {
@@ -250,6 +278,24 @@ public class UIEntry {
             } else {
                 ui.showDiagram("im1.jpg");
             }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("generated_01.wav"));
+                        Clip clip = AudioSystem.getClip();
+                        clip.open(audioInputStream);
+                        clip.start();
+                    } catch (LineUnavailableException e1) {
+                        e1.printStackTrace();
+                    } catch (UnsupportedAudioFileException e1) {
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }).start();
+
         }
     }
 

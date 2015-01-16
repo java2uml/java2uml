@@ -3,6 +3,7 @@ package com.github.java2uml.gui;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -11,8 +12,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +26,19 @@ import java.util.ResourceBundle;
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
 
+    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
+    private JTabbedPane tabs;
+    private JMenuBar menu;
+    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
+    private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
+            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
+            showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
+    private ButtonGroup directionGroup;
+    private ButtonGroup typeOfDiagramGroup;
+    private ButtonGroup languageGroup;
+
     public JCheckBoxMenuItem getPngExtensionItem() {
         return pngExtensionItem;
     }
@@ -35,22 +47,12 @@ public class UI implements ExceptionListener {
         return svgExtensionItem;
     }
 
-    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
-    private JTabbedPane tabs;
-    private JMenuBar menu;
-    private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
-    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
-    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
-            sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
-            showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
-    ButtonGroup directionGroup;
-    ButtonGroup typeOfDiagramGroup;
-    ButtonGroup languageGroup;
-    ButtonGroup diagramExtensionGroup;
-    About about;
+    private ButtonGroup diagramExtensionGroup;
+    private ButtonGroup parsingMethod;
+    private About about;
 
     private static Help helpWindow;
+    private static HelpRu helpRu;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
 
@@ -60,7 +62,6 @@ public class UI implements ExceptionListener {
     private BufferedImage diagram;
     private JLabel labelForDiagram;
 
-    ButtonGroup parsingMethod;
 
     private JScrollPane scrollPane, scrollPaneForDiagram;
 
@@ -84,6 +85,14 @@ public class UI implements ExceptionListener {
             return ResourceBundle.getBundle("GUILabels", new Locale(""));
         } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
 
+    }
+
+    public JCheckBoxMenuItem getEnglishLangItem() {
+        return englishLangItem;
+    }
+
+    public JCheckBoxMenuItem getRussianLangItem() {
+        return russianLangItem;
     }
 
 
@@ -379,14 +388,25 @@ public class UI implements ExceptionListener {
         helpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!Help.helpIsNull()) {
-                    if (!helpWindow.isVisible()) {
-                        helpWindow.setVisible(true);
-                    } else {
-                        helpWindow.toFront();
-                        helpWindow.repaint();
-                    }
-                } else helpWindow = Help.getInstance();
+                if (englishLangItem.getState()) {
+                    if (!Help.helpIsNull()) {
+                        if (!helpWindow.isVisible()) {
+                            helpWindow.setVisible(true);
+                        } else {
+                            helpWindow.toFront();
+                            helpWindow.repaint();
+                        }
+                    } else helpWindow = Help.getInstance();
+                } else {
+                    if (!HelpRu.helpIsNull()) {
+                        if (!helpRu.isVisible()) {
+                            helpRu.setVisible(true);
+                        } else {
+                            helpRu.toFront();
+                            helpRu.repaint();
+                        }
+                    } else helpRu = HelpRu.getInstance();
+                }
             }
         });
         return menu;
@@ -466,12 +486,48 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getGeneratedCode().setText("");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            Clip clip = AudioSystem.getClip();
+                            clip.open(audioInputStream);
+                            clip.start();
+                        } catch (LineUnavailableException e1) {
+                            e1.printStackTrace();
+                        } catch (UnsupportedAudioFileException e1) {
+                            e1.printStackTrace();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }).start();
+
             }
         });
         browse.addActionListener(new ChooseFileActionListener());
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            Clip clip = AudioSystem.getClip();
+                            clip.open(audioInputStream);
+                            clip.start();
+                        } catch (LineUnavailableException e1) {
+                            e1.printStackTrace();
+                        } catch (UnsupportedAudioFileException e1) {
+                            e1.printStackTrace();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                }).start();
+
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
@@ -496,7 +552,8 @@ public class UI implements ExceptionListener {
 
 //            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
 //            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
-        jLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("logo.png")));
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("logo.png"));
+        jLabel = new JLabel(new ImageIcon(image));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
@@ -549,6 +606,7 @@ public class UI implements ExceptionListener {
         mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mainFrame.setResizable(false);
         return mainFrame;
     }
 
