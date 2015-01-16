@@ -248,13 +248,7 @@ public class UIEntry {
             if (isPngExtensionItem) {
                 ui.showDiagram(dpng);
             } else {
-//                Desktop.getDesktop().open(new File(dsvg));
-                String userDir = System.getProperty("user.dir", "unknown");
-                try {
-                    Desktop.getDesktop().browse(new URI("file://" + userDir + "/" + dsvg));
-                } catch (IOException | URISyntaxException e) {
-                    e.printStackTrace();
-                }
+                ui.showDiagram("im1.jpg");
             }
         }
     }

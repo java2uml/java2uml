@@ -11,15 +11,15 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -355,7 +355,6 @@ public class UI implements ExceptionListener {
         options.add(showLollipops);
         options.add(enableDiagramItem);
 
-
         help.add(helpItem);
         help.add(aboutItem);
 
@@ -463,7 +462,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-
         clearCode.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -498,7 +496,7 @@ public class UI implements ExceptionListener {
 
 //            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
 //            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
-            jLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("logo.png")));
+        jLabel = new JLabel(new ImageIcon(getClass().getClassLoader().getResource("logo.png")));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
@@ -525,8 +523,25 @@ public class UI implements ExceptionListener {
         panelForSaveAndOpenDiagram.add(saveDiagram);
         panelForSaveAndOpenDiagram.add(openDiagram);
 
-        openDiagram.addMouseListener(new MouseListenerForDiagram());
-
+        openDiagram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (getPngExtensionItem().getState()) {
+                    try {
+                        Desktop.getDesktop().open(new File("diagram.png"));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {
+                    String userDir = System.getProperty("user.dir", "unknown");
+                    try {
+                        Desktop.getDesktop().browse(new URI("file://" + userDir + "/diagram.svg"));
+                    } catch (IOException | URISyntaxException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
@@ -558,6 +573,7 @@ public class UI implements ExceptionListener {
             diagram = ImageIO.read(new File(diagramName));
             diagram = Scalr.resize(diagram, 500);
             labelForDiagram = new JLabel(new ImageIcon(diagram));
+
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
