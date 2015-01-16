@@ -5,6 +5,7 @@ import sun.audio.AudioPlayer;
 import sun.audio.AudioStream;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -490,19 +491,24 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getGeneratedCode().setText("");
-                Thread soundThread = new Thread(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String clearSound = "clearCode.mp3";
-                        try (InputStream soundStream = getClass().getResourceAsStream(clearSound);) {
-                            AudioStream audioStream = new AudioStream(soundStream);
-                            AudioPlayer.player.start(audioStream);
+                        try {
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            Clip clip = AudioSystem.getClip();
+                            clip.open(audioInputStream);
+                            clip.start();
+                        } catch (LineUnavailableException e1) {
+                            e1.printStackTrace();
+                        } catch (UnsupportedAudioFileException e1) {
+                            e1.printStackTrace();
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
                     }
-                });
-                soundThread.start();
+                }).start();
+
 
             }
         });
@@ -510,19 +516,24 @@ public class UI implements ExceptionListener {
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Thread soundThread = new Thread(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String copySound = "copy.mp3";
-                        try (InputStream soundStream = getClass().getResourceAsStream(copySound);) {
-                            AudioStream audioStream = new AudioStream(soundStream);
-                            AudioPlayer.player.start(audioStream);
+                        try {
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            Clip clip = AudioSystem.getClip();
+                            clip.open(audioInputStream);
+                            clip.start();
+                        } catch (LineUnavailableException e1) {
+                            e1.printStackTrace();
+                        } catch (UnsupportedAudioFileException e1) {
+                            e1.printStackTrace();
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
                     }
-                });
-                soundThread.start();
+                }).start();
+
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }
@@ -584,6 +595,7 @@ public class UI implements ExceptionListener {
         mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mainFrame.setResizable(false);
         return mainFrame;
     }
 

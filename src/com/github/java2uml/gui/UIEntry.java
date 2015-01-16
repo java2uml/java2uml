@@ -11,6 +11,7 @@ import org.stathissideris.ascii2image.core.FileUtils;
 import sun.audio.AudioPlayer;
 import sun.audio.AudioStream;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -285,19 +286,23 @@ public class UIEntry {
                     e.printStackTrace();
                 }
             }
-            Thread soundThread = new Thread(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String generateSound = "finishGeneration.mp3";
-                    try (InputStream soundStream = getClass().getResourceAsStream(generateSound);) {
-                        AudioStream audioStream = new AudioStream(soundStream);
-                        AudioPlayer.player.start(audioStream);
+                    try {
+                        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("generated_01.wav"));
+                        Clip clip = AudioSystem.getClip();
+                        clip.open(audioInputStream);
+                        clip.start();
+                    } catch (LineUnavailableException e1) {
+                        e1.printStackTrace();
+                    } catch (UnsupportedAudioFileException e1) {
+                        e1.printStackTrace();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
                 }
-            });
-            soundThread.start();
+            }).start();
 
         }
     }
