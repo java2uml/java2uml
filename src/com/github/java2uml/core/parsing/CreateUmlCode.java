@@ -70,7 +70,7 @@ public class CreateUmlCode {
             if (folder[i].isDirectory()) {
 
                 if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
-                    System.out.println(folder[i].toString());
+                    System.out.println("Reading folder... " + folder[i].toString());
                     level++;
 
                     color = (level == 1 ? "#FFFFFF" : "#DDDDDD");
@@ -83,7 +83,8 @@ public class CreateUmlCode {
                     level--;
                 }
             }
-            else if (folder[i].toString().toLowerCase().endsWith(".java")) {
+            else if (folder[i].toString().toLowerCase().endsWith(".java") && folder[i].toString().contains(projectName + "/src")) {
+                System.out.println("Reading file... " + folder[i].toString());
                 createCU(folder[i]);
             }
         }
