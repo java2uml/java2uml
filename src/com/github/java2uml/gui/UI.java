@@ -490,7 +490,7 @@ public class UI implements ExceptionListener {
                     @Override
                     public void run() {
                         try {
-                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound_01.wav"));
                             Clip clip = AudioSystem.getClip();
                             clip.open(audioInputStream);
                             clip.start();
@@ -514,7 +514,7 @@ public class UI implements ExceptionListener {
                     @Override
                     public void run() {
                         try {
-                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.aif"));
+                            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound_01.wav"));
                             Clip clip = AudioSystem.getClip();
                             clip.open(audioInputStream);
                             clip.start();
