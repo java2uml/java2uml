@@ -289,8 +289,8 @@ public class UIEntry {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("generated_01.wav"));
-                         Clip clip = AudioSystem.getClip();){
+                    try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("generated.wav"));) {
+                        Clip clip = AudioSystem.getClip();
                         clip.open(audioInputStream);
                         clip.start();
                     } catch (LineUnavailableException e1) {
