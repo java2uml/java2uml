@@ -16,12 +16,12 @@ public class Reflection {
         UMLClassLoader ecl = new UMLClassLoader();
         Set<Class> classes = null;
 
-        // ui.increaseProgressBarForTwenty();
+        // ui.validateProgressBarTo();
 
         // Пробуем загрузить классы.
         classes = ecl.loadClasses(Options.getPath());
 
-        // ui.increaseProgressBarForTwenty();
+        // ui.validateProgressBarTo();
 
         // todo убрать вывод в консоль после тестирования
         if (classes == null || classes.size() == 0) {
@@ -35,7 +35,7 @@ public class Reflection {
 
             // for (Class clazz : classes) {
             // System.out.println(clazz.getName());
-            // ui.increaseProgressBarForTwenty();
+            // ui.validateProgressBarTo();
             // }
             // Создаем код UML из загруженных классов.
             String diagram = DataExtractor.extract(classes);
