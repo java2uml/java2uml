@@ -2,21 +2,24 @@ package com.github.java2uml.gui;
 
 import com.github.java2uml.core.Main;
 import com.github.java2uml.core.Options;
+import net.sourceforge.plantuml.FileFormat;
+import net.sourceforge.plantuml.FileFormatOption;
 import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
 
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 
 public class UIEntry {
     static UI ui;
@@ -49,6 +52,9 @@ public class UIEntry {
 
 
     public void initUI() {
+        if (System.getProperty("os.name").equals("Mac OS X")) {
+            settingDockIcon();
+        }
         GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UI.getInstance();
         exceptionListener = ui;
@@ -75,6 +81,14 @@ public class UIEntry {
         });
         ui.getGeneratePlantUML().addActionListener(generateActionListener);
         ui.getGenerateItem().addActionListener(generateActionListener);
+        ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (plantUMLCode != null && !plantUMLCode.equals(""))
+                    sendRequestAndShowSvg(plantUMLCode);
+
+            }
+        });
         ui.settingStateForAllOptions();
 
     }
@@ -109,15 +123,6 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
-        if (ui.getSvgExtensionItem().getState()) {
-            sendRequestAndShowSvg(source);
-        } else {
-            createAndShowPng(source, fileName);
-        }
-
-    }
-
-    private void createAndShowPng(String source, String fileName) {
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -125,17 +130,145 @@ public class UIEntry {
             }
 
             // поток вывода для диаграммы
-            OutputStream png = new FileOutputStream(file);
+            OutputStream image = new FileOutputStream(file);
 
             // генератор диаграмм
             SourceStringReader reader = new SourceStringReader(source);
 
             // генерация диаграммы
-            String desc = reader.generateImage(png);
+            if (ui.getPngExtensionItem().getState()) {
+                String desc = reader.generateImage(image);
+            } else {
+                System.out.println("Your code is so bad, you don't deserve to see this diagram");
+                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+// Write the first image to "os"
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                os.close();
+
+// The XML is stored into svg
+                final String svg = new String(os.toByteArray());
+                System.out.println(svg);
+
+                try {
+                    FileWriter fw = new FileWriter(file);
+                    fw.write(svg);
+                    fw.close();
+
+                } catch (IOException iox) {
+                    //do stuff with exception
+                    iox.printStackTrace();
+                }
+            }
 
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
+        }
+    }
+
+    public class GenerateActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                ui.getLabelForDiagram().setIcon(null);
+                ui.getProgressBar().setValue(0);
+                ui.getProgressBar().setString("0%");
+                ui.getGeneratePlantUML().setEnabled(false);
+
+                Main.main(gettingParametersFromUI());
+
+                swingWorker = new SwingWorkerForBackgroundGenerating();
+                swingWorker.execute();
+
+            } catch (Throwable e1) {
+                e1.printStackTrace();
+                exceptionListener.handleExceptionAndShowDialog(e1);
+            }
+        }
+    }
+
+    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
+        private final String dpng = "diagram.png";
+        private final String dsvg = "diagram.svg";
+
+        private String path;
+        private boolean isEnableDiagramItem;
+        private boolean isPngExtensionItem;
+
+        public SwingWorkerForBackgroundGenerating() {
+            isEnableDiagramItem = ui.getEnableDiagramItem().getState();
+            isPngExtensionItem = ui.getPngExtensionItem().getState();
+            path = isPngExtensionItem ? dpng : dsvg;
+        }
+
+        @Override
+        protected String doInBackground() throws Exception {
+
+            publish("loadingFilesLabel");
+            if (isCancelled()) return null;
+
+            publish("codeGenerationLabel");
+            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+
+            if (isCancelled()) return null;
+
+            if (isEnableDiagramItem) {
+                publish("loadingDiagramLabel");
+                generateDiagram(plantUMLCode, path);
+            }
+
+            if (isCancelled()) return null;
+            publish("completeLabel");
+
+            return "";
+        }
+
+        @Override
+        protected void process(List<String> chunks) {
+//            super.process(chunks);
+            for (String chunk : chunks) {
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
+            }
+            ui.increaseProgressBarForTwenty();
+        }
+
+        @Override
+        protected void done() {
+//            super.done();
+            if (isCancelled()) {
+                ui.getProgressBar().setString("0%");
+                ui.getProgressBar().setValue(0);
+                ui.getGeneratePlantUML().setEnabled(true);
+            }
+
+            ui.setProgressBarComplete();
+            ui.getGeneratePlantUML().setEnabled(true);
+
+            if (isPngExtensionItem) {
+                ui.showDiagram(dpng);
+            } else {
+                ui.showDiagram("im1.jpg");
+            }
+        }
+    }
+
+    public void settingDockIcon() {
+        try {
+            Class c = Class.forName("com.apple.eawt.Application");
+            Method m = c.getMethod("getApplication");
+            Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
+            Object applicationInstance = m.invoke(null);
+            m = applicationInstance.getClass().getMethod("setDockIconImage", java.awt.Image.class);
+            m.invoke(applicationInstance, image);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
         }
     }
 
@@ -150,68 +283,5 @@ public class UIEntry {
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
-        System.err.println(url);
-    }
-
-    public class GenerateActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                ui.getLabelForDiagram().setIcon(null);
-                ui.getProgressBar().setValue(0);
-                ui.getProgressBar().setString("0%");
-                swingWorker = new SwingWorkerForBackgroundGenerating();
-                swingWorker.execute();
-
-            } catch (Throwable e1) {
-                e1.printStackTrace();
-                exceptionListener.handleExceptionAndShowDialog(e1);
-            }
-        }
-    }
-
-    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
-        @Override
-        protected String doInBackground() throws Exception {
-
-            try {
-                ui.getGeneratePlantUML().setEnabled(false);
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingFilesLabel"));
-                ui.increaseProgressBarForTwenty();
-                if (isCancelled()) return null;
-
-                Main.main(gettingParametersFromUI());
-
-                if (isCancelled()) return null;
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
-                ui.increaseProgressBarForTwenty();
-                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-
-                if (isCancelled()) return null;
-
-                if (ui.getEnableDiagramItem().getState()) {
-                    ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
-                    ui.increaseProgressBarForTwenty();
-                    generateDiagram(plantUMLCode, "diagram.png");
-                    if (isCancelled()) return null;
-                    ui.showDiagram("diagram.png");
-                }
-
-                if (isCancelled()) return null;
-                ui.setProgressBarComplete();
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("completeLabel"));
-                ui.getGeneratePlantUML().setEnabled(true);
-
-            } catch (Throwable e) {
-                e.printStackTrace();
-                ui.getProgressBar().setString("0%");
-                ui.getProgressBar().setValue(0);
-                exceptionListener.handleExceptionAndShowDialog(e);
-                ui.getGeneratePlantUML().setEnabled(true);
-            }
-            return "";
-        }
-
     }
 }

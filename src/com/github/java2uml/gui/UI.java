@@ -1,9 +1,9 @@
 package com.github.java2uml.gui;
 
-import com.apple.eawt.Application;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -15,6 +15,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -23,52 +25,45 @@ import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
-    private JPanel panelForDiagram;
-    private JPanel panelForSaveAndOpenDiagram;
-    private JButton browse;
-    private JButton generatePlantUML;
-    private JButton copyToClipboard;
-    private JButton saveDiagram;
-    private JButton cancelLoading;
-    private JButton clearCode;
+
+    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
+    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
     private JTabbedPane tabs;
+    private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
-    JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
+    private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
             showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
-    ButtonGroup directionGroup;
-    ButtonGroup typeOfDiagramGroup;
-    ButtonGroup languageGroup;
-    About about;
-    private ButtonGroup extensionDiagram;
-
-    public JCheckBoxMenuItem getSvgExtensionItem() {
-        return svgExtensionItem;
-    }
-
-    public void setSvgExtensionItem(JCheckBoxMenuItem svgExtensionItem) {
-        this.svgExtensionItem = svgExtensionItem;
-    }
+    private ButtonGroup directionGroup;
+    private ButtonGroup typeOfDiagramGroup;
+    private ButtonGroup languageGroup;
 
     public JCheckBoxMenuItem getPngExtensionItem() {
         return pngExtensionItem;
     }
 
-    public void setPngExtensionItem(JCheckBoxMenuItem pngExtensionItem) {
-        this.pngExtensionItem = pngExtensionItem;
+    public JCheckBoxMenuItem getSvgExtensionItem() {
+        return svgExtensionItem;
     }
 
+    private ButtonGroup diagramExtensionGroup;
+    private ButtonGroup parsingMethod;
+    private About about;
+
     private static Help helpWindow;
+    private static HelpRu helpRu;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
 
-    private JFileChooser fileChooser;
+    private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
+    private JFileChooser fileChooser, fileSaver;
+    private File chosenDirectory;
+    private BufferedImage diagram;
     private JLabel labelForDiagram;
 
-    ButtonGroup parsingMethod;
 
-    private JScrollPane scrollPaneForDiagram;
+    private JScrollPane scrollPane, scrollPaneForDiagram;
 
     private JTextField path;
 
@@ -78,8 +73,6 @@ public class UI implements ExceptionListener {
     public static final String HORIZONTAL_DIRECTION = "Horizontal";
     public static final String CLASS_DIAGRAM = "Class Dia";
     public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
-    private JButton openDiagram;
-
 
     public JProgressBar getProgressBar() {
         return progressBar;
@@ -92,6 +85,14 @@ public class UI implements ExceptionListener {
             return ResourceBundle.getBundle("GUILabels", new Locale(""));
         } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
 
+    }
+
+    public JCheckBoxMenuItem getEnglishLangItem() {
+        return englishLangItem;
+    }
+
+    public JCheckBoxMenuItem getRussianLangItem() {
+        return russianLangItem;
     }
 
 
@@ -242,13 +243,14 @@ public class UI implements ExceptionListener {
         clearCode.setText(localeLabels.getString("clearLabel"));
 
         copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
+        openOnPlantUMLServer.setText(localeLabels.getString("showOnPlantUMLSite"));
 
         tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
         tabs.setTitleAt(1, localeLabels.getString("diagramTabLabel"));
     }
 
     private JMenuBar initMenu() {
-        JMenuBar menu = new JMenuBar();
+        menu = new JMenuBar();
 
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
@@ -283,7 +285,7 @@ public class UI implements ExceptionListener {
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
         languageGroup = new ButtonGroup();
-        extensionDiagram = new ButtonGroup();
+        diagramExtensionGroup = new ButtonGroup();
 
         reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
@@ -292,9 +294,6 @@ public class UI implements ExceptionListener {
 
         languageGroup.add(englishLangItem);
         languageGroup.add(russianLangItem);
-
-        extensionDiagram.add(pngExtensionItem);
-        extensionDiagram.add(svgExtensionItem);
 
         aboutItem.addActionListener(new ActionListener() {
             @Override
@@ -341,6 +340,9 @@ public class UI implements ExceptionListener {
         diagramExtension.add(pngExtensionItem);
         diagramExtension.add(svgExtensionItem);
 
+        diagramExtensionGroup.add(pngExtensionItem);
+        diagramExtensionGroup.add(svgExtensionItem);
+
         options.add(languageMenu);
         options.add(direction);
         options.add(diagramGeneratingMethods);
@@ -386,27 +388,42 @@ public class UI implements ExceptionListener {
         helpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!Help.helpIsNull()) {
-                    if (!helpWindow.isVisible()) {
-                        helpWindow.setVisible(true);
-                    } else {
-                        helpWindow.toFront();
-                        helpWindow.repaint();
-                    }
-                } else helpWindow = Help.getInstance();
+                if (englishLangItem.getState()) {
+                    if (!Help.helpIsNull()) {
+                        if (!helpWindow.isVisible()) {
+                            helpWindow.setVisible(true);
+                        } else {
+                            helpWindow.toFront();
+                            helpWindow.repaint();
+                        }
+                    } else helpWindow = Help.getInstance();
+                } else {
+                    if (!HelpRu.helpIsNull()) {
+                        if (!helpRu.isVisible()) {
+                            helpRu.setVisible(true);
+                        } else {
+                            helpRu.toFront();
+                            helpRu.repaint();
+                        }
+                    } else helpRu = HelpRu.getInstance();
+                }
             }
         });
         return menu;
     }
 
+    public JButton getOpenOnPlantUMLServer() {
+        return openOnPlantUMLServer;
+    }
+
     public JFrame initUI() {
         localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
-        JPanel panelForOptions = new JPanel();
-        JPanel panelForGeneratedCode = new JPanel();
+        panelForOptions = new JPanel();
+        panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
-        JPanel panelForClearAndCopyToClipboard = new JPanel();
-        JPanel panelForProgressBarAndCancel = new JPanel();
+        panelForClearAndCopyToClipboard = new JPanel();
+        panelForProgressBarAndCancel = new JPanel();
         panelForSaveAndOpenDiagram = new JPanel();
         browse = new JButton(localeLabels.getString("chooseDirLabel"));
         saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
@@ -414,36 +431,50 @@ public class UI implements ExceptionListener {
         cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
         clearCode = new JButton(localeLabels.getString("clearLabel"));
+        openOnPlantUMLServer = new JButton(localeLabels.getString("showOnPlantUMLSite"));
         openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
         generatedCode = new JTextArea();
         path = new JTextField();
-        JPanel panelForPath = new JPanel();
-        JPanel panelForPathAndButtons = new JPanel();
+        panelForPath = new JPanel();
+        panelForPathAndButtons = new JPanel();
         progressBar = new JProgressBar();
         progressBar.setBorder(new EmptyBorder(0, 3, 0, 3));
         tabs = new JTabbedPane();
         scrollPaneForDiagram = new JScrollPane(labelForDiagram);
-        JSeparator separatorBetweenPathAndButtons = new JSeparator();
-        JSeparator separatorBetweenButtonsAndProgressBar = new JSeparator();
+        separatorBetweenPathAndButtons = new JSeparator();
+        separatorBetweenButtonsAndProgressBar = new JSeparator();
         fileChooser = new JFileChooser();
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
+        fileSaver = new JFileChooser();
+
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fileChooser.setSelectedFile(new File("diagram.png"));
+                if (pngExtensionItem.getState()) {
+                    fileSaver.setSelectedFile(new File("diagram.png"));
+                    fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
+                } else {
+                    fileSaver.setSelectedFile(new File("diagram.svg"));
+                    fileSaver.setFileFilter(new FileNameExtensionFilter("SVG image", "svg"));
+                }
+
                 CopyOption[] options = new CopyOption[]{
                         StandardCopyOption.REPLACE_EXISTING,
                 };
-                if (fileChooser.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
+                if (fileSaver.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+                    File file = fileSaver.getSelectedFile();
                     try {
-                        Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
+                        if (pngExtensionItem.getState()) {
+                            Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
+                        } else {
+                            Files.copy(new File("diagram.svg").toPath(), file.toPath(), options);
+                        }
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     }
@@ -482,13 +513,11 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
         JLabel jLabel = null;
-        try {
-            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
-            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
-            jLabel = new JLabel(new ImageIcon(bufferedImage));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
+//            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
+        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("logo.png"));
+        jLabel = new JLabel(new ImageIcon(image));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
@@ -496,7 +525,7 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-        JScrollPane scrollPane = new JScrollPane(generatedCode);
+        scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -507,6 +536,7 @@ public class UI implements ExceptionListener {
         panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
         panelForClearAndCopyToClipboard.add(clearCode);
         panelForClearAndCopyToClipboard.add(copyToClipboard);
+        panelForClearAndCopyToClipboard.add(openOnPlantUMLServer);
         panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
@@ -514,11 +544,25 @@ public class UI implements ExceptionListener {
         panelForSaveAndOpenDiagram.add(saveDiagram);
         panelForSaveAndOpenDiagram.add(openDiagram);
 
-        openDiagram.addMouseListener(new MouseListenerForDiagram());
-
-        Application application = Application.getApplication();
-        Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png"));
-        application.setDockIconImage(image);
+        openDiagram.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (getPngExtensionItem().getState()) {
+                    try {
+                        Desktop.getDesktop().open(new File("diagram.png"));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                } else {
+                    String userDir = System.getProperty("user.dir", "unknown");
+                    try {
+                        Desktop.getDesktop().browse(new URI("file://" + userDir + "/diagram.svg"));
+                    } catch (IOException | URISyntaxException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
 
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
@@ -526,6 +570,7 @@ public class UI implements ExceptionListener {
         mainFrame.setSize(600, 600);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        mainFrame.setResizable(false);
         return mainFrame;
     }
 
@@ -547,7 +592,7 @@ public class UI implements ExceptionListener {
 
     public void showDiagram(String diagramName) {
         try {
-            BufferedImage diagram = ImageIO.read(new File(diagramName));
+            diagram = ImageIO.read(new File(diagramName));
             diagram = Scalr.resize(diagram, 500);
             labelForDiagram = new JLabel(new ImageIcon(diagram));
             panelForDiagram.removeAll();
@@ -570,7 +615,8 @@ public class UI implements ExceptionListener {
 
     @Override
     public void handleExceptionAndDisplayItInCodeArea(Exception exception) {
-        generatedCode.setText("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
+        StringBuilder stringBuilder = new StringBuilder("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
+        generatedCode.setText(stringBuilder.toString());
     }
 
     public class ChooseFileActionListener implements ActionListener {
@@ -580,7 +626,7 @@ public class UI implements ExceptionListener {
             getProgressBar().setValue(0);
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
             if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
-                File chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+                chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
                 path.setText(chosenDirectory.toString());
             }
         }
