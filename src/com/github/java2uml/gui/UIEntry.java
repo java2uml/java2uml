@@ -8,8 +8,6 @@ import net.sourceforge.plantuml.SourceStringReader;
 import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
-import sun.audio.AudioPlayer;
-import sun.audio.AudioStream;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
@@ -19,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -177,6 +174,10 @@ public class UIEntry {
                 ui.getLabelForDiagram().setIcon(null);
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
+                ui.getGeneratePlantUML().setEnabled(false);
+
+                Main.main(gettingParametersFromUI());
+
                 swingWorker = new SwingWorkerForBackgroundGenerating();
                 swingWorker.execute();
 
@@ -196,12 +197,6 @@ public class UIEntry {
         private boolean isPngExtensionItem;
 
         public SwingWorkerForBackgroundGenerating() {
-            ui.getGeneratePlantUML().setEnabled(false);
-            try {
-                Main.main(gettingParametersFromUI());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             isEnableDiagramItem = ui.getEnableDiagramItem().getState();
             isPngExtensionItem = ui.getPngExtensionItem().getState();
             path = isPngExtensionItem ? dpng : dsvg;
@@ -215,31 +210,6 @@ public class UIEntry {
 
             publish("codeGenerationLabel");
             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-
-
-                if (isCancelled()) return null;
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString("codeGenerationLabel"));
-                ui.increaseProgressBarForTwenty();
-                generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-
-                if (isCancelled()) return null;
-
-                if (ui.getEnableDiagramItem().getState()) {
-                    ui.getProgressBar().setString(ui.getLocaleLabels().getString("loadingDiagramLabel"));
-                    ui.increaseProgressBarForTwenty();
-
-                    if (ui.getPngExtensionItem().getState()) {
-                        generateDiagram(plantUMLCode, "diagram.png");
-                        if (isCancelled()) return null;
-                        ui.showDiagram("diagram.png");
-                    } else {
-                        generateDiagram(plantUMLCode, "diagram.svg");
-                        if (isCancelled()) return null;
-//                        TODO
-//                        отобразить svg
-                        ui.showDiagram(null);
-                    }
-                }
 
             if (isCancelled()) return null;
 
@@ -278,13 +248,7 @@ public class UIEntry {
             if (isPngExtensionItem) {
                 ui.showDiagram(dpng);
             } else {
-//                Desktop.getDesktop().open(new File(dsvg));
-                String userDir = System.getProperty("user.dir", "unknown");
-                try {
-                    Desktop.getDesktop().browse(new URI("file://" + userDir + "/" + dsvg));
-                } catch (IOException | URISyntaxException e) {
-                    e.printStackTrace();
-                }
+                ui.showDiagram("im1.jpg");
             }
             new Thread(new Runnable() {
                 @Override

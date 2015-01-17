@@ -7,6 +7,7 @@ import java.io.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -69,7 +70,7 @@ public class CreateUmlCode {
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
 
-                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
                     System.out.println("Reading folder... " + folder[i].toString());
                     level++;
 
@@ -78,12 +79,12 @@ public class CreateUmlCode {
                     source.append(getNamePackage(folder[i].toString()) + " " + color + " {\n");
                 }
                 readPackage(folder[i]);
-                if(folder[i].toString().contains(projectName + "/src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
                     source.append("}\n");
                     level--;
                 }
             }
-            else if (folder[i].toString().toLowerCase().endsWith(".java") && folder[i].toString().contains(projectName + "/src")) {
+            else if (folder[i].toString().toLowerCase().endsWith(".java") && folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src")) {
                 System.out.println("Reading file... " + folder[i].toString());
                 createCU(folder[i]);
             }
@@ -221,7 +222,7 @@ public class CreateUmlCode {
         String[] subString = path.split("src");
         if (subString.length > 1 && (subString[1].contains(".") || subString[1].contains("-")))
             return null;
-        String namePackage = subString.length > 1 ? subString[1].replace("/", ".").substring(1) : null;
+        String namePackage = subString.length > 1 ? subString[1].replace(System.getProperty("file.separator"), ".").substring(1) : null;
         return namePackage;
     }
 
@@ -240,7 +241,7 @@ public class CreateUmlCode {
     }
 
     private String getNameClass(String file){
-        String[] subString = file.split("/");
+        String[] subString = file.split(Pattern.quote(System.getProperty("file.separator")));
         String className = subString.length > 1 ? subString[subString.length - 1].replace(".java", "") : null;
         return className;
     }
