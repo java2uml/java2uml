@@ -617,8 +617,8 @@ public class UI implements ExceptionListener {
     public void showDiagram(String diagramName) {
         try {
             diagram = ImageIO.read(new File(diagramName));
-            diagram = Scalr.resize(diagram, 500);
-            labelForDiagram = new JLabel(new ImageIcon(diagram));
+            BufferedImage newDiagram = Scalr.resize(diagram, 500);
+            labelForDiagram = new JLabel(new ImageIcon(newDiagram));
             panelForDiagram.removeAll();
             scrollPaneForDiagram.removeAll();
             scrollPaneForDiagram = new JScrollPane(labelForDiagram);
