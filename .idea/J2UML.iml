@@ -14,9 +14,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="imgscalr-lib-4.2" level="project" />
-    <orderEntry type="library" name="net.sourceforge.plantuml:plantuml:8008" level="project" />
     <orderEntry type="library" name="japa-parser" level="project" />
-    <orderEntry type="library" name="plantuml-8008" level="project" />
     <orderEntry type="library" name="ant-1.8.1" level="project" />
+    <orderEntry type="library" name="plantuml-8008" level="project" />
   </component>
 </module>
