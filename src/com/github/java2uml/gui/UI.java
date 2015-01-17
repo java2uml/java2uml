@@ -486,47 +486,12 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 getGeneratedCode().setText("");
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.wav"));) {
-                            Clip clip = AudioSystem.getClip();
-                            clip.open(audioInputStream);
-                            clip.start();
-                        } catch (LineUnavailableException e1) {
-                            e1.printStackTrace();
-                        } catch (UnsupportedAudioFileException e1) {
-                            e1.printStackTrace();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }).start();
-
             }
         });
         browse.addActionListener(new ChooseFileActionListener());
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("sound.wav"));){
-                            Clip clip = AudioSystem.getClip();
-                            clip.open(audioInputStream);
-                            clip.start();
-                        } catch (LineUnavailableException e1) {
-                            e1.printStackTrace();
-                        } catch (UnsupportedAudioFileException e1) {
-                            e1.printStackTrace();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                }).start();
-
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }

@@ -250,23 +250,6 @@ public class UIEntry {
             } else {
                 ui.showDiagram("im1.jpg");
             }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(getClass().getClassLoader().getResource("generated.wav"));) {
-                        Clip clip = AudioSystem.getClip();
-                        clip.open(audioInputStream);
-                        clip.start();
-                    } catch (LineUnavailableException e1) {
-                        e1.printStackTrace();
-                    } catch (UnsupportedAudioFileException e1) {
-                        e1.printStackTrace();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }).start();
-
         }
     }
 
