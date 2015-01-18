@@ -251,7 +251,7 @@ public class UIEntry {
             if (isPngExtensionItem) {
                 ui.showDiagram(dpng);
             } else {
-                ui.showDiagram("im1.jpg");
+                ui.showDiagram("res/im1.jpg");
             }
         }
     }
