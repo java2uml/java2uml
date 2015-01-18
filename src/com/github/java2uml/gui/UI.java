@@ -1,5 +1,6 @@
 package com.github.java2uml.gui;
 
+import net.sourceforge.plantuml.core.Diagram;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
@@ -492,6 +493,9 @@ public class UI implements ExceptionListener {
         copyToClipboard.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                generatedCode.setFocusable(true);
+                generatedCode.selectAll();
+
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
             }

@@ -202,7 +202,7 @@ public class UIEntry {
 
         @Override
         protected String doInBackground() throws Exception {
-            
+
             deletePreviousVersionsOfDiagrams();
             setProgress(2);
             publish("loadingFilesLabel");
