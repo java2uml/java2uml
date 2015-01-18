@@ -547,19 +547,16 @@ public class UI implements ExceptionListener {
         openDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String diagram = null;
                 if (getPngExtensionItem().getState()) {
-                    try {
-                        Desktop.getDesktop().open(new File("diagram.png"));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                    diagram = "diagram.png";
                 } else {
-                    String userDir = System.getProperty("user.dir", "unknown");
-                    try {
-                        Desktop.getDesktop().browse(new URI("file://" + userDir + "/diagram.svg"));
-                    } catch (IOException | URISyntaxException e1) {
-                        e1.printStackTrace();
-                    }
+                    diagram = "diagram.svg";
+                }
+                try {
+                    Desktop.getDesktop().open(new File(diagram));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
             }
         });
