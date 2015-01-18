@@ -122,8 +122,6 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
-        deletePreviousVersionsOfDiagrams();
-
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -204,7 +202,8 @@ public class UIEntry {
 
         @Override
         protected String doInBackground() throws Exception {
-
+            
+            deletePreviousVersionsOfDiagrams();
             setProgress(2);
             publish("loadingFilesLabel");
             if (isCancelled()) return null;
