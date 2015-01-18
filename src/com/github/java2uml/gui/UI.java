@@ -574,8 +574,8 @@ public class UI implements ExceptionListener {
         return mainFrame;
     }
 
-    public int increaseProgressBarForTwenty() {
-        int value = progressBar.getValue() + 20;
+    public int validateProgressBarTo(int progress) {
+        int value = progress * 20;
         int maximum = progressBar.getMaximum();
         if (value > maximum) value = maximum;
         progressBar.setValue(value);

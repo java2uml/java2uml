@@ -9,7 +9,6 @@ import net.sourceforge.plantuml.code.Transcoder;
 import net.sourceforge.plantuml.code.TranscoderUtil;
 import org.stathissideris.ascii2image.core.FileUtils;
 
-import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -34,7 +33,7 @@ public class UIEntry {
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
         }
-        ui.increaseProgressBarForTwenty();
+        ui.validateProgressBarTo(1);
         args[0] = ui.getParsingCheckboxItem().getState() ? "java" : "class";
         args[1] = ui.getPath().getText().toString();
         args[2] = !ui.getShowHeader().getState() ? "" : "";
@@ -205,20 +204,24 @@ public class UIEntry {
         @Override
         protected String doInBackground() throws Exception {
 
+            setProgress(2);
             publish("loadingFilesLabel");
             if (isCancelled()) return null;
 
+            setProgress(3);
             publish("codeGenerationLabel");
             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
             if (isCancelled()) return null;
 
             if (isEnableDiagramItem) {
+                setProgress(4);
                 publish("loadingDiagramLabel");
                 generateDiagram(plantUMLCode, path);
             }
 
             if (isCancelled()) return null;
+            setProgress(5);
             publish("completeLabel");
 
             return "";
@@ -230,7 +233,7 @@ public class UIEntry {
             for (String chunk : chunks) {
                 ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
             }
-            ui.increaseProgressBarForTwenty();
+            ui.validateProgressBarTo(getProgress());
         }
 
         @Override
