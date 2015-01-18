@@ -122,6 +122,8 @@ public class UIEntry {
     }
 
     public void generateDiagram(String source, String fileName) {
+        deletePreviousVersionsOfDiagrams();
+
         try {
             File file = new File(fileName);
             if (!file.exists()) {
@@ -138,7 +140,6 @@ public class UIEntry {
             if (ui.getPngExtensionItem().getState()) {
                 String desc = reader.generateImage(image);
             } else {
-                System.out.println("Your code is so bad, you don't deserve to see this diagram");
                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
 // Write the first image to "os"
                 String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
@@ -238,13 +239,11 @@ public class UIEntry {
 
         @Override
         protected void done() {
-//            super.done();
             if (isCancelled()) {
                 ui.getProgressBar().setString("0%");
                 ui.getProgressBar().setValue(0);
                 ui.getGeneratePlantUML().setEnabled(true);
             }
-
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
 
@@ -286,5 +285,17 @@ public class UIEntry {
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean deletePreviousVersionsOfDiagrams(){
+        boolean success = false;
+
+        if (new File("diagram.svg").exists()) {
+            success = new File("diagram.svg").delete();
+        }
+        if (new File("diagram.png").exists()) {
+            success = new File("diagram.png").delete();
+        }
+        return success;
     }
 }

@@ -38,19 +38,9 @@ public class UI implements ExceptionListener {
     private ButtonGroup directionGroup;
     private ButtonGroup typeOfDiagramGroup;
     private ButtonGroup languageGroup;
-
-    public JCheckBoxMenuItem getPngExtensionItem() {
-        return pngExtensionItem;
-    }
-
-    public JCheckBoxMenuItem getSvgExtensionItem() {
-        return svgExtensionItem;
-    }
-
     private ButtonGroup diagramExtensionGroup;
     private ButtonGroup parsingMethod;
     private About about;
-
     private static Help helpWindow;
     private static HelpRu helpRu;
     private JTextArea generatedCode;
@@ -93,6 +83,15 @@ public class UI implements ExceptionListener {
 
     public JCheckBoxMenuItem getRussianLangItem() {
         return russianLangItem;
+    }
+
+
+    public JCheckBoxMenuItem getPngExtensionItem() {
+        return pngExtensionItem;
+    }
+
+    public JCheckBoxMenuItem getSvgExtensionItem() {
+        return svgExtensionItem;
     }
 
 
@@ -456,6 +455,7 @@ public class UI implements ExceptionListener {
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                fileSaver.setCurrentDirectory(new File(path.getText()));
                 if (pngExtensionItem.getState()) {
                     fileSaver.setSelectedFile(new File("diagram.png"));
                     fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));

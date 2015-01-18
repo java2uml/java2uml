@@ -1,4 +1,4 @@
-package com.github.java2uml.core.reflection;
+package com.github.java2uml.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -376,7 +376,7 @@ public class DiagramViewer extends JFrame {
 			public void run() {
 				//String tmp = "http://oracle.com";
 				//String tmp = "C:/Apache2_2/htdocs/eclipse/java2uml_balyschev/classes.png";
-				String tmp = "C:/Apache2_2/htdocs/eclipse/java2uml_balyschev/diagrams/test.svg";
+				String tmp = "/Users/mac/Desktop/java2UML/diagram.svg";
 				DiagramViewer.getInstance().show(tmp);
 			}
 		});
