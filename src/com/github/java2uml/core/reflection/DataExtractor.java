@@ -49,13 +49,16 @@ public class DataExtractor {
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
-        source.append("skinparam headerFontSize 50\n");
+        source.append(Options.isHorizontal() ? "left to right direction\n" : "top to bottom direction\n");
+        source.append("skinparam headerFontSize " + Options.getHeaderSize() + "\n");
         source.append("skinparam headerFontStyle bold\n");
+        source.append("skinparam classAttributeIconSize 0\n");
+        source.append("scale 1.0\n");
+        
         //source.append("' Split into 2 pages\n");
         //source.append("page 2x1\n");
         //source.append("skinparam backgroundColor Snow\n");
         //source.append("skinparam monochrome true\n");
-        source.append("skinparam classAttributeIconSize 0\n");
         //source.append("skinparam classBorderColor MediumSeaGreen\n");
         //source.append("skinparam classBackgroundColor Lavender\n");
         //source.append("skinparam classFontSize 20\n");
@@ -68,7 +71,6 @@ public class DataExtractor {
         //source.append("skinparam classArrowColor DarkBlue\n");
         //source.append("skinparam classArrowFontSize 24\n");
         //source.append("skinparam classArrowFontStyle bold\n");
-        source.append("scale 1.0\n");
         
         // заголовок диаграммы
         String header = Options.getHeader();

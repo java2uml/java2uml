@@ -1,4 +1,7 @@
 package com.github.java2uml.core;
+
+import com.github.java2uml.core.Options;
+
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
@@ -8,6 +11,7 @@ public final class Options {
     private static String path = null;
     private static String outputFile = "classes.plantuml";
     private static String header = null;
+    private static int headerSize = 30;
 
     private static boolean isClassDiagram = true;
 
@@ -19,10 +23,7 @@ public final class Options {
 
     private static boolean isVertical = true;
     
-    // отображение внутренних структур класса
     private static boolean showClassInterior = false;
-    
-    // отображение аргументов функций
     private static boolean showMethodArgs = true;
 
     private Options() {
@@ -32,6 +33,7 @@ public final class Options {
         path = null;
         outputFile = "classes.plantuml";
         header = null;
+        headerSize = 30;
 
         isClassDiagram = true;
 
@@ -42,7 +44,7 @@ public final class Options {
         showImplementation = true;
 
         isVertical = true;
-        
+
         showClassInterior	= false;
         showMethodArgs 		= true;
     }
@@ -69,6 +71,14 @@ public final class Options {
 
     public static void setHeader(String header) {
         Options.header = header;
+    }
+    
+    public static int getHeaderSize() {
+        return headerSize;
+    }
+
+    public static void setHeaderSize(int headerSize) {
+        Options.headerSize = headerSize;
     }
 
     public static boolean isClassDiagram() {
@@ -142,7 +152,7 @@ public final class Options {
     public static void setHorizontal() {
         isVertical = false;
     }
-    
+
     public static boolean isShowClassInterior() {
         return showClassInterior;
     }
