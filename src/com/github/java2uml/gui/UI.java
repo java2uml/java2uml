@@ -552,17 +552,18 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String diagram = null;
+
                 if (getPngExtensionItem().getState()) {
                     diagram = "diagram.png";
                 } else {
                     diagram = "diagram.svg";
                 }
-                DiagramViewer.getInstance().show(diagram);
-//                try {
-//                    Desktop.getDesktop().open(new File(diagram));
-//                } catch (IOException e1) {
-//                    e1.printStackTrace();
-//                }
+
+                try {
+                    Desktop.getDesktop().  open(new File(diagram));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
             }
         });
 
