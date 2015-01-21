@@ -563,7 +563,7 @@ public class UI implements ExceptionListener {
                 }
 
                 try {
-                    Desktop.getDesktop().  open(new File(diagram));
+                    Desktop.getDesktop().open(new File(diagram));
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
