@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -107,6 +108,8 @@ public class UI implements ExceptionListener {
     public JButton getGeneratePlantUML() {
         return generatePlantUML;
     }
+
+
 
     private static class UIHolder {
         static final UI UI_INSTANCE = new UI();
@@ -560,7 +563,7 @@ public class UI implements ExceptionListener {
                 }
 
                 try {
-                    Desktop.getDesktop().  open(new File(diagram));
+                    Desktop.getDesktop().open(new File(diagram));
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -593,9 +596,9 @@ public class UI implements ExceptionListener {
         return labelForDiagram;
     }
 
-    public void showDiagram(String diagramName) {
+    public void showDiagram(URL resource) {
         try {
-            diagram = ImageIO.read(new File(diagramName));
+            diagram = ImageIO.read(resource);
             diagram = Scalr.resize(diagram, 500);
             labelForDiagram = new JLabel(new ImageIcon(diagram));
             panelForDiagram.removeAll();
