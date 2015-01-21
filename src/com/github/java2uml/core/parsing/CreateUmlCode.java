@@ -226,18 +226,19 @@ public class CreateUmlCode {
         return namePackage;
     }
 
-    private void createListClasses(File path){
+    private void createListClasses(File path) throws CreateUmlCodeException{
+        if(path.exists()) {
+            File[] folder = path.listFiles();
 
-        File[] folder = path.listFiles();
-
-        for (int i = 0; i < folder.length; i++) {
-            if (folder[i].isDirectory()) {
-                createListClasses(folder[i]);
+            for (int i = 0; i < folder.length; i++) {
+                if (folder[i].isDirectory()) {
+                    createListClasses(folder[i]);
+                } else if (folder[i].toString().toLowerCase().endsWith(".java")) {
+                    classes.add(getNameClass(folder[i].toString()));
+                }
             }
-            else if (folder[i].toString().toLowerCase().endsWith(".java")) {
-                classes.add(getNameClass(folder[i].toString()));
-            }
-        }
+        }else 
+            throw new CreateUmlCodeException("Folder is not exist");
     }
 
     private String getNameClass(String file){

@@ -30,7 +30,7 @@ public class About extends JFrame {
         titledBorder.setTitleJustification(TitledBorder.CENTER);
 
 
-
+        this.getContentPane();
         about.setBorder(BorderFactory.createCompoundBorder(titledBorder, new EmptyBorder(4, 4, 4, 4)));
 
         try {

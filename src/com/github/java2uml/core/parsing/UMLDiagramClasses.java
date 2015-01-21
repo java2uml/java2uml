@@ -9,48 +9,49 @@ import japa.parser.ast.expr.NameExpr;
 import japa.parser.ast.stmt.ThrowStmt;
 import japa.parser.ast.type.ClassOrInterfaceType;
 import japa.parser.ast.visitor.VoidVisitorAdapter;
+
+import java.io.File;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Nadchuk Andrei on 21.12.14.
- *
  */
 public class UMLDiagramClasses {
     private CompilationUnit cu;
 
-    public UMLDiagramClasses(CompilationUnit cu){
+    public UMLDiagramClasses(CompilationUnit cu) {
         this.cu = cu;
         getClasses();
         getEnums();
     }
 
     /**
-     *  Code generation for the classes and interfaces
-     * @author - Nadchuk Andrei navikom11@mail.ru 
+     * Code generation for the classes and interfaces
+     *
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void getClasses() {
-        
+
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
-                
+
 
                 if (n.isInterface())
                     CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
 
                 else
                     CreateUmlCode.source.append("class ");
-                
+
                 CreateUmlCode.source.append(n.getName());
 
                 // Если класс имплементирует интерфейсы создаем связь
                 if (n.getImplements() != null) {
                     for (ClassOrInterfaceType type : n.getImplements()) {
                         // Отделяем сторонние интерфейсы
-                        if(availability(type.getName())){
-                            // Если внутри пакета связь делаем короткую
+                        if (availability(type.getName())) {
                             CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             // Если внутри пакета связь делаем короткую
                             if (genericPackage(cu.getImports(), cu.getPackage()))
@@ -59,10 +60,10 @@ public class UMLDiagramClasses {
                                 CreateUmlCode.connections.append(" <|.. ");
 
                             CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
-                        }else if(Options.isShowLollipop()){
+                        } else if (Options.isShowLollipop()) {
                             CreateUmlCode.source.append(" <<");
                             CreateUmlCode.source.append(type.getName());
-                            if(n.getImplements().size() > 1)
+                            if (n.getImplements().size() > 1)
                                 CreateUmlCode.source.append(",");
                             CreateUmlCode.source.append(">> ");
                         }
@@ -72,14 +73,14 @@ public class UMLDiagramClasses {
                 if (n.getExtends() != null && !n.getName().toLowerCase().contains("exception")) {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
-                        if(availability(type.getName())) {
+                        if (availability(type.getName())) {
                             CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             if (genericPackage(cu.getImports(), cu.getPackage()))
                                 CreateUmlCode.connections.append(" <|- ");
                             else
                                 CreateUmlCode.connections.append(" <|-- ");
                             break;
-                        }else if(!n.getName().toLowerCase().contains("exception")){
+                        } else if (!n.getName().toLowerCase().contains("exception")) {
                             CreateUmlCode.connections.append(type.getName());
                             if (Options.isShowLollipop()) {
                                 CreateUmlCode.connections.append(" ()- ");
@@ -92,9 +93,9 @@ public class UMLDiagramClasses {
 
                     CreateUmlCode.connections.append(nameWithPath(n.getName()) + "\n");
                 }
-                
+
                 // Определяем класс наследуемый exceptions
-                if(n.getName().toLowerCase().contains("exception"))
+                if (n.getName().toLowerCase().contains("exception"))
                     CreateUmlCode.source.append(" << (E,yellow) >> ");
                 // Определяем точку входа
                 if (n.getMembers().toString().contains("public static void main(String[] args)") && !n.getName().equals("UMLDiagramClasses"))
@@ -117,8 +118,8 @@ public class UMLDiagramClasses {
                     accessClass(n);
 
                     // Добавляем связь внутренним enum
-                    setConnectWithInnerEnums(n, 
-                            nameWithPath(n.getName()), 
+                    setConnectWithInnerEnums(n,
+                            nameWithPath(n.getName()),
                             cu.getPackage() == null ? "" : cu.getPackage().getName().toString());
                     // Добавляем связь - агрегацию
                     setAggregation(n, nameWithPath(n.getName()));
@@ -129,19 +130,19 @@ public class UMLDiagramClasses {
         }.visit(cu, null);
 
     }
-    
-    private void setConstructors(ClassOrInterfaceDeclaration n, final String nameClass, final List allThrows){
+
+    private void setConstructors(ClassOrInterfaceDeclaration n, final String nameClass, final List allThrows) {
         new VoidVisitorAdapter() {
             @Override
             public void visit(ConstructorDeclaration n, Object arg) {
-                if(n.getThrows() != null)
-                    for (NameExpr expr : n.getThrows()){
+                if (n.getThrows() != null)
+                    for (NameExpr expr : n.getThrows()) {
                         String throwName = (expr.getComment() != null
                                 ?
                                 expr.toString().replace(expr.getComment().toString(), "")
                                 :
                                 expr.toString());
-                        if(allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
+                        if (allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
 
                             CreateUmlCode.association.append(nameWithPath(throwName));
                             CreateUmlCode.association.append(" <.. ");
@@ -152,30 +153,32 @@ public class UMLDiagramClasses {
 
             }
         }.visit(n, null);
-        
+
     }
 
     /**
-     *  The isolation of classes created in the analyzed project
-     * @author - Nadchuk Andrei navikom11@mail.ru 
+     * The isolation of classes created in the analyzed project
+     *
      * @param clazz - class name
      * @return
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
-    private boolean availability(String clazz){
+    private boolean availability(String clazz) {
         for (String item : CreateUmlCode.classes) {
             if (clazz.equals(item)) {
                 return true;
             }
         }
         return false;
-        
+
     }
 
     /**
-     *  Generation Communications - aggregation
-     * @author - Nadchuk Andrei navikom11@mail.ru
-     * @param n - piece of code
+     * Generation Communications - aggregation
+     *
+     * @param n         - piece of code
      * @param nameClass - class name
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setAggregation(ClassOrInterfaceDeclaration n, final String nameClass) {
         StringBuilder writeClass = new StringBuilder();
@@ -189,10 +192,10 @@ public class UMLDiagramClasses {
         }.visit(n, null);
 
         for (String item : typeFields) {
-            
+
             for (String cl : CreateUmlCode.classes) {
                 if ((item.equals(cl) || containsClass(item, cl))
-                        && !nameWithPath(cl).equals(nameClass) 
+                        && !nameWithPath(cl).equals(nameClass)
                         && !writeClass.toString().contains("." + cl + ".")) {
                     CreateUmlCode.aggregation.append(nameClass);
                     CreateUmlCode.aggregation.append(" \" " + 1 + "\" ");
@@ -212,11 +215,12 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Determination of the number of connections
-     * @author - Nadchuk Andrei navikom11@mail.ru 
-     * @param classes - classes are already trapped in buffer
+     * Determination of the number of connections
+     *
+     * @param classes    - classes are already trapped in buffer
      * @param checkClass
      * @return
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private int quantityConnection(List<String> classes, String checkClass) {
         int quantity = 0;
@@ -228,11 +232,12 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Generation of communication for internal enum
-     * @author - Nadchuk Andrei navikom11@mail.ru 
-     * @param n - piece of code
+     * Generation of communication for internal enum
+     *
+     * @param n         - piece of code
      * @param className
      * @param path
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setConnectWithInnerEnums(ClassOrInterfaceDeclaration n, final String className, final String path) {
         // Так как в ClassOrInterfaceDeclaration нет прямого метода разбиения этих данных,
@@ -249,19 +254,20 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Search inner classes
-     * @author - Nadchuk Andrei navikom11@mail.ru
+     * Search inner classes
+     *
      * @param n - piece of code
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
-    private void accessClass(ClassOrInterfaceDeclaration n){
+    private void accessClass(ClassOrInterfaceDeclaration n) {
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
-                
-                for (BodyDeclaration body : n.getMembers()){
+
+                for (BodyDeclaration body : n.getMembers()) {
 
                     // Находим в коде признаки внутреннего класса
-                    if(body.toString().contains(" class ") && isClass(body)) {
+                    if (body.toString().contains(" class ") && isClass(body)) {
 
                         // Преобразуем доступа к нужным методам
                         ClassOrInterfaceDeclaration cu = (ClassOrInterfaceDeclaration) body;
@@ -270,14 +276,14 @@ public class UMLDiagramClasses {
                 }
             }
         }.visit(n, null);
-        
+
     }
-    
-    private boolean isClass(BodyDeclaration body){
+
+    private boolean isClass(BodyDeclaration body) {
         String lines = body.getComment() != null ? body.toString().replace(body.getComment().toString(), "") : body.toString();
         String[] strings = lines.split(System.getProperty("line.separator"));
         String string = strings[0];
-        if((string.startsWith("protected ")
+        if ((string.startsWith("protected ")
                 || string.startsWith("private ")
                 || string.startsWith("class ")
                 || string.startsWith("abstract")
@@ -285,31 +291,32 @@ public class UMLDiagramClasses {
                 && string.contains(" class "))
             return true;
         return false;
-        
+
     }
 
     /**
-     *  Generation of communication for inner classes 
-     * @author - Nadchuk Andrei navikom11@mail.rua
-     * @param n - piece of code
+     * Generation of communication for inner classes
+     *
+     * @param n           - piece of code
      * @param parentClass
+     * @author - Nadchuk Andrei navikom11@mail.rua
      */
-    private void getDataInnerClass(ClassOrInterfaceDeclaration n, final String parentClass){
+    private void getDataInnerClass(ClassOrInterfaceDeclaration n, final String parentClass) {
         new VoidVisitorAdapter() {
             @Override
             public void visit(ClassOrInterfaceDeclaration n, Object arg) {
-                               
+
                 if (n.isInterface())
                     CreateUmlCode.source.append(Modifier.toString(Modifier.INTERFACE) + " ");
                 else
                     CreateUmlCode.source.append("class ");
-                CreateUmlCode.source.append(n.getName()+"_"+parentClass);
+                CreateUmlCode.source.append(n.getName() + "_" + parentClass);
 
                 // Если класс имплементирует интерфейсы создаем связь
                 if (n.getImplements() != null) {
                     for (ClassOrInterfaceType type : n.getImplements()) {
                         // Отделяем сторонние интерфейсы
-                        if(availability(type.getName())){
+                        if (availability(type.getName())) {
                             // Если внутри пакета связь делаем короткую
                             CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             // Если внутри пакета связь делаем короткую
@@ -320,10 +327,10 @@ public class UMLDiagramClasses {
 
                             CreateUmlCode.connections.append(nameWithPath(n.getName()) + "_");
                             CreateUmlCode.connections.append(parentClass + "\n");
-                        }else if(Options.isShowLollipop()){
+                        } else if (Options.isShowLollipop()) {
                             CreateUmlCode.source.append(" <<");
                             CreateUmlCode.source.append(type.getName());
-                            if(n.getImplements().size() > 1)
+                            if (n.getImplements().size() > 1)
                                 CreateUmlCode.source.append(",");
                             CreateUmlCode.source.append(">> ");
                         }
@@ -333,14 +340,14 @@ public class UMLDiagramClasses {
                 if (n.getExtends() != null && !n.getName().toLowerCase().contains("exception")) {
                     for (ClassOrInterfaceType type : n.getExtends()) {
                         // Отделяем сторонние классы
-                        if(availability(type.getName())) {
+                        if (availability(type.getName())) {
                             CreateUmlCode.connections.append(nameWithPath(type.getName()));
                             if (genericPackage(cu.getImports(), cu.getPackage()))
                                 CreateUmlCode.connections.append(" <|- ");
                             else
                                 CreateUmlCode.connections.append(" <|-- ");
                             break;
-                        }else if(!n.getName().toLowerCase().contains("exception")){
+                        } else if (!n.getName().toLowerCase().contains("exception")) {
                             CreateUmlCode.connections.append(type.getName());
                             if (Options.isShowLollipop()) {
                                 CreateUmlCode.connections.append(" ()- ");
@@ -356,7 +363,7 @@ public class UMLDiagramClasses {
                 }
 
                 // Определяем класс наследуемый exceptions
-                if(n.getName().toLowerCase().contains("exception"))
+                if (n.getName().toLowerCase().contains("exception"))
                     CreateUmlCode.source.append(" << (E,yellow) >> ");
 
                 if (n.getMembers().size() > 0) {
@@ -379,12 +386,13 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *   Generation Communications - composition
-     * @author - Nadchuk Andrei navikom11@mail.ru 
+     * Generation Communications - composition
+     *
      * @param innerClass
      * @param parentClass
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
-    private void setComposition(String innerClass, String parentClass){
+    private void setComposition(String innerClass, String parentClass) {
 
         CreateUmlCode.composition.append(innerClass);
         CreateUmlCode.composition.append(" *- ");
@@ -392,8 +400,9 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *   Code generation for enum
-     * @author - Nadchuk Andrei navikom11@mail.ru 
+     * Code generation for enum
+     *
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void getEnums() {
         // Посещаем визитор EnumDeclaration
@@ -426,9 +435,10 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Code generation enum fields
-     * @author - Nadchuk Andrei navikom11@mail.ru  
+     * Code generation enum fields
+     *
      * @param n - piece of code
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setEnumFields(EnumDeclaration n) {
         CreateUmlCode.source.append(".. Fields ..\n");
@@ -448,9 +458,10 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Code generation enum methods
-     * @author - Nadchuk Andrei navikom11@mail.ru  
+     * Code generation enum methods
+     *
      * @param n - piece of code
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setEnumMethods(EnumDeclaration n) {
         CreateUmlCode.source.append(".. Methods ..\n");
@@ -474,9 +485,10 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Code generation for class fields
-     * @author - Nadchuk Andrei navikom11@mail.ru  
+     * Code generation for class fields
+     *
      * @param clazz
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setFields(ClassOrInterfaceDeclaration clazz) {
 
@@ -494,12 +506,13 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Code generation for class methods
-     * @author - Nadchuk Andrei navikom11@mail.ru  
+     * Code generation for class methods
+     *
      * @param clazz
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     public void setMethods(final ClassOrInterfaceDeclaration clazz, final List allThrows) {
-        
+
         new VoidVisitorAdapter() {
             @Override
             public void visit(MethodDeclaration n, Object arg) {
@@ -513,15 +526,15 @@ public class UMLDiagramClasses {
                 }
                 CreateUmlCode.source.append(")\n");
 
-                if(n.getThrows() != null) {
+                if (n.getThrows() != null) {
 
-                    for (NameExpr expr : n.getThrows()){
+                    for (NameExpr expr : n.getThrows()) {
                         String throwName = (expr.getComment() != null
                                 ?
                                 expr.toString().replace(expr.getComment().toString(), "")
                                 :
                                 expr.toString());
-                        if(allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
+                        if (allThrows != null && availability(throwName) && quantityConnection(allThrows, throwName) == 0) {
 
                             CreateUmlCode.association.append(nameWithPath(throwName));
                             CreateUmlCode.association.append(" <.. ");
@@ -537,9 +550,10 @@ public class UMLDiagramClasses {
     }
 
     /**
-     *  Code generation for method parameters
-     * @author - Nadchuk Andrei navikom11@mail.ru
+     * Code generation for method parameters
+     *
      * @param parameters - collection parameters
+     * @author - Nadchuk Andrei navikom11@mail.ru
      */
     private void setParameters(List<Parameter> parameters) {
 
@@ -555,8 +569,25 @@ public class UMLDiagramClasses {
     private String nameWithPath(String nameClass) {
         if (cu.getImports() != null && cu.getImports().size() > 0)
             for (ImportDeclaration imp : cu.getImports()) {
+
                 if (imp.getName().toString().toLowerCase().endsWith("." + nameClass.toLowerCase()))
                     return imp.getName().toString();
+
+                StringBuilder builder = new StringBuilder();
+                builder.append(Options.getPath());
+                builder.append(System.getProperty("file.separator"));
+                builder.append("src");
+                builder.append(System.getProperty("file.separator"));
+                builder.append(imp.getName().toString().replace(".", System.getProperty("file.separator")));
+                builder.append(System.getProperty("file.separator"));
+                builder.append(nameClass);
+                builder.append(".java");
+                File file = new File(builder.toString());
+
+                if (file.exists())
+                    return imp.getName().toString() + "." + nameClass;
+
+
             }
         return getPackage() + nameClass;
     }
@@ -569,18 +600,18 @@ public class UMLDiagramClasses {
             }
         return false;
     }
-    
-    private boolean containsClass(String where, String what){
-        if(where.contains("<" + what + ">") || where.contains(what + "["))
+
+    private boolean containsClass(String where, String what) {
+        if (where.contains("<" + what + ">") || where.contains(what + "["))
             return true;
         return false;
-        
+
     }
-    
-    private String getPackage(){
-        
+
+    private String getPackage() {
+
         return (cu.getPackage() == null ? "" : cu.getPackage().getName().toString() + ".");
-        
+
     }
 
 }

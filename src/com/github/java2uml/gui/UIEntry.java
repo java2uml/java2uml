@@ -138,7 +138,6 @@ public class UIEntry {
             if (ui.getPngExtensionItem().getState()) {
                 String desc = reader.generateImage(image);
             } else {
-                System.out.println("Your code is so bad, you don't deserve to see this diagram");
                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
 // Write the first image to "os"
                 String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
@@ -204,24 +203,25 @@ public class UIEntry {
         @Override
         protected String doInBackground() throws Exception {
 
-            setProgress(1);
+            deletePreviousVersionsOfDiagrams();
+            setProgress(2);
             publish("loadingFilesLabel");
             if (isCancelled()) return null;
 
-            setProgress(2);
+            setProgress(3);
             publish("codeGenerationLabel");
             generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
             if (isCancelled()) return null;
 
             if (isEnableDiagramItem) {
-                setProgress(3);
+                setProgress(4);
                 publish("loadingDiagramLabel");
                 generateDiagram(plantUMLCode, path);
             }
 
             if (isCancelled()) return null;
-            setProgress(4);
+            setProgress(5);
             publish("completeLabel");
 
             return "";
@@ -238,13 +238,11 @@ public class UIEntry {
 
         @Override
         protected void done() {
-//            super.done();
             if (isCancelled()) {
                 ui.getProgressBar().setString("0%");
                 ui.getProgressBar().setValue(0);
                 ui.getGeneratePlantUML().setEnabled(true);
             }
-
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
 
@@ -286,5 +284,17 @@ public class UIEntry {
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean deletePreviousVersionsOfDiagrams(){
+        boolean success = false;
+
+        if (new File("diagram.svg").exists()) {
+            success = new File("diagram.svg").delete();
+        }
+        if (new File("diagram.png").exists()) {
+            success = new File("diagram.png").delete();
+        }
+        return success;
     }
 }
