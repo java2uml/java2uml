@@ -622,6 +622,10 @@ public class UI implements ExceptionListener {
     @Override
     public void handleExceptionAndShowDialog(Throwable throwable) {
         JOptionPane.showMessageDialog(mainFrame, throwable.getMessage(), "It's an error, breathe deeply", JOptionPane.ERROR_MESSAGE);
+        labelForDiagram.setIcon(null);
+        generatePlantUML.setEnabled(true);
+        progressBar.setString("0%");
+        progressBar.setValue(0);
     }
 
     @Override
