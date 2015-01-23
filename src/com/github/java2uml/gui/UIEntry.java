@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -203,7 +204,7 @@ public class UIEntry {
         @Override
         protected String doInBackground() throws Exception {
 
-            deletePreviousVersionsOfDiagrams();
+//            deletePreviousVersionsOfDiagrams();
             setProgress(2);
             publish("loadingFilesLabel");
             if (isCancelled()) return null;
@@ -246,11 +247,13 @@ public class UIEntry {
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
 
-            if (isPngExtensionItem) {
-                ui.showDiagram(dpng);
-            } else {
-                ui.showDiagram("res/im1.jpg");
-            }
+            if (ui.getPngExtensionItem().getState()) {
+                try {
+                    ui.showDiagram(new File("diagram.png").toURI().toURL());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+            } else ui.showDiagram(getClass().getClassLoader().getResource("not_available.png"));
         }
     }
 
