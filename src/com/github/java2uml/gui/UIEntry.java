@@ -54,6 +54,8 @@ public class UIEntry {
     public void initUI() {
         if (System.getProperty("os.name").equals("Mac OS X")) {
             settingDockIcon();
+        } else if (System.getProperty("os.name").contains("Windows")){
+            ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
         }
         GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UI.getInstance();

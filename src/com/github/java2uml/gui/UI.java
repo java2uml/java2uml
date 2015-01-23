@@ -119,6 +119,11 @@ public class UI implements ExceptionListener {
 
     }
 
+    public JFrame getMainFrame() {
+        return mainFrame;
+    }
+
+
     public static UI getInstance() {
         return UIHolder.UI_INSTANCE;
     }
