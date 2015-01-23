@@ -253,7 +253,7 @@ public class UIEntry {
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
-            } else ui.showDiagram(getClass().getClassLoader().getResource("black.png"));
+            } else ui.showDiagram(getClass().getClassLoader().getResource("not_available.png"));
         }
     }
 
