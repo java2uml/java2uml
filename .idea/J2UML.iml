@@ -18,5 +18,7 @@
     <orderEntry type="library" name="ant-1.8.1" level="project" />
     <orderEntry type="library" name="plantuml-8008" level="project" />
     <orderEntry type="library" name="junit-4.12" level="project" />
+    <orderEntry type="library" name="logback-classic-1.1.2" level="project" />
+    <orderEntry type="library" name="jfxrt" level="project" />
   </component>
 </module>
