@@ -559,19 +559,26 @@ public class UI implements ExceptionListener {
         openDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String diagram = null;
+                final boolean isPng = getPngExtensionItem().getState();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        String diagram = null;
 
-                if (getPngExtensionItem().getState()) {
-                    diagram = "diagram.png";
-                } else {
-                    diagram = "diagram.svg";
-                }
+                        if (isPng) {
+                            diagram = "diagram.png";
+                        } else {
+                            diagram = "diagram.svg";
+                        }
 
-                try {
-                    Desktop.getDesktop().open(new File(diagram));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                        try {
+                            Desktop.getDesktop().open(new File(diagram));
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+
             }
         });
 
