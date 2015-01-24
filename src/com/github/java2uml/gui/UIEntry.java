@@ -55,10 +55,16 @@ public class UIEntry {
         if (System.getProperty("os.name").equals("Mac OS X")) {
             settingDockIcon();
         }
+
         GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UI.getInstance();
         exceptionListener = ui;
         ui.initUI().setVisible(true);
+
+        if (System.getProperty("os.name").contains("Windows")){
+            ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
+        }
+
         ui.getCancelLoading().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -253,7 +259,12 @@ public class UIEntry {
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
-            } else ui.showDiagram(getClass().getClassLoader().getResource("not_available.png"));
+            } else {
+                if (ui.getEnglishLangItem().getState())
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
+                else
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
+            }
         }
     }
 
