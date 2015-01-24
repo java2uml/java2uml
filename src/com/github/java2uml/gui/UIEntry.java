@@ -124,7 +124,7 @@ public class UIEntry {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ui.getGeneratedCode().setText(plantUMLCode);
+//        ui.getGeneratedCode().setText(plantUMLCode);
         return plantUMLCode;
     }
 
@@ -152,7 +152,7 @@ public class UIEntry {
 
 // The XML is stored into svg
                 final String svg = new String(os.toByteArray());
-                System.out.println(svg);
+//                System.out.println(svg);
 
                 try {
                     FileWriter fw = new FileWriter(file);
@@ -217,7 +217,7 @@ public class UIEntry {
 
             setProgress(3);
             publish("codeGenerationLabel");
-            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+            plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
             if (isCancelled()) return null;
 
@@ -252,6 +252,7 @@ public class UIEntry {
             }
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
+            ui.getGeneratedCode().setText(plantUMLCode);
 
             if (ui.getPngExtensionItem().getState()) {
                 try {
