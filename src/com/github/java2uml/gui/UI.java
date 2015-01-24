@@ -566,12 +566,16 @@ public class UI implements ExceptionListener {
                 } else {
                     diagram = "diagram.svg";
                 }
-
-                try {
-                    Desktop.getDesktop().open(new File(diagram));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
+                if (System.getProperty("os.name").contains("Windows")) {
+                    DiagramViewer.getInstance().show(diagram);
+                } else {
+                    try {
+                        Desktop.getDesktop().open(new File(diagram));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
                 }
+
             }
         });
 
