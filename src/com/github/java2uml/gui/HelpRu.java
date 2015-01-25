@@ -53,7 +53,7 @@ public class HelpRu extends JFrame implements ActionListener {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         if (!e.getURL().toString().contains("graph") && !e.getURL().toString().contains("wikipedia") &&
-                                !e.getURL().toString().contains("plantuml") && !e.getURL().toString().contains("referal")) {
+                                !e.getURL().toString().contains("plantuml") && !e.getURL().toString().contains("reformal")) {
                             editorPane.setPage(e.getURL());
                         } else {
                             try {

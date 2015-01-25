@@ -187,6 +187,7 @@ public class UI implements ExceptionListener {
         verticalDirectionCheckboxItem.setState(true);
         classDiagramCheckboxItem.setEnabled(false);
         sequenceDiagramCheckboxItem.setEnabled(false);
+        showHeader.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
         reflectionCheckboxItem.setState(true);
         showAggregation.setState(true);
@@ -566,10 +567,14 @@ public class UI implements ExceptionListener {
 
                         String diagram = isPng ? "diagram.png" : "diagram.svg";
 
-                        try {
-                            Desktop.getDesktop().open(new File(diagram));
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        if (System.getProperty("os.name").contains("Windows")) {
+                            DiagramViewer.getInstance().show(diagram);
+                        } else {
+                            try {
+                                Desktop.getDesktop().open(new File(diagram));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
                         }
                     }
                 });
