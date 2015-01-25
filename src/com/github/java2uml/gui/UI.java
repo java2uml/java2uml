@@ -568,7 +568,15 @@ public class UI implements ExceptionListener {
                         String diagram = isPng ? "diagram.png" : "diagram.svg";
 
                         if (System.getProperty("os.name").contains("Windows")) {
-                            DiagramViewer.getInstance().show(diagram);
+                        	try {
+                        		if (viewerProc != null) {
+                        			viewerProc.destroy();
+                        			viewerProc = null;
+                        		}
+                        		viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + diagram);
+                        	} catch(IOException ioe) {
+                        		ioe.printStackTrace();
+                        	}
                         } else {
                             try {
                                 Desktop.getDesktop().open(new File(diagram));
@@ -591,6 +599,10 @@ public class UI implements ExceptionListener {
         mainFrame.setResizable(false);
         return mainFrame;
     }
+    
+    // процесс просмоторщика диаграмм
+    private Process viewerProc = null;
+
 
     public int validateProgressBarTo(int progress) {
         int value = progress * 20;
