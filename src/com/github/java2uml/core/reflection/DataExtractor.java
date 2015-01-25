@@ -55,8 +55,8 @@ public class DataExtractor {
     	LOG.info("Classes before check..." + classesArg.size());
     	for(Class clazz : classesArg) {
     		try { 
+    			// дейcтвие, чтобы убедиться, что клас не битый
     			if (clazz.getCanonicalName() != null) {
-    				// убеждаемся, что клас не битый
     				classes.add(clazz);
     			}
     		} catch(Throwable e) {
@@ -64,7 +64,7 @@ public class DataExtractor {
     		}
         }
     	LOG.info("Classes after check..." + classes.size());
-    		
+    	
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
@@ -119,233 +119,237 @@ public class DataExtractor {
         
         // объявление классов...
         for (Class clazz : classes) {
-        	// анонимные классы и классы, доюавленные компилятором, пока игнорируем
-        	if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
-        		continue;
-        	}
-        	
-        	// проверка, является ли данный класс внутренней структурой
-        	if (!Options.isShowClassInterior()) {
-        		boolean interior = false;
-        		for(Class cls : classes) {
-        			if (isDeclared(cls, clazz)) {
-        				interior = true;
-        				break;
-        			}
-        		}
-        		if (interior) {
-        			continue;
-        		}
-        	}
-        	
-        	// получение информации о классе
-        	String className 	= clazz.getCanonicalName();
-            String classPack	= getPackageName(clazz.getCanonicalName());
-            
-            // объявляем класс и его содержимое
-            StringBuilder res = new StringBuilder();
-            res.append(getClassModifiers(classes, clazz));
-            
-            // если есть наследуемый класс, укажем
-            Class superCls = clazz.getSuperclass();
-            if (superCls != null && classes.contains(superCls)) {
-            	res.append(String.format(" <? extends %s> ", superCls.getSimpleName()));
-            }
-            
-            // реализуемые интерфейсы, не попавшие во входное множество
-            String classStyle	= getClassStyle(clazz);
-            String classImpl 	= "";
-            if (Options.isShowLollipop()) {
-            	StringBuilder outerInterfaces = new StringBuilder();
-                for (Class inter : clazz.getInterfaces()) {
-                	if (!classes.contains(inter)) {
-                		// внешний интерфейс - укажем
-                		outerInterfaces.append(inter.getSimpleName());
-                		outerInterfaces.append(", ");
-                	}
-                }
-                if (!outerInterfaces.toString().isEmpty()) {
-                	classImpl = outerInterfaces.toString();
-                	classImpl = classImpl.substring(0, classImpl.lastIndexOf(",")); 
-                } 
-            }
-            if (!classStyle.isEmpty() || !classImpl.isEmpty()) {
-            	// добавим стиль и внешние интерфейсы
-            	res.append(" <<");
-            	res.append(classStyle);
-            	res.append(classImpl);
-            	res.append(">> ");
-            }
-            res.append(" {\n");
-            
-            // буфер статических членов класса
-            StringBuilder staticMembers = new StringBuilder();
-            
-            // получение информации о полях
-            try {
-            	Field[] fields = clazz.getDeclaredFields();
-                if(fields.length > 0) {
-                	res.append(".. Fields  ..\n");
-                	// сортировка полей по афлавиту
-                	Arrays.sort(fields, new Comparator<Field>() {
-                		@Override
-                		public int compare(Field fld1, Field fld2) {
-                			return fld1.getName().compareTo(fld2.getName());
-                		}
-                	});
-                	
-                    for (Field field : fields) {
-                    	if (field.isSynthetic()) {
-                        	// выводим только объявленные структуры
-                        	continue;
-                        }
-                    	if (Modifier.isStatic(field.getModifiers())) {
-                    		// статические члены в конец объявления
-                    		staticMembers.append(getMemberModifiers(field.getModifiers()));
-                    		staticMembers.append(field.getName());
-                    		staticMembers.append(" : ");
-                    		staticMembers.append(field.getType().getSimpleName());
-                    		staticMembers.append("\n");
-                    		continue;
-                    	}
-                    	res.append(getMemberModifiers(field.getModifiers()));
-                    	res.append(field.getName());
-                    	res.append(" : ");
-                    	res.append(field.getType().getSimpleName());
-                    	res.append("\n");
-                    }
-                }
-            } catch(NoClassDefFoundError e) {
-            	continue;
-            }
-            
-            
-            // получение информации методах
-            Method[] methods = clazz.getDeclaredMethods();
-            final boolean showMethodArgs = Options.isShowMethodArgs();
-            if (methods.length > 0) {
-            	res.append(".. Methods ..\n");
-            	// сортировка методов по афлавиту
-            	Arrays.sort(methods, new Comparator<Method>() {
-            		@Override
-            		public int compare(Method m1, Method m2) {
-            			return m1.getName().compareTo(m2.getName());
-            		}
-            	});
-            }
-            for (Method method : methods) {
-            	if (method.isSynthetic()) {
-            		// выводим только объявленные структуры
+        	try {
+        		// анонимные классы и классы, доюавленные компилятором, пока игнорируем
+            	if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
             		continue;
             	}
             	
-            	if (Modifier.isStatic(method.getModifiers())) {
-            		// статические члены в конец объявления
-            		staticMembers.append(getMemberModifiers(method.getModifiers()));
-            		staticMembers.append(method.getName());
-            		staticMembers.append("()");
-            		staticMembers.append(" : ");
-            		staticMembers.append(method.getReturnType().getSimpleName());
-            		staticMembers.append("\n");
-            		
-            		// определяем точку входа
-            		if (Modifier.isPublic(method.getModifiers()) && method.getName().equals("main")) {
-            			entryPoints.put(clazz.getCanonicalName(), "");
+            	// проверка, является ли данный класс внутренней структурой
+            	if (!Options.isShowClassInterior()) {
+            		boolean interior = false;
+            		for(Class cls : classes) {
+            			if (isDeclared(cls, clazz)) {
+            				interior = true;
+            				break;
+            			}
             		}
-            		continue;
+            		if (interior) {
+            			continue;
+            		}
             	}
-            	res.append(getMemberModifiers(method.getModifiers()));
-                res.append(method.getName());
-                res.append("(");
-                // аргументы функций
-                String args = "";
-                if (showMethodArgs) {
-                	for (Class arg : method.getParameterTypes()) {
-                		if (!arg.getSimpleName().isEmpty()) {
-                			args += arg.getSimpleName() + ", "; 
-                		}
-                	}
-                	if (args.contains(",")) {
-                		args = args.substring(0, args.lastIndexOf(","));
-                	}
-                }
-                res.append(args);
-                res.append(")");
-                res.append(" : ");
-                res.append(method.getReturnType().getSimpleName());
-                res.append("\n");
+            	
+            	// получение информации о классе
+            	String className 	= clazz.getCanonicalName();
+                String classPack	= getPackageName(clazz.getCanonicalName());
                 
-                // бросает ли метод исключение
-                for (Class exception : method.getExceptionTypes()) {
-                	if (classes.contains(exception)) {
-                		// добавляем связь о брошенном исключении
-                		if (Options.isShowAssociation()) {
-                			String link = exception.getCanonicalName();
-                    		link += " <.. ";
-                    		link += className;
-                    		link += "\n";
-                    		throwLinks.add(link);
-                		}
-                	}
+                // объявляем класс и его содержимое
+                StringBuilder res = new StringBuilder();
+                res.append(getClassModifiers(classes, clazz));
+                
+                // если есть наследуемый класс, укажем
+                Class superCls = clazz.getSuperclass();
+                if (superCls != null && classes.contains(superCls)) {
+                	res.append(String.format(" <? extends %s> ", superCls.getSimpleName()));
                 }
-            }
-            
-            // инфорация о статике
-            if (!staticMembers.toString().isEmpty()) {
-            	res.append(".. Static ..\n");
-            	String[] stat = staticMembers.toString().split("\n");
-            	// сортировка статики по афлавиту
-            	Arrays.sort(stat, new Comparator<String>() {
-            		@Override
-            		public int compare(String str1, String str2) {
-            			return str1.compareTo(str2);
-            		}
-            	});
-            	for (String str : stat) {
-            		res.append(str);
-            		res.append("\n");
-            	}
-            }
-            
-            // информация о внутренних структурах
-            if (!Options.isShowClassInterior()) {
-            	// список структур, объявленных внутри класса
-                List<Class> declaredClasses = new ArrayList<Class>();
-                declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
-                // сортировка структур по афлавиту
-            	Collections.sort(declaredClasses, new Comparator<Class>() {
-            		@Override
-            		public int compare(Class cls1, Class cls2) {
-            			return cls1.getSimpleName().compareTo(cls2.getSimpleName());
-            		}
-            	});
-            	if (declaredClasses.size() > 0) {
-            		res.append(".. Interiors ..\n");	
-                    for (Class declared : declaredClasses) {
-                    	String modStr = getMemberModifiers(declared.getModifiers());
-                    	String desc = "class ";
-                    	if (declared.isInterface()) {
-                    		desc = "interface ";
+                
+                // реализуемые интерфейсы, не попавшие во входное множество
+                String classStyle	= getClassStyle(clazz);
+                String classImpl 	= "";
+                if (Options.isShowLollipop()) {
+                	StringBuilder outerInterfaces = new StringBuilder();
+                    for (Class inter : clazz.getInterfaces()) {
+                    	if (!classes.contains(inter)) {
+                    		// внешний интерфейс - укажем
+                    		outerInterfaces.append(inter.getSimpleName());
+                    		outerInterfaces.append(", ");
                     	}
-                    	if (declared.isAnnotation()) {
-                    		desc = "annotation ";
+                    }
+                    if (!outerInterfaces.toString().isEmpty()) {
+                    	classImpl = outerInterfaces.toString();
+                    	classImpl = classImpl.substring(0, classImpl.lastIndexOf(",")); 
+                    } 
+                }
+                if (!classStyle.isEmpty() || !classImpl.isEmpty()) {
+                	// добавим стиль и внешние интерфейсы
+                	res.append(" <<");
+                	res.append(classStyle);
+                	res.append(classImpl);
+                	res.append(">> ");
+                }
+                res.append(" {\n");
+                
+                // буфер статических членов класса
+                StringBuilder staticMembers = new StringBuilder();
+                
+                // получение информации о полях
+                try {
+                	Field[] fields = clazz.getDeclaredFields();
+                    if(fields.length > 0) {
+                    	res.append(".. Fields  ..\n");
+                    	// сортировка полей по афлавиту
+                    	Arrays.sort(fields, new Comparator<Field>() {
+                    		@Override
+                    		public int compare(Field fld1, Field fld2) {
+                    			return fld1.getName().compareTo(fld2.getName());
+                    		}
+                    	});
+                    	
+                        for (Field field : fields) {
+                        	if (field.isSynthetic()) {
+                            	// выводим только объявленные структуры
+                            	continue;
+                            }
+                        	if (Modifier.isStatic(field.getModifiers())) {
+                        		// статические члены в конец объявления
+                        		staticMembers.append(getMemberModifiers(field.getModifiers()));
+                        		staticMembers.append(field.getName());
+                        		staticMembers.append(" : ");
+                        		staticMembers.append(field.getType().getSimpleName());
+                        		staticMembers.append("\n");
+                        		continue;
+                        	}
+                        	res.append(getMemberModifiers(field.getModifiers()));
+                        	res.append(field.getName());
+                        	res.append(" : ");
+                        	res.append(field.getType().getSimpleName());
+                        	res.append("\n");
+                        }
+                    }
+                } catch(NoClassDefFoundError e) {
+                	continue;
+                }
+                
+                
+                // получение информации методах
+                Method[] methods = clazz.getDeclaredMethods();
+                final boolean showMethodArgs = Options.isShowMethodArgs();
+                if (methods.length > 0) {
+                	res.append(".. Methods ..\n");
+                	// сортировка методов по афлавиту
+                	Arrays.sort(methods, new Comparator<Method>() {
+                		@Override
+                		public int compare(Method m1, Method m2) {
+                			return m1.getName().compareTo(m2.getName());
+                		}
+                	});
+                }
+                for (Method method : methods) {
+                	if (method.isSynthetic()) {
+                		// выводим только объявленные структуры
+                		continue;
+                	}
+                	
+                	if (Modifier.isStatic(method.getModifiers())) {
+                		// статические члены в конец объявления
+                		staticMembers.append(getMemberModifiers(method.getModifiers()));
+                		staticMembers.append(method.getName());
+                		staticMembers.append("()");
+                		staticMembers.append(" : ");
+                		staticMembers.append(method.getReturnType().getSimpleName());
+                		staticMembers.append("\n");
+                		
+                		// определяем точку входа
+                		if (Modifier.isPublic(method.getModifiers()) && method.getName().equals("main")) {
+                			entryPoints.put(clazz.getCanonicalName(), "");
+                		}
+                		continue;
+                	}
+                	res.append(getMemberModifiers(method.getModifiers()));
+                    res.append(method.getName());
+                    res.append("(");
+                    // аргументы функций
+                    String args = "";
+                    if (showMethodArgs) {
+                    	for (Class arg : method.getParameterTypes()) {
+                    		if (!arg.getSimpleName().isEmpty()) {
+                    			args += arg.getSimpleName() + ", "; 
+                    		}
                     	}
-                    	if (declared.isEnum()) {
-                    		desc = "enum ";
+                    	if (args.contains(",")) {
+                    		args = args.substring(0, args.lastIndexOf(","));
                     	}
-                    	res.append(modStr);
-                    	res.append(desc);
-                    	res.append(declared.getSimpleName());
-                    	res.append("\n");
+                    }
+                    res.append(args);
+                    res.append(")");
+                    res.append(" : ");
+                    res.append(method.getReturnType().getSimpleName());
+                    res.append("\n");
+                    
+                    // бросает ли метод исключение
+                    for (Class exception : method.getExceptionTypes()) {
+                    	if (classes.contains(exception)) {
+                    		// добавляем связь о брошенном исключении
+                    		if (Options.isShowAssociation()) {
+                    			String link = exception.getCanonicalName();
+                        		link += " <.. ";
+                        		link += className;
+                        		link += "\n";
+                        		throwLinks.add(link);
+                    		}
+                    	}
                     }
                 }
-            }
-            
-            // закрываем класс
-            res.append("}\n");
-            
-            // добавляем класс в таблицу пакетов
-            packages.put(classPack, packages.get(classPack) + res.toString());
+                
+                // инфорация о статике
+                if (!staticMembers.toString().isEmpty()) {
+                	res.append(".. Static ..\n");
+                	String[] stat = staticMembers.toString().split("\n");
+                	// сортировка статики по афлавиту
+                	Arrays.sort(stat, new Comparator<String>() {
+                		@Override
+                		public int compare(String str1, String str2) {
+                			return str1.compareTo(str2);
+                		}
+                	});
+                	for (String str : stat) {
+                		res.append(str);
+                		res.append("\n");
+                	}
+                }
+                
+                // информация о внутренних структурах
+                if (!Options.isShowClassInterior()) {
+                	// список структур, объявленных внутри класса
+                    List<Class> declaredClasses = new ArrayList<Class>();
+                    declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
+                    // сортировка структур по афлавиту
+                	Collections.sort(declaredClasses, new Comparator<Class>() {
+                		@Override
+                		public int compare(Class cls1, Class cls2) {
+                			return cls1.getSimpleName().compareTo(cls2.getSimpleName());
+                		}
+                	});
+                	if (declaredClasses.size() > 0) {
+                		res.append(".. Interiors ..\n");	
+                        for (Class declared : declaredClasses) {
+                        	String modStr = getMemberModifiers(declared.getModifiers());
+                        	String desc = "class ";
+                        	if (declared.isInterface()) {
+                        		desc = "interface ";
+                        	}
+                        	if (declared.isAnnotation()) {
+                        		desc = "annotation ";
+                        	}
+                        	if (declared.isEnum()) {
+                        		desc = "enum ";
+                        	}
+                        	res.append(modStr);
+                        	res.append(desc);
+                        	res.append(declared.getSimpleName());
+                        	res.append("\n");
+                        }
+                    }
+                }
+                
+                // закрываем класс
+                res.append("}\n");
+                
+                // добавляем класс в таблицу пакетов
+                packages.put(classPack, packages.get(classPack) + res.toString());
+        	} catch(Throwable e) {
+        		continue;
+        	}
         }
         
         // вывод объявленных классов с учетом пакетов и их вложенности 
