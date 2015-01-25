@@ -239,6 +239,9 @@ public class UIEntry {
 //            super.process(chunks);
             for (String chunk : chunks) {
                 ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
+                if (chunk.equals("loadingDiagramLabel")) {
+                    ui.getGeneratedCode().setText(plantUMLCode);
+                }
             }
             ui.validateProgressBarTo(getProgress());
         }
@@ -252,7 +255,6 @@ public class UIEntry {
             }
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
-            ui.getGeneratedCode().setText(plantUMLCode);
 
             if (ui.getPngExtensionItem().getState()) {
                 try {

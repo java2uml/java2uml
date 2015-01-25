@@ -563,13 +563,8 @@ public class UI implements ExceptionListener {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        String diagram = null;
 
-                        if (isPng) {
-                            diagram = "diagram.png";
-                        } else {
-                            diagram = "diagram.svg";
-                        }
+                        String diagram = isPng ? "diagram.png" : "diagram.svg";
 
                         try {
                             Desktop.getDesktop().open(new File(diagram));
