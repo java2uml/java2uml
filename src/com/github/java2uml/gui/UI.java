@@ -119,6 +119,11 @@ public class UI implements ExceptionListener {
 
     }
 
+    public JFrame getMainFrame() {
+        return mainFrame;
+    }
+
+
     public static UI getInstance() {
         return UIHolder.UI_INSTANCE;
     }
@@ -182,6 +187,7 @@ public class UI implements ExceptionListener {
         verticalDirectionCheckboxItem.setState(true);
         classDiagramCheckboxItem.setEnabled(false);
         sequenceDiagramCheckboxItem.setEnabled(false);
+        showHeader.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
         reflectionCheckboxItem.setState(true);
         showAggregation.setState(true);
@@ -554,19 +560,25 @@ public class UI implements ExceptionListener {
         openDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String diagram = null;
+                final boolean isPng = getPngExtensionItem().getState();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
 
-                if (getPngExtensionItem().getState()) {
-                    diagram = "diagram.png";
-                } else {
-                    diagram = "diagram.svg";
-                }
+                        String diagram = isPng ? "diagram.png" : "diagram.svg";
 
-                try {
-                    Desktop.getDesktop().open(new File(diagram));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
+                        if (System.getProperty("os.name").contains("Windows")) {
+                            DiagramViewer.getInstance().show(diagram);
+                        } else {
+                            try {
+                                Desktop.getDesktop().open(new File(diagram));
+                            } catch (IOException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
             }
         });
 
@@ -617,6 +629,10 @@ public class UI implements ExceptionListener {
     @Override
     public void handleExceptionAndShowDialog(Throwable throwable) {
         JOptionPane.showMessageDialog(mainFrame, throwable.getMessage(), "It's an error, breathe deeply", JOptionPane.ERROR_MESSAGE);
+        labelForDiagram.setIcon(null);
+        generatePlantUML.setEnabled(true);
+        progressBar.setString("0%");
+        progressBar.setValue(0);
     }
 
     @Override

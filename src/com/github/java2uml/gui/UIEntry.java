@@ -55,10 +55,16 @@ public class UIEntry {
         if (System.getProperty("os.name").equals("Mac OS X")) {
             settingDockIcon();
         }
+
         GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UI.getInstance();
         exceptionListener = ui;
         ui.initUI().setVisible(true);
+
+        if (System.getProperty("os.name").contains("Windows")){
+            ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
+        }
+
         ui.getCancelLoading().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -118,7 +124,7 @@ public class UIEntry {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ui.getGeneratedCode().setText(plantUMLCode);
+//        ui.getGeneratedCode().setText(plantUMLCode);
         return plantUMLCode;
     }
 
@@ -146,7 +152,7 @@ public class UIEntry {
 
 // The XML is stored into svg
                 final String svg = new String(os.toByteArray());
-                System.out.println(svg);
+//                System.out.println(svg);
 
                 try {
                     FileWriter fw = new FileWriter(file);
@@ -211,7 +217,7 @@ public class UIEntry {
 
             setProgress(3);
             publish("codeGenerationLabel");
-            generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+            plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
 
             if (isCancelled()) return null;
 
@@ -233,6 +239,9 @@ public class UIEntry {
 //            super.process(chunks);
             for (String chunk : chunks) {
                 ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
+                if (chunk.equals("loadingDiagramLabel")) {
+                    ui.getGeneratedCode().setText(plantUMLCode);
+                }
             }
             ui.validateProgressBarTo(getProgress());
         }
@@ -253,7 +262,12 @@ public class UIEntry {
                 } catch (MalformedURLException e) {
                     e.printStackTrace();
                 }
-            } else ui.showDiagram(getClass().getClassLoader().getResource("not_available.png"));
+            } else {
+                if (ui.getEnglishLangItem().getState())
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
+                else
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
+            }
         }
     }
 
