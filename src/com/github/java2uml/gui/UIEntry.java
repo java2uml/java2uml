@@ -263,17 +263,19 @@ public class UIEntry {
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
 
-            if (ui.getPngExtensionItem().getState()) {
-                try {
-                    ui.showDiagram(new File("diagram.png").toURI().toURL());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
+            if (ui.getEnableDiagramItem().getState()) {
+                if (ui.getPngExtensionItem().getState()) {
+                    try {
+                        ui.showDiagram(new File("diagram.png").toURI().toURL());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    if (ui.getEnglishLangItem().getState())
+                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
+                    else
+                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
                 }
-            } else {
-                if (ui.getEnglishLangItem().getState())
-                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
-                else
-                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
             }
         }
     }
