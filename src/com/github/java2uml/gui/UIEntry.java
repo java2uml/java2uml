@@ -90,8 +90,11 @@ public class UIEntry {
         ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (plantUMLCode != null && !plantUMLCode.equals(""))
+                if (plantUMLCode != null && !plantUMLCode.equals("") && !ui.getGeneratedCode().getText().equals(""))
                     sendRequestAndShowSvg(plantUMLCode);
+                else {
+                    JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"));
+                }
 
             }
         });
@@ -180,6 +183,7 @@ public class UIEntry {
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
                 ui.getGeneratePlantUML().setEnabled(false);
+                ui.getOpenOnPlantUMLServer().setEnabled(false);
 
                 Main.main(gettingParametersFromUI());
 
@@ -253,6 +257,7 @@ public class UIEntry {
                 ui.getProgressBar().setValue(0);
                 ui.getGeneratePlantUML().setEnabled(true);
             }
+            ui.getOpenOnPlantUMLServer().setEnabled(true);
             ui.setProgressBarComplete();
             ui.getGeneratePlantUML().setEnabled(true);
 

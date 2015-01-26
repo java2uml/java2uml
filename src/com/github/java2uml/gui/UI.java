@@ -29,7 +29,14 @@ public class UI implements ExceptionListener {
     private JFrame mainFrame;
 
     private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
-    private JButton browse, generatePlantUML, copyToClipboard, saveDiagram, cancelLoading, clearCode, openDiagram, openOnPlantUMLServer;
+    private JButton browse;
+    private JButton generatePlantUML;
+    private JButton copyToClipboard;
+    private JButton saveDiagram;
+    private JButton cancelLoading;
+    private JButton clearCode;
+    private JButton openDiagram;
+    private JButton openOnPlantUMLServer;
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
@@ -186,6 +193,7 @@ public class UI implements ExceptionListener {
         classDiagramCheckboxItem.setState(true);
         verticalDirectionCheckboxItem.setState(true);
         classDiagramCheckboxItem.setEnabled(false);
+        openOnPlantUMLServer.setEnabled(false);
         sequenceDiagramCheckboxItem.setEnabled(false);
         showHeader.setEnabled(false);
         classDiagramCheckboxItem.setState(true);
@@ -459,6 +467,8 @@ public class UI implements ExceptionListener {
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
         fileSaver = new JFileChooser();
 
+        generatedCode.setEditable(false);
+
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
         progressBar.setMaximum(100);
@@ -544,13 +554,13 @@ public class UI implements ExceptionListener {
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panelForGeneratedCode.setLayout(new GridBagLayout());
-        panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 0, 1, 2, 1, 7, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
+        panelForGeneratedCode.add(openOnPlantUMLServer, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
+        panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 1, 1, 3, 1, 5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
 
         panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
         panelForClearAndCopyToClipboard.add(clearCode);
         panelForClearAndCopyToClipboard.add(copyToClipboard);
-        panelForClearAndCopyToClipboard.add(openOnPlantUMLServer);
-        panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 5, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         panelForSaveAndOpenDiagram.setLayout(new BoxLayout(panelForSaveAndOpenDiagram, BoxLayout.X_AXIS));
@@ -593,10 +603,10 @@ public class UI implements ExceptionListener {
         mainFrame.setJMenuBar(initMenu());
         mainFrame.add(tabs);
         mainFrame.add(BorderLayout.NORTH, panelForPathAndButtons);
-        mainFrame.setSize(600, 600);
+        mainFrame.setSize(600, 650);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        mainFrame.setResizable(false);
+//        mainFrame.setResizable(false);
         return mainFrame;
     }
     
