@@ -218,6 +218,7 @@ public class UIEntry {
             setProgress(3);
             publish("codeGenerationLabel");
             plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+            publish("showCodeString");
 
             if (isCancelled()) return null;
 
@@ -238,9 +239,10 @@ public class UIEntry {
         protected void process(List<String> chunks) {
 //            super.process(chunks);
             for (String chunk : chunks) {
-                ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
-                if (chunk.equals("loadingDiagramLabel")) {
+                if (chunk.equals("showCodeString")) {
                     ui.getGeneratedCode().setText(plantUMLCode);
+                } else {
+                    ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
                 }
             }
             ui.validateProgressBarTo(getProgress());
