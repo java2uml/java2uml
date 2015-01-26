@@ -93,7 +93,7 @@ public class UIEntry {
                 if (plantUMLCode != null && !plantUMLCode.equals("") && !ui.getGeneratedCode().getText().equals(""))
                     sendRequestAndShowSvg(plantUMLCode);
                 else {
-                    JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"));
+                    JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
                 }
 
             }

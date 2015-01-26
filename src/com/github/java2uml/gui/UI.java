@@ -475,29 +475,33 @@ public class UI implements ExceptionListener {
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fileSaver.setCurrentDirectory(new File(path.getText()));
-                if (pngExtensionItem.getState()) {
-                    fileSaver.setSelectedFile(new File("diagram.png"));
-                    fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
-                } else {
-                    fileSaver.setSelectedFile(new File("diagram.svg"));
-                    fileSaver.setFileFilter(new FileNameExtensionFilter("SVG image", "svg"));
-                }
-
-                CopyOption[] options = new CopyOption[]{
-                        StandardCopyOption.REPLACE_EXISTING,
-                };
-                if (fileSaver.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
-                    File file = fileSaver.getSelectedFile();
-                    try {
-                        if (pngExtensionItem.getState()) {
-                            Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
-                        } else {
-                            Files.copy(new File("diagram.svg").toPath(), file.toPath(), options);
-                        }
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
+                if (enableDiagramItem.getState()) {
+                    fileSaver.setCurrentDirectory(new File(path.getText()));
+                    if (pngExtensionItem.getState()) {
+                        fileSaver.setSelectedFile(new File("diagram.png"));
+                        fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
+                    } else {
+                        fileSaver.setSelectedFile(new File("diagram.svg"));
+                        fileSaver.setFileFilter(new FileNameExtensionFilter("SVG image", "svg"));
                     }
+
+                    CopyOption[] options = new CopyOption[]{
+                            StandardCopyOption.REPLACE_EXISTING,
+                    };
+                    if (fileSaver.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+                        File file = fileSaver.getSelectedFile();
+                        try {
+                            if (pngExtensionItem.getState()) {
+                                Files.copy(new File("diagram.png").toPath(), file.toPath(), options);
+                            } else {
+                                Files.copy(new File("diagram.svg").toPath(), file.toPath(), options);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, getLocaleLabels().getString("youMustGenerateDiagramFirst"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
@@ -570,32 +574,36 @@ public class UI implements ExceptionListener {
         openDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                final boolean isPng = getPngExtensionItem().getState();
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                if (enableDiagramItem.getState()) {
+                    final boolean isPng = getPngExtensionItem().getState();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
 
-                        String diagram = isPng ? "diagram.png" : "diagram.svg";
+                            String diagram = isPng ? "diagram.png" : "diagram.svg";
 
-                        if (System.getProperty("os.name").contains("Windows")) {
-                        	try {
-                        		if (viewerProc != null) {
-                        			viewerProc.destroy();
-                        			viewerProc = null;
-                        		}
-                        		viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + diagram);
-                        	} catch(IOException ioe) {
-                        		ioe.printStackTrace();
-                        	}
-                        } else {
-                            try {
-                                Desktop.getDesktop().open(new File(diagram));
-                            } catch (IOException e1) {
-                                e1.printStackTrace();
+                            if (System.getProperty("os.name").contains("Windows")) {
+                                try {
+                                    if (viewerProc != null) {
+                                        viewerProc.destroy();
+                                        viewerProc = null;
+                                    }
+                                    viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + diagram);
+                                } catch (IOException ioe) {
+                                    ioe.printStackTrace();
+                                }
+                            } else {
+                                try {
+                                    Desktop.getDesktop().open(new File(diagram));
+                                } catch (IOException e1) {
+                                    e1.printStackTrace();
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, getLocaleLabels().getString("youMustGenerateDiagramFirst"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
+                }
 
             }
         });
