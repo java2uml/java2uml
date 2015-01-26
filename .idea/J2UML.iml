@@ -21,5 +21,6 @@
     <orderEntry type="library" name="jfxrt" level="project" />
     <orderEntry type="library" name="slf4j-api-1.7.7" level="project" />
     <orderEntry type="library" name="logback-core-1.1.2" level="project" />
+    <orderEntry type="library" name="diagram_viewer" level="project" />
   </component>
 </module>
