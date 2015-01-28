@@ -1,10 +1,8 @@
 package com.github.java2uml.gui;
 
-import net.sourceforge.plantuml.core.Diagram;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -16,8 +14,6 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
@@ -40,7 +36,7 @@ public class UI implements ExceptionListener {
     private JTabbedPane tabs;
     private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
-    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem;
     private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
             showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
@@ -50,6 +46,7 @@ public class UI implements ExceptionListener {
     private ButtonGroup diagramExtensionGroup;
     private ButtonGroup parsingMethod;
     private About about;
+    private QuickHelp quickHelp;
     private static Help helpWindow;
     private static HelpRu helpRu;
     private JTextArea generatedCode;
@@ -86,6 +83,14 @@ public class UI implements ExceptionListener {
 
     }
 
+    private static class UIHolder {
+        static final UI UI_INSTANCE = new UI();
+    }
+
+    private UI() {
+
+    }
+
     public JCheckBoxMenuItem getEnglishLangItem() {
         return englishLangItem;
     }
@@ -116,15 +121,6 @@ public class UI implements ExceptionListener {
         return generatePlantUML;
     }
 
-
-
-    private static class UIHolder {
-        static final UI UI_INSTANCE = new UI();
-    }
-
-    private UI() {
-
-    }
 
     public JFrame getMainFrame() {
         return mainFrame;
@@ -236,6 +232,7 @@ public class UI implements ExceptionListener {
         showComposition.setText(localeLabels.getString("compositionMenuLabel"));
         showHeader.setText(localeLabels.getString("chooseHeaderMenuLabel"));
         showLollipops.setText(localeLabels.getString("showLollipopMenuLabel"));
+        quickHelpItem.setText(localeLabels.getString("quickHelp"));
         helpItem.setText(localeLabels.getString("helpMenuLabel"));
         exitItem.setText(localeLabels.getString("exitMenuLabel"));
         aboutItem.setText(localeLabels.getString("aboutMenuLabel"));
@@ -294,6 +291,7 @@ public class UI implements ExceptionListener {
         showLollipops = new StayOpenCheckBoxMenuItem(localeLabels.getString("showLollipopMenuLabel"));
 
         helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
+        quickHelpItem = new JMenuItem(localeLabels.getString("quickHelp"));
         exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
@@ -311,6 +309,23 @@ public class UI implements ExceptionListener {
 
         languageGroup.add(englishLangItem);
         languageGroup.add(russianLangItem);
+
+        quickHelpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!QuickHelp.quickHelpIsNull()) {
+                    if (!quickHelp.isVisible()) {
+                        quickHelp.setVisible(true);
+                    } else {
+                        quickHelp.toFront();
+                        quickHelp.repaint();
+                    }
+                } else {
+                    quickHelp = QuickHelp.getInstance();
+                    quickHelp.setVisible(true);
+                }
+            }
+        });
 
         aboutItem.addActionListener(new ActionListener() {
             @Override
@@ -381,6 +396,7 @@ public class UI implements ExceptionListener {
         options.add(showLollipops);
         options.add(enableDiagramItem);
 
+        help.add(quickHelpItem);
         help.add(helpItem);
         help.add(aboutItem);
 
@@ -465,6 +481,7 @@ public class UI implements ExceptionListener {
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Java project directory", "."));
         fileSaver = new JFileChooser();
 
         generatedCode.setEditable(false);
@@ -617,7 +634,7 @@ public class UI implements ExceptionListener {
 //        mainFrame.setResizable(false);
         return mainFrame;
     }
-    
+
     // процесс просмоторщика диаграмм
     private Process viewerProc = null;
 

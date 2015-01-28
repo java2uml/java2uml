@@ -127,7 +127,6 @@ public class UIEntry {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        ui.getGeneratedCode().setText(plantUMLCode);
         return plantUMLCode;
     }
 
