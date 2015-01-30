@@ -1,0 +1,76 @@
+<idea-plugin version="2">
+  <id>com.TestPlaginJava2UM</id>
+  <name>TestPlaginJava2UML</name>
+  <version>0.1</version>
+  <vendor url="http://www.java2uml.ru" email="java2uml@yandex.ru">Java2UML open-source team</vendor>
+
+
+  <description><![CDATA[
+      Удобный автопостроитель красивых диаграмм классов UML на основании исходного кода Java.
+    ]]></description>
+
+  <change-notes><![CDATA[
+      0.1 first version (uses Java2UML core v. 0.4a)<br>
+      <em></em>
+    ]]>
+  </change-notes>
+
+  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+  <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products-->
+  <depends>com.intellij.modules.lang</depends>
+
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- Add your extensions here -->
+    <toolWindow id="JavaToUML" secondary="false" anchor="right" factoryClass="com.github.java2uml.plugin.idea.MainPanel"
+                icon="/com/github/java2uml/plugin/idea/icon/logo.png"></toolWindow>
+
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+    <!--<component>-->
+      <!--<implementation-class>com.github.java2uml.plugin.idea.MyPluginRegistration</implementation-class>-->
+    <!--</component>-->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+    <group id="Java2UML.Toolbar" description="Java2UML toolbar" icon="/com/github/java2uml/plugin/idea/icon/logo.png" text="Java2UML">
+        <add-to-group group-id="MainMenu" anchor="after" relative-to-action="RefactoringMenu"/>
+      <action id="Java2UML.Generate" description="Generate diagram"  icon="/actions/execute.png"
+              class="com.github.java2uml.plugin.idea.actions.FileChooseAction" text="Generate diagram for chosen files"/>
+      <action id="Java2UML.FileChoose" description="Choose file for generating diagram"  icon="/actions/menu-open.png"
+              class="com.github.java2uml.plugin.idea.actions.FileChooseAction" text="Choose file for generating diagram"/>
+      <separator/>
+      <separator/>
+      <action id="Java2UML.Settings" description="Configure Java2UML"  icon="/general/Configure.png"
+              class="com.github.java2uml.plugin.idea.actions.FileChooseAction" text="Configure Java2UML"/>
+      <separator/>
+      <action id="Java2UML.Help" description="Help (full)"  icon="/actions/help.png"
+              class="com.github.java2uml.plugin.idea.actions.HelpAction" text="Help (full)">
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt F1"/>
+      </action>
+      <action id="Java2UML.QuickHelp" description="Quick Help (tutorial)" icon="/actions/createFromUsage.png"
+                class="com.github.java2uml.plugin.idea.actions.QuickHelpAction" text="Quick Help (tutorial)"/>
+      <action id="Java2UML.About" description="About" icon="/general/balloonInformation.png"
+              class="com.github.java2uml.plugin.idea.actions.AboutAction" text="About"/>
+    </group>
+    <action id="Java2UML.GenerateDiagramForCurrentProject" icon="/actions/erDiagram.png"
+            class="com.github.java2uml.plugin.idea.actions.GenerateDiagramForCurrentProjectAction"
+            text="Generate Diagram For Current Project" description="Generate Diagram For Current Project">
+      <!--<add-to-group group-id="ToolsMenu" anchor="first"/>-->
+      <add-to-group group-id="Java2UML.Toolbar" anchor="first"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt ENTER" second-keystroke="ctrl alt F9"/>
+    </action>
+  </actions>
+
+</idea-plugin>
