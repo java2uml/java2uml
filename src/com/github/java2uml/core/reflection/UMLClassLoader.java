@@ -258,21 +258,35 @@ public class UMLClassLoader extends ClassLoader {
 //                    "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
             String loadingClassName = className;
             String loadingFromPath = path;
+
             boolean packetFound = false;
             while (!packetFound) {
                 try {
+                    // Загружаем класс.
                     Class c = loadClass(loadingClassName);
                     classes.add(c);
+
+                    // Если у класса нет пакета, определяем его.
+                    if (c.getPackage() == null) {
+                        int posSeparator = loadingClassName.lastIndexOf(".");
+                        if (posSeparator > 0) {
+                            String packageName = loadingClassName.substring(0, posSeparator);
+                            definePackage(packageName, null, null, null, null, null, null, null);
+                        }
+                    }
+
                     // TODO убрать вывод после тестирования
 //                    System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
                     packetFound = true;
                 } catch (NoClassDefFoundError e) {
+                    // Если класс не смог загрузиться, переходим на следующую подпапку.
                     int posSeparator = loadingClassName.indexOf(".");
                     if (posSeparator == -1) {
                         // TODO убрать вывод после тестирования
 //                        System.out.println("Не найден пакет для класса " + loadingClassName);
                         break;
                     }
+
                     loadingFromPath = loadingFromPath + System.getProperty("file.separator")
                             + loadingClassName.substring(0, posSeparator);
                     loadingClassName = loadingClassName.substring(posSeparator + 1);

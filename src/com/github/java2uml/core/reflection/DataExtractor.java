@@ -724,7 +724,7 @@ public class DataExtractor {
     /**
      * Проверка, является ли указанный тип коллекцией
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
-     * @param Class - входящий класс
+     * @param clazz - входящий класс
      * @return boolean
      */
     private static boolean isCollection(final Class<?> clazz) {
