@@ -35,6 +35,10 @@ public class UIPluginEntry extends JPanel implements Disposable {
     private Project project;
 //    private JScrollPane scrollPane;
 
+    public static UIPlugin getUi() {
+        return ui;
+    }
+
     static UIPlugin ui;
     String[] args;
     String plantUMLCode;

@@ -97,6 +97,16 @@ public class UIPlugin implements ExceptionListener{
         return mainFrame;
     }
 
+    public void chooseItem(){
+        getProgressBar().setString("0%");
+        getProgressBar().setValue(0);
+        int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
+        if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
+            chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+            path.setText(chosenDirectory.toString());
+        }
+    }
+
     public static UIPlugin getInstance() {
         return UIHolder.UI_INSTANCE;
     }
@@ -149,7 +159,7 @@ public class UIPlugin implements ExceptionListener{
         fileChooser = new JFileChooser();
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Java source files (.java)", "java"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java project directory", "."));
         fileSaver = new JFileChooser();
 

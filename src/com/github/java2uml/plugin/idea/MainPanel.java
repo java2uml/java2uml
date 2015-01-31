@@ -22,4 +22,8 @@ public class MainPanel implements ToolWindowFactory {
         //Добавляем в IDE
         toolWindow.getContentManager().addContent(content);
     }
+
+    public static void createToolWindowContent() {
+
+    }
 }
