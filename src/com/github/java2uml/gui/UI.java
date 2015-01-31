@@ -24,7 +24,8 @@ import java.util.ResourceBundle;
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
 
-    private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
+    private JPanel panelForDiagram;
+    private JPanel panelForSaveAndOpenDiagram;
     private JButton browse;
     private JButton generatePlantUML;
     private JButton copyToClipboard;
@@ -34,17 +35,11 @@ public class UI implements ExceptionListener {
     private JButton openDiagram;
     private JButton openOnPlantUMLServer;
     private JTabbedPane tabs;
-    private JMenuBar menu;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem;
     private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
             showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
-    private ButtonGroup directionGroup;
-    private ButtonGroup typeOfDiagramGroup;
-    private ButtonGroup languageGroup;
-    private ButtonGroup diagramExtensionGroup;
-    private ButtonGroup parsingMethod;
     private About about;
     private QuickHelp quickHelp;
     private static Help helpWindow;
@@ -52,14 +47,11 @@ public class UI implements ExceptionListener {
     private JTextArea generatedCode;
     private JProgressBar progressBar;
 
-    private JSeparator separatorBetweenPathAndButtons, separatorBetweenButtonsAndProgressBar;
     private JFileChooser fileChooser, fileSaver;
-    private File chosenDirectory;
-    private BufferedImage diagram;
     private JLabel labelForDiagram;
 
 
-    private JScrollPane scrollPane, scrollPaneForDiagram;
+    private JScrollPane scrollPaneForDiagram;
 
     private JTextField path;
 
@@ -264,7 +256,7 @@ public class UI implements ExceptionListener {
     }
 
     private JMenuBar initMenu() {
-        menu = new JMenuBar();
+        JMenuBar menu = new JMenuBar();
 
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
@@ -296,11 +288,11 @@ public class UI implements ExceptionListener {
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
         chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
-        parsingMethod = new ButtonGroup();
-        directionGroup = new ButtonGroup();
-        typeOfDiagramGroup = new ButtonGroup();
-        languageGroup = new ButtonGroup();
-        diagramExtensionGroup = new ButtonGroup();
+        ButtonGroup parsingMethod = new ButtonGroup();
+        ButtonGroup directionGroup = new ButtonGroup();
+        ButtonGroup typeOfDiagramGroup = new ButtonGroup();
+        ButtonGroup languageGroup = new ButtonGroup();
+        ButtonGroup diagramExtensionGroup = new ButtonGroup();
 
         reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
@@ -452,11 +444,11 @@ public class UI implements ExceptionListener {
     public JFrame initUI() {
         localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
-        panelForOptions = new JPanel();
-        panelForGeneratedCode = new JPanel();
+        JPanel panelForOptions = new JPanel();
+        JPanel panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
-        panelForClearAndCopyToClipboard = new JPanel();
-        panelForProgressBarAndCancel = new JPanel();
+        JPanel panelForClearAndCopyToClipboard = new JPanel();
+        JPanel panelForProgressBarAndCancel = new JPanel();
         panelForSaveAndOpenDiagram = new JPanel();
         browse = new JButton(localeLabels.getString("chooseDirLabel"));
         saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
@@ -469,14 +461,14 @@ public class UI implements ExceptionListener {
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
         generatedCode = new JTextArea();
         path = new JTextField();
-        panelForPath = new JPanel();
-        panelForPathAndButtons = new JPanel();
+        JPanel panelForPath = new JPanel();
+        JPanel panelForPathAndButtons = new JPanel();
         progressBar = new JProgressBar();
         progressBar.setBorder(new EmptyBorder(0, 3, 0, 3));
         tabs = new JTabbedPane();
         scrollPaneForDiagram = new JScrollPane(labelForDiagram);
-        separatorBetweenPathAndButtons = new JSeparator();
-        separatorBetweenButtonsAndProgressBar = new JSeparator();
+        JSeparator separatorBetweenPathAndButtons = new JSeparator();
+        JSeparator separatorBetweenButtonsAndProgressBar = new JSeparator();
         fileChooser = new JFileChooser();
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setMultiSelectionEnabled(false);
@@ -556,12 +548,8 @@ public class UI implements ExceptionListener {
         panelForProgressBarAndCancel.add(generatePlantUML);
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
-        JLabel jLabel = null;
-
-//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
-//            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
         Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("logo.png"));
-        jLabel = new JLabel(new ImageIcon(image));
+        JLabel jLabel = new JLabel(new ImageIcon(image));
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
@@ -569,7 +557,7 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-        scrollPane = new JScrollPane(generatedCode);
+        JScrollPane scrollPane = new JScrollPane(generatedCode);
 
         generatedCode.setLineWrap(true);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -657,7 +645,7 @@ public class UI implements ExceptionListener {
 
     public void showDiagram(URL resource) {
         try {
-            diagram = ImageIO.read(resource);
+            BufferedImage diagram = ImageIO.read(resource);
             diagram = Scalr.resize(diagram, 500);
             labelForDiagram = new JLabel(new ImageIcon(diagram));
             panelForDiagram.removeAll();
@@ -669,7 +657,7 @@ public class UI implements ExceptionListener {
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
-            this.getInstance().handleExceptionAndShowDialog(throwable);
+            this.handleExceptionAndShowDialog(throwable);
         }
     }
 
@@ -684,18 +672,20 @@ public class UI implements ExceptionListener {
 
     @Override
     public void handleExceptionAndDisplayItInCodeArea(Exception exception) {
-        StringBuilder stringBuilder = new StringBuilder("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
-        generatedCode.setText(stringBuilder.toString());
+        generatedCode.setText("We've got an error, breathe deeply, invisible little dwarves are trying to fix it right now... \n Error message:\n\n" + exception.getMessage());
     }
 
     public class ChooseFileActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (new File(path.getText()).exists() && !path.getText().equals("")){
+                fileChooser.setCurrentDirectory(new File(path.getText()));
+            }
             getProgressBar().setString("0%");
             getProgressBar().setValue(0);
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
             if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
-                chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+                File chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
                 path.setText(chosenDirectory.toString());
             }
         }
