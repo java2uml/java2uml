@@ -1,0 +1,57 @@
+h1 {
+	font-family: Arial;
+	color: #8FB299;
+	font-size: 50;
+	text-align: center
+}
+
+li {
+	padding-bottom: 5px;
+	list-style-type: decimal;
+	font-family: Arial;
+	font-size: 16;
+
+}
+#paramForPointers {
+	color: #9D9DAD;
+
+
+}
+#h1smallerfont{
+    	font-family: Arial;
+	color: #8FB299;
+	font-size: 40;
+	text-align: center
+}
+p {
+	padding-left: 5px;
+	padding-right: 5px;
+	font-family: 'Tangerine', serif;
+	font-size: 16;
+}
+
+footer{
+	text-align: right;
+}
+
+/*b8c4cc*/
+a {
+	color: #9D9DAD;
+}
+blockquote{
+  font-size: 16;
+  font-family: 'Tangerine', serif;
+  font-style: italic;
+  border-width: 1px;
+  border-spacing: 20;
+  border-style: dashed;
+  padding: 10px;
+}
+b {
+	font-family: Arial;
+	font-size: 16;
+}
+#imglink {
+	color: white;
+}
+
