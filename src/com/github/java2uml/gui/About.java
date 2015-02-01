@@ -46,7 +46,7 @@ public class About extends JFrame {
         mainAboutPanel.add(copyright, new GridBagConstraints(10, 25, 3, 2, 3, 2, GridBagConstraints.CENTER, GridBagConstraints.REMAINDER, new Insets(3, 0, 3, 0), 0, 0));
 
         add(BorderLayout.NORTH, mainAboutPanel);
-        setSize(340, 560);
+        setSize(340, 600);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
