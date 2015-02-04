@@ -81,7 +81,6 @@ public class UMLClassLoader extends ClassLoader {
      * Метод ищет класс в созданном CLASSPATH и возвращает массив байтов
      *
      * @param className Имя класса, который нужно загрузить
-     *
      * @return Массив, содержащий байт-код класса
      */
     private byte[] getClassFromAddedClassPaths(String className) {
@@ -115,9 +114,7 @@ public class UMLClassLoader extends ClassLoader {
      * Создает массив байтов из входного потока
      *
      * @param in Входной поток
-     *
      * @return Массив байтов
-     *
      * @throws IOException
      */
     private byte[] createByteArray(InputStream in) throws IOException {
@@ -136,7 +133,6 @@ public class UMLClassLoader extends ClassLoader {
      * Преобразует имя пакета в путь к каталогу
      *
      * @param className преобразуемое имя класса
-     *
      * @return полученное имя файла
      */
     private String classNameToFileName(String className) {
@@ -206,7 +202,6 @@ public class UMLClassLoader extends ClassLoader {
      * Загружает все классы из path.
      *
      * @param path Путь к папке с классами.
-     *
      * @return Массив загруженных классов.
      */
     public Set<Class> loadClasses(String path) throws ClassNotFoundException, IOException {
@@ -214,38 +209,38 @@ public class UMLClassLoader extends ClassLoader {
         List<String> classNames = new ArrayList<String>();
 
         if (path.matches(".+\\.jar$")) {
-			try {
-				// прислали jar - распакуем
-				JarFile jarfile = new JarFile(new File(path));
-				// выгружаем классы в папку с именем jar
-				String destdir = path.substring(0, path.indexOf(".jar"));
-				Enumeration<JarEntry> enu = jarfile.entries();
-				while (enu.hasMoreElements()) {
-					JarEntry je = enu.nextElement();
-					File fl = new File(destdir, je.getName());
-					if (je.isDirectory()) {
-						continue;
-					}
-					if (!fl.exists()) {
-						fl.getParentFile().mkdirs();
-						fl.getParentFile().createNewFile();
-						fl = new java.io.File(destdir, je.getName());
-					}
-					try (InputStream is = jarfile.getInputStream(je);
-							FileOutputStream fo = new FileOutputStream(fl);) {
-						// сохраняем файл
-						while (is.available() > 0) {
-							fo.write(is.read());
-						}
-					}
-				}
-				// меняем path
-				path = destdir;
-			} catch(IOException e) {
-				throw e;
-			}
-		}
-        
+            try {
+                // прислали jar - распакуем
+                JarFile jarfile = new JarFile(new File(path));
+                // выгружаем классы в папку с именем jar
+                String destdir = path.substring(0, path.indexOf(".jar"));
+                Enumeration<JarEntry> enu = jarfile.entries();
+                while (enu.hasMoreElements()) {
+                    JarEntry je = enu.nextElement();
+                    File fl = new File(destdir, je.getName());
+                    if (je.isDirectory()) {
+                        continue;
+                    }
+                    if (!fl.exists()) {
+                        fl.getParentFile().mkdirs();
+                        fl.getParentFile().createNewFile();
+                        fl = new java.io.File(destdir, je.getName());
+                    }
+                    try (InputStream is = jarfile.getInputStream(je);
+                         FileOutputStream fo = new FileOutputStream(fl);) {
+                        // сохраняем файл
+                        while (is.available() > 0) {
+                            fo.write(is.read());
+                        }
+                    }
+                }
+                // меняем path
+                path = destdir;
+            } catch (IOException e) {
+                throw e;
+            }
+        }
+
         // Добавляем путь к списку CLASSPATH, если такой в списке отсутствует.
         int index = paths.indexOf(path);
         if (index < 0) {
@@ -259,25 +254,39 @@ public class UMLClassLoader extends ClassLoader {
         // Исключения пока выбрасываются вверх.
         for (String className : classNames) {
             // TODO убрать вывод после тестирования
-            System.out.print(
-                    "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
+//            System.out.print(
+//                    "Загружается " + className.substring(className.lastIndexOf(".") + 1) + "... ");
             String loadingClassName = className;
             String loadingFromPath = path;
+
             boolean packetFound = false;
             while (!packetFound) {
                 try {
+                    // Загружаем класс.
                     Class c = loadClass(loadingClassName);
                     classes.add(c);
+
+                    // Если у класса нет пакета, определяем его.
+                    if (c.getPackage() == null) {
+                        int posSeparator = loadingClassName.lastIndexOf(".");
+                        if (posSeparator > 0) {
+                            String packageName = loadingClassName.substring(0, posSeparator);
+                            definePackage(packageName, null, null, null, null, null, null, null);
+                        }
+                    }
+
                     // TODO убрать вывод после тестирования
-                    System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
+//                    System.out.println("Загружен " + loadingClassName + " из " + loadingFromPath);
                     packetFound = true;
                 } catch (NoClassDefFoundError e) {
+                    // Если класс не смог загрузиться, переходим на следующую подпапку.
                     int posSeparator = loadingClassName.indexOf(".");
                     if (posSeparator == -1) {
                         // TODO убрать вывод после тестирования
-                        System.out.println("Не найден пакет для класса " + loadingClassName);
+//                        System.out.println("Не найден пакет для класса " + loadingClassName);
                         break;
                     }
+
                     loadingFromPath = loadingFromPath + System.getProperty("file.separator")
                             + loadingClassName.substring(0, posSeparator);
                     loadingClassName = loadingClassName.substring(posSeparator + 1);
@@ -299,7 +308,6 @@ public class UMLClassLoader extends ClassLoader {
      * @param path        Имя папки
      * @param classPrefix Префикс для имени класса.
      * @param classNames  Список, в который добавляются найденные имена классов.
-     *
      * @return Список имен классов.
      */
     private List<String> classList(String path, String classPrefix, List<String> classNames) {
