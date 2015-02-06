@@ -1,23 +1,10 @@
 package com.github.java2uml.core.reflection;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -223,8 +210,6 @@ public class UMLClassLoader extends ClassLoader {
         Set<String> unloaded = new HashSet<String>();
         if (path.matches(".+\\.jar$")) {
             try {
-<<<<<<< HEAD
-=======
             	// подготовка загрузчика
                 File file  = new File(path);
                 URL url = file.toURI().toURL();
@@ -232,7 +217,6 @@ public class UMLClassLoader extends ClassLoader {
                 urlList.add(url);
                 ClassLoader cl = new URLClassLoader(Arrays.copyOf(urlList.toArray(), urlList.size(), URL[].class));
             	
->>>>>>> 349c31e2130341e25b04ec2fa6681ed536f4cece
                 // прислали jar - распакуем
                 JarFile jarfile = new JarFile(new File(path));
                 // выгружаем классы в папку с именем jar
@@ -240,31 +224,11 @@ public class UMLClassLoader extends ClassLoader {
                 Enumeration<JarEntry> enu = jarfile.entries();
                 while (enu.hasMoreElements()) {
                     JarEntry je = enu.nextElement();
-<<<<<<< HEAD
-=======
                     //System.out.println("Jar file - " + je.getName());
->>>>>>> 349c31e2130341e25b04ec2fa6681ed536f4cece
                     File fl = new File(destdir, je.getName());
                     if (je.isDirectory()) {
                         continue;
                     }
-<<<<<<< HEAD
-                    if (!fl.exists()) {
-                        fl.getParentFile().mkdirs();
-                        fl.getParentFile().createNewFile();
-                        fl = new java.io.File(destdir, je.getName());
-                    }
-                    try (InputStream is = jarfile.getInputStream(je);
-                         FileOutputStream fo = new FileOutputStream(fl);) {
-                        // сохраняем файл
-                        while (is.available() > 0) {
-                            fo.write(is.read());
-                        }
-                    }
-                }
-                // меняем path
-                path = destdir;
-=======
                     if (je.getName().matches(".+\\.jar$")) {
                     	// нашли jar - распакум и добавим в загрузчик
                     	if (!fl.exists()) {
@@ -313,19 +277,14 @@ public class UMLClassLoader extends ClassLoader {
                 path = destdir;
                 System.out.println("Classes have been loaded... " + classes.size());
                 return classes;
->>>>>>> 349c31e2130341e25b04ec2fa6681ed536f4cece
             } catch (IOException e) {
                 throw e;
             }
         }
-<<<<<<< HEAD
 
-=======
-        
         // писок загружаемых классов
         List<String> classNames = new ArrayList<String>();
         
->>>>>>> 349c31e2130341e25b04ec2fa6681ed536f4cece
         // Добавляем путь к списку CLASSPATH, если такой в списке отсутствует.
         int index = paths.indexOf(path);
         if (index < 0) {
