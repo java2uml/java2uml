@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Properties;
 
 public class UIEntry {
     static UI ui;
@@ -113,6 +114,17 @@ public class UIEntry {
     }
 
     public static void main(String[] args) {
+        try (FileReader reader = new FileReader(new File("config.properties"))) {
+            Properties config = new Properties();
+            config.load(reader);
+            if (config.getProperty("firstRun").equals("true")) {
+
+            }
+        } catch (FileNotFoundException ex) {
+            ex.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
