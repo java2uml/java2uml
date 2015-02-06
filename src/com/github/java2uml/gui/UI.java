@@ -84,6 +84,10 @@ public class UI implements ExceptionListener {
 
     }
 
+    public static UI getInstance() {
+        return UIHolder.UI_INSTANCE;
+    }
+
     public JCheckBoxMenuItem getEnglishLangItem() {
         return englishLangItem;
     }
@@ -117,11 +121,6 @@ public class UI implements ExceptionListener {
 
     public JFrame getMainFrame() {
         return mainFrame;
-    }
-
-
-    public static UI getInstance() {
-        return UIHolder.UI_INSTANCE;
     }
 
     public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
@@ -306,7 +305,7 @@ public class UI implements ExceptionListener {
         quickHelpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!QuickHelp.quickHelpIsNull()) {
+                if (quickHelp != null) {
                     if (!quickHelp.isVisible()) {
                         quickHelp.setVisible(true);
                     } else {
@@ -678,7 +677,7 @@ public class UI implements ExceptionListener {
     public class ChooseFileActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (new File(path.getText()).exists() && !path.getText().equals("")){
+            if (new File(path.getText()).exists() && !path.getText().equals("")) {
                 fileChooser.setCurrentDirectory(new File(path.getText()));
             }
             getProgressBar().setString("0%");

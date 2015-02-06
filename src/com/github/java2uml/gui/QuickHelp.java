@@ -10,10 +10,11 @@ public class QuickHelp extends JFrame {
     }
 
     public static QuickHelp getInstance(){
-        if (quickHelp == null) {
-            quickHelp = new QuickHelp();
-        }
-        return quickHelp;
+        return QuickHelpHolder.quickHelpInstance;
+    }
+
+    private static class QuickHelpHolder {
+        static final QuickHelp quickHelpInstance = new QuickHelp();
     }
 
     private QuickHelp(){

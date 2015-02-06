@@ -113,18 +113,15 @@ public class UIEntry {
 
     }
 
-    public static void main(String[] args) {
-        try (FileReader reader = new FileReader(new File("config.properties"))) {
-            Properties config = new Properties();
-            config.load(reader);
-            if (config.getProperty("firstRun").equals("true")) {
+    public InputStream getConfigFileInputStream(){
+       return getClass().getClassLoader().getResourceAsStream("config.properties");
+    }
 
-            }
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public FileOutputStream getConfigFileOutputStream() throws FileNotFoundException {
+       return new FileOutputStream(getClass().getClassLoader().getResource("config.properties").getFile());
+    }
+
+    public static void main(String[] args) {
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -137,7 +134,28 @@ public class UIEntry {
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
+        }
 
+        try {
+            Properties config = new Properties();
+            config.load(uiEntry.getConfigFileInputStream());
+            if (config.getProperty("firstRun").equals("true")) {
+                config.setProperty("firstRun", "false");
+                config.store(uiEntry.getConfigFileOutputStream(), "Already shown");
+
+                String[] options = new String[]{ui.getLocaleLabels().getString("noLabel"), ui.getLocaleLabels().getString("yesLabel")};
+                int showOrNot = JOptionPane.showOptionDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("wantToShowQuickHelp"), "Java2UML", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
+                switch (showOrNot) {
+                    case 0:
+                        break;
+                    case 1:
+                        QuickHelp.getInstance().setVisible(true);
+                        break;
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+            exceptionListener.handleExceptionAndShowDialog(e);
         }
 
     }
