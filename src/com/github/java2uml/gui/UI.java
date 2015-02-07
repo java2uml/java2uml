@@ -175,6 +175,14 @@ public class UI implements ExceptionListener {
         this.generateItem = generateItem;
     }
 
+    public String getPathOfCurrentDiagram() {
+        return pathOfCurrentDiagram;
+    }
+
+    public void setPathOfCurrentDiagram(String fileName) {
+        this.pathOfCurrentDiagram = fileName;
+    }
+
 
     public void settingStateForAllOptions() {
 
@@ -652,7 +660,7 @@ public class UI implements ExceptionListener {
             panelForDiagram.add(panelForSaveAndOpenDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
             tabs.removeTabAt(1);
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
-            pathOfCurrentDiagram = resource.getPath();
+
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             this.handleExceptionAndShowDialog(throwable);
