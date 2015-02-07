@@ -21,9 +21,9 @@ public class About extends JFrame {
         super(title);
         version = new JLabel("<html><b>Java2UML v.0.4a</b></html>");
         logo = null;
-        copyright = new JLabel(UI.getInstance().getLocaleLabels().getString("copyrightLabel"));
+        copyright = new JLabel(UIPlugin.getInstance().getLocaleLabels().getString("copyrightLabel"));
         mainAboutPanel = new JPanel();
-        about = new JLabel(UI.getInstance().getLocaleLabels().getString("aboutLabel"));
+        about = new JLabel(UIPlugin.getInstance().getLocaleLabels().getString("aboutLabel"));
         mainAboutPanel.setLayout(new GridBagLayout());
 
         TitledBorder titledBorder = new TitledBorder("<html><b>Java2UML v.0.4a</b></html>");
@@ -46,7 +46,7 @@ public class About extends JFrame {
         mainAboutPanel.add(copyright, new GridBagConstraints(10, 25, 3, 2, 3, 2, GridBagConstraints.CENTER, GridBagConstraints.REMAINDER, new Insets(3, 0, 3, 0), 0, 0));
 
         add(BorderLayout.NORTH, mainAboutPanel);
-        setSize(340, 560);
+        setSize(340, 600);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);

@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.*;
 import java.util.List;
 
 public class UIEntry {
@@ -30,7 +31,7 @@ public class UIEntry {
 
 
     private String[] gettingParametersFromUI() {
-        args = new String[9];
+        args = new String[10];
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
         }
@@ -44,6 +45,15 @@ public class UIEntry {
         args[6] = !ui.getShowAggregation().getState() ? "noaggregation" : "";
         args[7] = !ui.getShowAssociation().getState() ? "noassociation" : "";
         args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : "";
+        if (!ui.getPath().getText().isEmpty() && new File(ui.getPath().getText()).exists()) {
+            File outputPath = new File(ui.getPath().getText());
+            if (outputPath.isFile()) {
+                args[9] = "output=" + outputPath.getParent() + FileSystems.getDefault().getSeparator() + "classes.plantuml";
+            } else {
+                args[9] = "output=" + outputPath + FileSystems.getDefault().getSeparator() + "classes.plantuml";
+            }
+
+        }
 
         for (String str : args) System.out.println(str);
 
@@ -132,13 +142,14 @@ public class UIEntry {
 
     public void generateDiagram(String source, String fileName) {
         try {
-            File file = new File(fileName);
-            if (!file.exists()) {
-                file.createNewFile();
+            File path = new File(fileName);
+
+            if (!path.exists()){
+                path.createNewFile();
             }
 
             // поток вывода для диаграммы
-            OutputStream image = new FileOutputStream(file);
+            OutputStream image = new FileOutputStream(path);
 
             // генератор диаграмм
             SourceStringReader reader = new SourceStringReader(source);
@@ -157,7 +168,7 @@ public class UIEntry {
 //                System.out.println(svg);
 
                 try {
-                    FileWriter fw = new FileWriter(file);
+                    FileWriter fw = new FileWriter(path);
                     fw.write(svg);
                     fw.close();
 
@@ -207,7 +218,13 @@ public class UIEntry {
         public SwingWorkerForBackgroundGenerating() {
             isEnableDiagramItem = ui.getEnableDiagramItem().getState();
             isPngExtensionItem = ui.getPngExtensionItem().getState();
-            path = isPngExtensionItem ? dpng : dsvg;
+
+            File currentDir = new File(ui.getPath().getText());
+            if (currentDir.isFile()){
+                path = isPngExtensionItem ? currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dpng : currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dsvg;
+            } else {
+                path = isPngExtensionItem ? currentDir + FileSystems.getDefault().getSeparator() + dpng : currentDir + FileSystems.getDefault().getSeparator() + dsvg;
+            }
         }
 
         @Override
@@ -265,7 +282,12 @@ public class UIEntry {
             if (ui.getEnableDiagramItem().getState()) {
                 if (ui.getPngExtensionItem().getState()) {
                     try {
-                        ui.showDiagram(new File("diagram.png").toURI().toURL());
+                        File file = new File(ui.getPath().getText());
+                        if (file.isFile()) {
+                            file = file.getParentFile();
+                            System.out.println(file);
+                        }
+                        ui.showDiagram(new File(file.toString() + FileSystems.getDefault().getSeparator() + "diagram.png").toURI().toURL());
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     }

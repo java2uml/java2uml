@@ -30,9 +30,17 @@ import java.util.List;
 public class UIPluginEntry extends JPanel implements Disposable {
     private static Logger logger = Logger.getInstance(UIPluginEntry.class);
 
-    private ToolWindow toolWindow;
+    public static ToolWindow getToolWindow() {
+        return toolWindow;
+    }
+
+    public static Project getProject() {
+        return project;
+    }
+
+    private static ToolWindow toolWindow;
 //    private AncestorListener java2umlAncestorListener = new Java2UmlAncestorListener();
-    private Project project;
+    private static Project project;
 //    private JScrollPane scrollPane;
 
     public static UIPlugin getUi() {
@@ -54,7 +62,11 @@ public class UIPluginEntry extends JPanel implements Disposable {
 //        this.toolWindow.getComponent().addAncestorListener(java2umlAncestorListener);
     }
 
-    private String[] gettingParametersFromUI() {
+    public void generateActionFromOutside(){
+        new GenerateActionListener().actionPerformed(null);
+    }
+
+    private String[] gettingParametersFromSettings() {
         args = new String[9];
         for (int i = 0; i < args.length; i++) {
             args[i] = "";
@@ -87,38 +99,38 @@ public class UIPluginEntry extends JPanel implements Disposable {
         exceptionListener = ui;
         ui.initUI().setVisible(true);
         add(ui.getMainFrame());
-        ui.getCancelLoading().addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    ui.getLabelForDiagram().setIcon(null);
-
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                swingWorker.cancel(true);
-                            } catch (NullPointerException ex) {
-                                exceptionListener.handleExceptionAndShowDialog(ex);
-                            }
-                        }
-                    }).start();
-                    ui.getGeneratePlantUML().setEnabled(true);
-                    ui.getProgressBar().setString("0%");
-                    ui.getProgressBar().setValue(0);
-                }
-        });
-        ui.getGeneratePlantUML().addActionListener(generateActionListener);
-        ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (plantUMLCode != null && !plantUMLCode.equals("") && !ui.getGeneratedCode().getText().equals(""))
-                        sendRequestAndShowSvg(plantUMLCode);
-                    else {
-                        JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
-                    }
-
-                }
-            });
+//        ui.getCancelLoading().addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    ui.getLabelForDiagram().setIcon(null);
+//
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            try {
+//                                swingWorker.cancel(true);
+//                            } catch (NullPointerException ex) {
+//                                exceptionListener.handleExceptionAndShowDialog(ex);
+//                            }
+//                        }
+//                    }).start();
+//                    //ui.getGeneratePlantUML().setEnabled(true);
+//                    ui.getProgressBar().setString("0%");
+//                    ui.getProgressBar().setValue(0);
+//                }
+//        });
+        //ui.getGeneratePlantUML().addActionListener(generateActionListener);
+//        ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    if (plantUMLCode != null && !plantUMLCode.equals("") && !ui.getGeneratedCode().getText().equals(""))
+//                        sendRequestAndShowSvg(plantUMLCode);
+//                    else {
+//                        JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
+//                    }
+//
+//                }
+//            });
             //ui.settingStateForAllOptions();
     }
 
@@ -187,10 +199,10 @@ public class UIPluginEntry extends JPanel implements Disposable {
                 ui.getLabelForDiagram().setIcon(null);
                 ui.getProgressBar().setValue(0);
                 ui.getProgressBar().setString("0%");
-                ui.getGeneratePlantUML().setEnabled(false);
-                ui.getOpenOnPlantUMLServer().setEnabled(false);
+//                ui.getGeneratePlantUML().setEnabled(false);
+//                ui.getOpenOnPlantUMLServer().setEnabled(false);
 
-                Main.main(gettingParametersFromUI());
+                Main.main(gettingParametersFromSettings());
 
                 swingWorker = new SwingWorkerForBackgroundGenerating();
                 swingWorker.execute();
@@ -262,11 +274,11 @@ public class UIPluginEntry extends JPanel implements Disposable {
             if (isCancelled()) {
                 ui.getProgressBar().setString("0%");
                 ui.getProgressBar().setValue(0);
-                ui.getGeneratePlantUML().setEnabled(true);
+//                ui.getGeneratePlantUML().setEnabled(true);
             }
-            ui.getOpenOnPlantUMLServer().setEnabled(true);
+//            ui.getOpenOnPlantUMLServer().setEnabled(true);
             ui.setProgressBarComplete();
-            ui.getGeneratePlantUML().setEnabled(true);
+//            ui.getGeneratePlantUML().setEnabled(true);
 
                     try {
                         ui.showDiagram(new File("diagram.png").toURI().toURL());
@@ -301,39 +313,4 @@ public class UIPluginEntry extends JPanel implements Disposable {
         }
         return success;
     }
-
-//    private void addScrollBarListeners(JComponent panel) {
-//        panel.addMouseWheelListener(new MouseWheelListener() {
-//            public void mouseWheelMoved(MouseWheelEvent e) {
-//                if (e.isControlDown()) {
-//                    setZoom(Math.max(getZoom() - e.getWheelRotation() * 10, 1));
-//                } else {
-//                    scrollPane.dispatchEvent(e);
-//                }
-//            }
-//        });
-//
-//        panel.addMouseMotionListener(new MouseMotionListener() {
-//            private int x, y;
-//
-//            public void mouseDragged(MouseEvent e) {
-//                JScrollBar h = scrollPane.getHorizontalScrollBar();
-//                JScrollBar v = scrollPane.getVerticalScrollBar();
-//
-//                int dx = x - e.getXOnScreen();
-//                int dy = y - e.getYOnScreen();
-//
-//                h.setValue(h.getValue() + dx);
-//                v.setValue(v.getValue() + dy);
-//
-//                x = e.getXOnScreen();
-//                y = e.getYOnScreen();
-//            }
-//
-//            public void mouseMoved(MouseEvent e) {
-//                x = e.getXOnScreen();
-//                y = e.getYOnScreen();
-//            }
-//        });
-//    }
 }

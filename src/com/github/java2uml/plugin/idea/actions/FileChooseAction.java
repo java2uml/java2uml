@@ -18,7 +18,9 @@ public class FileChooseAction extends DumbAwareAction {
             UIPluginEntry.getUi().chooseItem();
         }
         else{
-            MainPanel.createToolWindowContent();
+//            MainPanel.run();
+//            UIPluginEntry.getUi().chooseItem();
+//            new MainPanel().createToolWindowContent(project, toolWindow);
         }
     }
 }
