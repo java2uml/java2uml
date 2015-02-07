@@ -22,6 +22,8 @@ import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
 import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 
 public class UIEntry {
     static UI ui;
@@ -29,6 +31,8 @@ public class UIEntry {
     String plantUMLCode;
     SwingWorkerForBackgroundGenerating swingWorker;
     static ExceptionListener exceptionListener;
+    private static Preferences config;
+    private static final int ITERATOR_OF_EXECUTIONS = 1;
 
 
     private String[] gettingParametersFromUI() {
@@ -72,7 +76,7 @@ public class UIEntry {
         exceptionListener = ui;
         ui.initUI().setVisible(true);
 
-        if (System.getProperty("os.name").contains("Windows")){
+        if (System.getProperty("os.name").contains("Windows")) {
             ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
         }
 
@@ -113,22 +117,24 @@ public class UIEntry {
 
     }
 
-    public InputStream getConfigFileInputStream(){
-       return getClass().getClassLoader().getResourceAsStream("config.properties");
+    public InputStream getConfigFileInputStream() throws FileNotFoundException {
+        return ClassLoader.class.getResourceAsStream("config.properties");
     }
 
     public FileOutputStream getConfigFileOutputStream() throws FileNotFoundException {
-       return new FileOutputStream(getClass().getClassLoader().getResource("config.properties").getFile());
+        return new FileOutputStream(getClass().getClassLoader().getResource("config.properties").getFile());
     }
 
     public static void main(String[] args) {
+        config = Preferences.userRoot().node("firstRun");
+        config.putInt("amountOfExecutions", config.getInt("amountOfExecutions", 0) + ITERATOR_OF_EXECUTIONS);
+
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     uiEntry.initUI();
-
                 }
             });
         } catch (Throwable e) {
@@ -136,200 +142,191 @@ public class UIEntry {
             exceptionListener.handleExceptionAndShowDialog(e);
         }
 
-        try {
-            Properties config = new Properties();
-            config.load(uiEntry.getConfigFileInputStream());
-            if (config.getProperty("firstRun").equals("true")) {
-                config.setProperty("firstRun", "false");
-                config.store(uiEntry.getConfigFileOutputStream(), "Already shown");
-
-                String[] options = new String[]{ui.getLocaleLabels().getString("noLabel"), ui.getLocaleLabels().getString("yesLabel")};
-                int showOrNot = JOptionPane.showOptionDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("wantToShowQuickHelp"), "Java2UML", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
-                switch (showOrNot) {
-                    case 0:
-                        break;
-                    case 1:
-                        QuickHelp.getInstance().setVisible(true);
-                        break;
-                }
+        if (config.getInt("amountOfExecutions", 0) <= 1) {
+            config.putInt("amountOfExecutions", config.getInt("amountOfExectuions", 1) + ITERATOR_OF_EXECUTIONS);
+            String[] options = new String[]{ui.getLocaleLabels().getString("noLabel"), ui.getLocaleLabels().getString("yesLabel")};
+            int showOrNot = JOptionPane.showOptionDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("wantToShowQuickHelp"), "Java2UML", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
+            switch (showOrNot) {
+                case 0:
+                    break;
+                case 1:
+                    QuickHelp.getInstance().setVisible(true);
+                    break;
             }
-        } catch (Throwable e) {
-            e.printStackTrace();
-            exceptionListener.handleExceptionAndShowDialog(e);
         }
-
     }
 
-    private String generatePlantUMLAndLoadToTextArea(String outputPath) {
-        plantUMLCode = null;
-        try {
-            plantUMLCode = FileUtils.readFile(new File(outputPath));
-        } catch (IOException e) {
-            e.printStackTrace();
+private String generatePlantUMLAndLoadToTextArea(String outputPath){
+        plantUMLCode=null;
+        try{
+        plantUMLCode=FileUtils.readFile(new File(outputPath));
+        }catch(IOException e){
+        e.printStackTrace();
         }
         return plantUMLCode;
-    }
+        }
 
-    public void generateDiagram(String source, String fileName) {
-        try {
-            File path = new File(fileName);
+public void generateDiagram(String source,String fileName){
+        try{
+        File path=new File(fileName);
 
-            if (!path.exists()){
-                path.createNewFile();
-            }
+        if(!path.exists()){
+        path.createNewFile();
+        }
 
-            // поток вывода для диаграммы
-            OutputStream image = new FileOutputStream(path);
+        // поток вывода для диаграммы
+        OutputStream image=new FileOutputStream(path);
 
-            // генератор диаграмм
-            SourceStringReader reader = new SourceStringReader(source);
+        // генератор диаграмм
+        SourceStringReader reader=new SourceStringReader(source);
 
-            // генерация диаграммы
-            if (ui.getPngExtensionItem().getState()) {
-                String desc = reader.generateImage(image);
-            } else {
-                final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        // генерация диаграммы
+        if(ui.getPngExtensionItem().getState()){
+        String desc=reader.generateImage(image);
+        }else{
+final ByteArrayOutputStream os=new ByteArrayOutputStream();
 // Write the first image to "os"
-                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
-                os.close();
+        String desc=reader.generateImage(os,new FileFormatOption(FileFormat.SVG));
+        os.close();
 
 // The XML is stored into svg
-                final String svg = new String(os.toByteArray());
+final String svg=new String(os.toByteArray());
 //                System.out.println(svg);
 
-                try {
-                    FileWriter fw = new FileWriter(path);
-                    fw.write(svg);
-                    fw.close();
+        try{
+        FileWriter fw=new FileWriter(path);
+        fw.write(svg);
+        fw.close();
 
-                } catch (IOException iox) {
-                    //do stuff with exception
-                    iox.printStackTrace();
-                }
-            }
+        }catch(IOException iox){
+        //do stuff with exception
+        iox.printStackTrace();
+        }
+        }
 
-        } catch (Throwable e) {
-            e.printStackTrace();
-            exceptionListener.handleExceptionAndShowDialog(e);
+        }catch(Throwable e){
+        e.printStackTrace();
+        exceptionListener.handleExceptionAndShowDialog(e);
+        }
+        }
+
+public class GenerateActionListener implements ActionListener {
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        try {
+            ui.getLabelForDiagram().setIcon(null);
+            ui.getProgressBar().setValue(0);
+            ui.getProgressBar().setString("0%");
+            ui.getGeneratePlantUML().setEnabled(false);
+            ui.getOpenOnPlantUMLServer().setEnabled(false);
+
+            Main.main(gettingParametersFromUI());
+
+            swingWorker = new SwingWorkerForBackgroundGenerating();
+            swingWorker.execute();
+
+        } catch (Throwable e1) {
+            e1.printStackTrace();
+            exceptionListener.handleExceptionAndShowDialog(e1);
+        }
+    }
+}
+
+public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
+    private final String dpng = "diagram.png";
+    private final String dsvg = "diagram.svg";
+
+    private String path;
+    private boolean isEnableDiagramItem;
+    private boolean isPngExtensionItem;
+
+    public SwingWorkerForBackgroundGenerating() {
+        isEnableDiagramItem = ui.getEnableDiagramItem().getState();
+        isPngExtensionItem = ui.getPngExtensionItem().getState();
+
+        File currentDir = new File(ui.getPath().getText());
+        if (currentDir.isFile()) {
+            path = isPngExtensionItem ? currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dpng : currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dsvg;
+        } else {
+            path = isPngExtensionItem ? currentDir + FileSystems.getDefault().getSeparator() + dpng : currentDir + FileSystems.getDefault().getSeparator() + dsvg;
         }
     }
 
-    public class GenerateActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                ui.getLabelForDiagram().setIcon(null);
-                ui.getProgressBar().setValue(0);
-                ui.getProgressBar().setString("0%");
-                ui.getGeneratePlantUML().setEnabled(false);
-                ui.getOpenOnPlantUMLServer().setEnabled(false);
-
-                Main.main(gettingParametersFromUI());
-
-                swingWorker = new SwingWorkerForBackgroundGenerating();
-                swingWorker.execute();
-
-            } catch (Throwable e1) {
-                e1.printStackTrace();
-                exceptionListener.handleExceptionAndShowDialog(e1);
-            }
-        }
-    }
-
-    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
-        private final String dpng = "diagram.png";
-        private final String dsvg = "diagram.svg";
-
-        private String path;
-        private boolean isEnableDiagramItem;
-        private boolean isPngExtensionItem;
-
-        public SwingWorkerForBackgroundGenerating() {
-            isEnableDiagramItem = ui.getEnableDiagramItem().getState();
-            isPngExtensionItem = ui.getPngExtensionItem().getState();
-
-            File currentDir = new File(ui.getPath().getText());
-            if (currentDir.isFile()){
-                path = isPngExtensionItem ? currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dpng : currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dsvg;
-            } else {
-                path = isPngExtensionItem ? currentDir + FileSystems.getDefault().getSeparator() + dpng : currentDir + FileSystems.getDefault().getSeparator() + dsvg;
-            }
-        }
-
-        @Override
-        protected String doInBackground() throws Exception {
+    @Override
+    protected String doInBackground() throws Exception {
 
 //            deletePreviousVersionsOfDiagrams();
-            setProgress(2);
-            publish("loadingFilesLabel");
-            if (isCancelled()) return null;
+        setProgress(2);
+        publish("loadingFilesLabel");
+        if (isCancelled()) return null;
 
-            setProgress(3);
-            publish("codeGenerationLabel");
-            plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-            publish("showCodeString");
+        setProgress(3);
+        publish("codeGenerationLabel");
+        plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+        publish("showCodeString");
 
-            if (isCancelled()) return null;
+        if (isCancelled()) return null;
 
-            if (isEnableDiagramItem) {
-                setProgress(4);
-                publish("loadingDiagramLabel");
-                generateDiagram(plantUMLCode, path);
-            }
-
-            if (isCancelled()) return null;
-            setProgress(5);
-            publish("completeLabel");
-
-            return "";
+        if (isEnableDiagramItem) {
+            setProgress(4);
+            publish("loadingDiagramLabel");
+            generateDiagram(plantUMLCode, path);
         }
 
-        @Override
-        protected void process(List<String> chunks) {
+        if (isCancelled()) return null;
+        setProgress(5);
+        publish("completeLabel");
+
+        return "";
+    }
+
+    @Override
+    protected void process(List<String> chunks) {
 //            super.process(chunks);
-            for (String chunk : chunks) {
-                if (chunk.equals("showCodeString")) {
-                    ui.getGeneratedCode().setText(plantUMLCode);
-                } else {
-                    ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
-                }
+        for (String chunk : chunks) {
+            if (chunk.equals("showCodeString")) {
+                ui.getGeneratedCode().setText(plantUMLCode);
+            } else {
+                ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
             }
-            ui.validateProgressBarTo(getProgress());
         }
+        ui.validateProgressBarTo(getProgress());
+    }
 
-        @Override
-        protected void done() {
-            if (isCancelled()) {
-                ui.getProgressBar().setString("0%");
-                ui.getProgressBar().setValue(0);
-                ui.getGeneratePlantUML().setEnabled(true);
-            }
-            ui.getOpenOnPlantUMLServer().setEnabled(true);
-            ui.setProgressBarComplete();
+    @Override
+    protected void done() {
+        if (isCancelled()) {
+            ui.getProgressBar().setString("0%");
+            ui.getProgressBar().setValue(0);
             ui.getGeneratePlantUML().setEnabled(true);
+        }
+        ui.getOpenOnPlantUMLServer().setEnabled(true);
+        ui.setProgressBarComplete();
+        ui.getGeneratePlantUML().setEnabled(true);
 
-            if (ui.getEnableDiagramItem().getState()) {
-                if (ui.getPngExtensionItem().getState()) {
-                    try {
-                        File file = new File(ui.getPath().getText());
-                        if (file.isFile()) {
-                            file = file.getParentFile();
-                            System.out.println(file);
-                        }
-                        ui.showDiagram(new File(file.toString() + FileSystems.getDefault().getSeparator() + "diagram.png").toURI().toURL());
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
+        if (ui.getEnableDiagramItem().getState()) {
+            if (ui.getPngExtensionItem().getState()) {
+                try {
+                    File file = new File(ui.getPath().getText());
+                    if (file.isFile()) {
+                        file = file.getParentFile();
+                        System.out.println(file);
                     }
-                } else {
-                    if (ui.getEnglishLangItem().getState())
-                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
-                    else
-                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
+                    ui.showDiagram(new File(file.toString() + FileSystems.getDefault().getSeparator() + "diagram.png").toURI().toURL());
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
                 }
+            } else {
+                if (ui.getEnglishLangItem().getState())
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
+                else
+                    ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
             }
         }
     }
+
+}
 
     public void settingDockIcon() {
         try {
@@ -363,7 +360,7 @@ public class UIEntry {
         }
     }
 
-    public boolean deletePreviousVersionsOfDiagrams(){
+    public boolean deletePreviousVersionsOfDiagrams() {
         boolean success = false;
 
         if (new File("diagram.svg").exists()) {
