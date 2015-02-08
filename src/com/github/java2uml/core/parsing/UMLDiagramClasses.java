@@ -63,8 +63,7 @@ public class UMLDiagramClasses {
                         } else if (Options.isShowLollipop()) {
                             CreateUmlCode.source.append(" <<");
                             CreateUmlCode.source.append(type.getName());
-                            if (n.getImplements().size() > 1)
-                                CreateUmlCode.source.append(",");
+
                             CreateUmlCode.source.append(">> ");
                         }
                     }
@@ -99,7 +98,7 @@ public class UMLDiagramClasses {
                     CreateUmlCode.source.append(" << (E,yellow) >> ");
                 // Определяем точку входа
                 if (n.getMembers().toString().contains("public static void main(String[] args)") && !n.getName().equals("UMLDiagramClasses"))
-                    CreateUmlCode.source.append(" << start >> ");
+                    CreateUmlCode.source.append(" << (C,yellow) start >> ");
 
                 if (n.getMembers().size() > 0) {
                     CreateUmlCode.source.append("{\n");
@@ -119,8 +118,7 @@ public class UMLDiagramClasses {
 
                     // Добавляем связь внутренним enum
                     setConnectWithInnerEnums(n,
-                            nameWithPath(n.getName()),
-                            cu.getPackage() == null ? "" : cu.getPackage().getName().toString());
+                            nameWithPath(n.getName()));
                     // Добавляем связь - агрегацию
                     setAggregation(n, nameWithPath(n.getName()));
                 } else
@@ -236,10 +234,9 @@ public class UMLDiagramClasses {
      *
      * @param n         - piece of code
      * @param className
-     * @param path
      * @author - Nadchuk Andrei navikom11@mail.ru
      */
-    private void setConnectWithInnerEnums(ClassOrInterfaceDeclaration n, final String className, final String path) {
+    private void setConnectWithInnerEnums(ClassOrInterfaceDeclaration n, final String className) {
         // Так как в ClassOrInterfaceDeclaration нет прямого метода разбиения этих данных,
         // преобразуем нужный нам кусок кода в нужный тип и получаем доступ
         new VoidVisitorAdapter() {
@@ -247,7 +244,7 @@ public class UMLDiagramClasses {
             public void visit(EnumDeclaration n, Object arg) {
                 CreateUmlCode.composition.append(className);
                 CreateUmlCode.composition.append(" *- ");
-                CreateUmlCode.composition.append(path + "." + n.getName() + "\n");
+                CreateUmlCode.composition.append(className + "_" + n.getName() + "\n");
             }
         }.visit(n, null);
 
@@ -410,7 +407,7 @@ public class UMLDiagramClasses {
             @Override
             public void visit(EnumDeclaration n, Object arg) {
                 if (n != null) {
-                    CreateUmlCode.source.append("enum " + n.getName());
+                    CreateUmlCode.source.append(getEnumName(n.getName()));
                     CreateUmlCode.source.append("{\n");
                     if (n.getMembers() != null || n.getEntries() != null) {
 
@@ -606,6 +603,20 @@ public class UMLDiagramClasses {
             return true;
         return false;
 
+    }
+
+    private String getEnumName(final String enumName){
+        final StringBuilder builder = new StringBuilder();
+        builder.append("enum ");
+        new VoidVisitorAdapter(){
+            @Override
+            public void visit(ClassOrInterfaceDeclaration n, Object arg) {
+                if(!n.getName().equals(enumName))
+                    builder.append(n.getName() + "_");
+                }
+        }.visit(cu, null);
+        builder.append(enumName);
+        return builder.toString();
     }
 
     private String getPackage() {
