@@ -27,7 +27,6 @@ public class CreateUmlCode {
     private static String projectName;
     private int typeConnections;
     private static int level = 0;
-    private static String color;
 
     public CreateUmlCode() throws Exception {
         projectName = endAfterLastPoint(Options.getPath(), "/");
@@ -70,16 +69,15 @@ public class CreateUmlCode {
         for (int i = 0; i < folder.length; i++) {
             if (folder[i].isDirectory()) {
 
-                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null && packageWithFiles(folder[i])) {
                     System.out.println("Reading folder... " + folder[i].toString());
                     level++;
 
-                    color = (level == 1 ? "#FFFFFF" : "#DDDDDD");
                     source.append("namespace ");
-                    source.append(getNamePackage(folder[i].toString()) + " " + color + " {\n");
+                    source.append(getNamePackage(folder[i].toString()) + " {\n");
                 }
                 readPackage(folder[i]);
-                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null) {
+                if(folder[i].toString().contains(projectName + System.getProperty("file.separator") + "src") && getNamePackage(folder[i].toString()) != null && packageWithFiles(folder[i])) {
                     source.append("}\n");
                     level--;
                 }
@@ -224,6 +222,18 @@ public class CreateUmlCode {
             return null;
         String namePackage = subString.length > 1 ? subString[1].replace(System.getProperty("file.separator"), ".").substring(1) : null;
         return namePackage;
+    }
+
+    private boolean packageWithFiles(File path){
+        if(path.exists()){
+            File[] folder = path.listFiles();
+            for (int i = 0; i < folder.length; i++) {
+                if (folder[i].toString().toLowerCase().endsWith(".java")) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void createListClasses(File path) throws CreateUmlCodeException{
