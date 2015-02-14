@@ -1,6 +1,7 @@
 package com.github.java2uml.gui;
 
 
+import com.github.java2uml.plugin.idea.PluginSettings;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTabbedPane;
@@ -29,23 +30,8 @@ import java.util.ResourceBundle;
 public class UIPlugin implements ExceptionListener{
     private JPanel mainFrame;
     private JPanel panelForOptions, panelForGeneratedCode, panelForPath, panelForPathAndButtons, panelForDiagram, panelForProgressBarAndCancel, panelForClearAndCopyToClipboard, panelForSaveAndOpenDiagram;
-    //private JButton browse;
-    //private JButton generatePlantUML;
-//    private JButton copyToClipboard;
     private JButton saveDiagram;
-    //private JButton cancelLoading;
-    //private JButton clearCode;
-    //private JButton openDiagram;
-    //private JButton openOnPlantUMLServer;
     private JTabbedPane tabs;
-    private ButtonGroup directionGroup;
-    private ButtonGroup typeOfDiagramGroup;
-    private ButtonGroup languageGroup;
-    private ButtonGroup diagramExtensionGroup;
-    private ButtonGroup parsingMethod;
-//    private About about;
-//    private static Help helpWindow;
-//    private static HelpRu helpRu;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
 
@@ -61,11 +47,6 @@ public class UIPlugin implements ExceptionListener{
     private JTextField path;
 
     ResourceBundle localeLabels;
-
-    public static final String VERTICAL_DIRECTION = "Vertical";
-    public static final String HORIZONTAL_DIRECTION = "Horizontal";
-    public static final String CLASS_DIAGRAM = "Class Dia";
-    public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
 
     public JProgressBar getProgressBar() {
         return progressBar;
@@ -83,10 +64,6 @@ public class UIPlugin implements ExceptionListener{
         return path;
     }
 
-//    public JButton getGeneratePlantUML() {
-//        return generatePlantUML;
-//    }
-
     private static class UIHolder {
         static final UIPlugin UI_INSTANCE = new UIPlugin();
     }
@@ -101,13 +78,13 @@ public class UIPlugin implements ExceptionListener{
     public void chooseItem(){
         ActionEvent action = null;
         new ChooseFileActionListener().actionPerformed(action);
-//        getProgressBar().setString("0%");
-//        getProgressBar().setValue(0);
-//        int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
-//        if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
-//            chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
-//            path.setText(chosenDirectory.toString());
-//        }
+        getProgressBar().setString("0%");
+        getProgressBar().setValue(0);
+        int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
+        if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
+            chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+            path.setText(chosenDirectory.toString());
+        }
     }
 
     public static UIPlugin getInstance() {
@@ -129,26 +106,35 @@ public class UIPlugin implements ExceptionListener{
         generatedCode.setText(stringBuilder.toString());
     }
 
+    public void settingLocaleLabels(ResourceBundle local) {
+//        if (PluginSettings.getSettings() != null){
+//            local = PluginSettings.getSettings().get("language") == PluginSettings.RUSSIAN ?
+//                    ResourceBundle.getBundle("GUILabels", new Locale("ru")):
+//                    ResourceBundle.getBundle("GUILabels", new Locale(""));
+//        } else {
+//            local = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+//        }
+        tabs.setTitleAt(0, local.getString("plantUMLTabLabel"));
+        tabs.setTitleAt(1, local.getString("diagramTabLabel"));
+    }
+
     public JPanel initUI() {
-        localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+        if (PluginSettings.getSettings() != null){
+            localeLabels = PluginSettings.getSettings().get("language") == PluginSettings.RUSSIAN ?
+                    ResourceBundle.getBundle("GUILabels", new Locale("ru")):
+                    ResourceBundle.getBundle("GUILabels", new Locale(""));
+        } else {
+            localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+        }
         mainFrame = new JBPanel(new BorderLayout());
-//        mainFrame = new JBPanel();
-//        mainFrame.setLayout(new BoxLayout(mainFrame, BoxLayout.Y_AXIS));
         panelForOptions = new JPanel();
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         panelForClearAndCopyToClipboard = new JPanel();
         panelForProgressBarAndCancel = new JPanel();
         panelForSaveAndOpenDiagram = new JPanel();
-        //browse = new JButton(localeLabels.getString("chooseDirLabel"));
         saveDiagram = new JButton(localeLabels.getString("saveMenuLabel"));
-        //generatePlantUML = new JButton(localeLabels.getString("generateLabel"));
-        //cancelLoading = new JButton(localeLabels.getString("cancelLabel"));
         labelForDiagram = new JLabel();
-        //clearCode = new JButton(localeLabels.getString("clearLabel"));
-        //openOnPlantUMLServer = new JButton(localeLabels.getString("showOnPlantUMLSite"));
-        //openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
-//        copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
         generatedCode = new JTextArea();
         path = new JTextField();
         panelForPath = new JPanel();
@@ -194,24 +180,6 @@ public class UIPlugin implements ExceptionListener{
                     }
             }
         });
-
-//        clearCode.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                getGeneratedCode().setText("");
-//            }
-//        });
-//        browse.addActionListener(new ChooseFileActionListener());
-//        copyToClipboard.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                generatedCode.setFocusable(true);
-//                generatedCode.selectAll();
-//
-//                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-//                clipboard.setContents(new StringSelection(getGeneratedCode().getText()), null);
-//            }
-//        });
         scrollPaneForDiagram.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneForDiagram.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
         tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
@@ -228,10 +196,6 @@ public class UIPlugin implements ExceptionListener{
 //        panelForProgressBarAndCancel.add(generatePlantUML);
         panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
         panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
-        JLabel jLabel = null;
-
-//            BufferedImage bufferedImage = ImageIO.read(getClass().getClassLoader().getResource("logo.png"));
-//            bufferedImage = Scalr.resize(bufferedImage, Scalr.Method.ULTRA_QUALITY, 350, 86);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
         panelForPathAndButtons.add(panelForOptions);
@@ -244,83 +208,19 @@ public class UIPlugin implements ExceptionListener{
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         panelForGeneratedCode.setLayout(new GridBagLayout());
-//        panelForGeneratedCode.add(openOnPlantUMLServer, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 1, 1, 3, 1, 5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
 
         panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
-//        panelForClearAndCopyToClipboard.add(clearCode);
-//        panelForClearAndCopyToClipboard.add(copyToClipboard);
         panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 5, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
         panelForSaveAndOpenDiagram.setLayout(new BoxLayout(panelForSaveAndOpenDiagram, BoxLayout.X_AXIS));
         panelForSaveAndOpenDiagram.add(saveDiagram);
-//        panelForSaveAndOpenDiagram.add(openDiagram);
-
-//        openDiagram.addActionListener(new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                    final boolean isPng = true;
-//                    SwingUtilities.invokeLater(new Runnable() {
-//                        @Override
-//                        public void run() {
-//
-//                            String diagram = isPng ? "diagram.png" : "diagram.svg";
-//
-//                            if (System.getProperty("os.name").contains("Windows")) {
-//                                try {
-//                                    if (viewerProc != null) {
-//                                        viewerProc.destroy();
-//                                        viewerProc = null;
-//                                    }
-//                                    viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + diagram);
-//                                } catch (IOException ioe) {
-//                                    ioe.printStackTrace();
-//                                }
-//                            } else {
-//                                try {
-//                                    Desktop.getDesktop().open(new File(diagram));
-//                                } catch (IOException e1) {
-//                                    e1.printStackTrace();
-//                                }
-//                            }
-//                        }
-//                    });
-//            }
-//        });
         mainFrame.add(panelForPathAndButtons, BorderLayout.NORTH);
         mainFrame.add(tabs, BorderLayout.CENTER);
         mainFrame.setSize(600, 650);
-        //mainFrame.setLocationRelativeTo(null);
-//        mainFrame.setResizable(false);
         return mainFrame;
     }
-
-//    public JButton getCancelLoading() {
-//        return cancelLoading;
-//    }
-
-//    public void setCancelLoading(JButton cancelLoading) {
-//        this.cancelLoading = cancelLoading;
-//    }
-    public void settingLocaleLabels(ResourceBundle localeLabels) {
-//        browse.setText(localeLabels.getString("chooseDirLabel"));
-        saveDiagram.setText(localeLabels.getString("saveMenuLabel"));
-//        openDiagram.setText(localeLabels.getString("openDiagramLabel"));
-//        generatePlantUML.setText(localeLabels.getString("generateLabel"));
-//        cancelLoading.setText(localeLabels.getString("cancelLabel"));
-//        clearCode.setText(localeLabels.getString("clearLabel"));
-
-//        copyToClipboard.setText(localeLabels.getString("copyToClipboardLabel"));
-//        openOnPlantUMLServer.setText(localeLabels.getString("showOnPlantUMLSite"));
-
-        tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
-        tabs.setTitleAt(1, localeLabels.getString("diagramTabLabel"));
-    }
-
-//    public JButton getOpenOnPlantUMLServer() {
-//        return openOnPlantUMLServer;
-//    }
 
     public class ChooseFileActionListener implements ActionListener {
         @Override

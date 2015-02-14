@@ -1,6 +1,8 @@
 package com.github.java2uml.plugin.idea.actions;
 
 import com.github.java2uml.gui.Settings;
+import com.github.java2uml.gui.UIPlugin;
+import com.github.java2uml.gui.UIPluginEntry;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 

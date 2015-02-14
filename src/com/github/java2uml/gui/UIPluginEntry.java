@@ -99,39 +99,6 @@ public class UIPluginEntry extends JPanel implements Disposable {
         exceptionListener = ui;
         ui.initUI().setVisible(true);
         add(ui.getMainFrame());
-//        ui.getCancelLoading().addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    ui.getLabelForDiagram().setIcon(null);
-//
-//                    new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            try {
-//                                swingWorker.cancel(true);
-//                            } catch (NullPointerException ex) {
-//                                exceptionListener.handleExceptionAndShowDialog(ex);
-//                            }
-//                        }
-//                    }).start();
-//                    //ui.getGeneratePlantUML().setEnabled(true);
-//                    ui.getProgressBar().setString("0%");
-//                    ui.getProgressBar().setValue(0);
-//                }
-//        });
-        //ui.getGeneratePlantUML().addActionListener(generateActionListener);
-//        ui.getOpenOnPlantUMLServer().addActionListener(new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                    if (plantUMLCode != null && !plantUMLCode.equals("") && !ui.getGeneratedCode().getText().equals(""))
-//                        sendRequestAndShowSvg(plantUMLCode);
-//                    else {
-//                        JOptionPane.showMessageDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("umlCodeMustNotBeEmpty"), "Java2UML message", JOptionPane.INFORMATION_MESSAGE);
-//                    }
-//
-//                }
-//            });
-            //ui.settingStateForAllOptions();
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
@@ -141,7 +108,6 @@ public class UIPluginEntry extends JPanel implements Disposable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        ui.getGeneratedCode().setText(plantUMLCode);
         return plantUMLCode;
     }
 
@@ -151,45 +117,22 @@ public class UIPluginEntry extends JPanel implements Disposable {
             if (!file.exists()) {
                 file.createNewFile();
             }
-
             // поток вывода для диаграммы
             OutputStream image = new FileOutputStream(file);
-
             // генератор диаграмм
             SourceStringReader reader = new SourceStringReader(source);
-
             // генерация диаграммы
                 String desc = reader.generateImage(image);
-
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
         }
     }
-//    public void renderLater() {
-//        logger.debug("renderLater ", project.getName());
-//        ApplicationManager.getApplication().invokeLater(new Runnable() {
-//            @Override
-//            public void run() {
-//            }
-//        });
-//    }
 
     @Override
     public void dispose() {
 
     }
-
-//    class Java2UmlAncestorListener extends AncestorListenerAdapter {
-//        private Logger logger = Logger.getInstance(Java2UmlAncestorListener.class);
-//
-//        @Override
-//        public void ancestorAdded(AncestorEvent ancestorEvent) {
-//            logger.debug("ancestorAdded ", project.getName());
-//            renderLater();
-//        }
-//
-//    }
 
     public class GenerateActionListener implements ActionListener {
 

@@ -1,7 +1,5 @@
 package com.github.java2uml.plugin.idea;
 
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,16 +9,16 @@ import java.util.Map;
 public class PluginSettings {
     static Map<String, Integer> settings;
 
-    static int ENGLISH = 0;
-    static int RUSSIAN = 1;
-    static int HORIZONTAL = 0;
-    static int VERTICAL = 1;
-    static int PARSING = 0;
-    static int REFLECTION = 1;
-    static int PNG = 0;
-    static int SVG = 1;
-    static int CLASS = 0;
-    static int SEQUENCE = 1;
+    public final static int ENGLISH = 0;
+    public final static int RUSSIAN = 1;
+    public final static int HORIZONTAL = 0;
+    public final static int VERTICAL = 1;
+    public final static int PARSING = 0;
+    public final static int REFLECTION = 1;
+    public final static int PNG = 0;
+    public final static  int SVG = 1;
+    public final static  int CLASS = 0;
+    public final static  int SEQUENCE = 1;
 
     private PluginSettings(){
 
