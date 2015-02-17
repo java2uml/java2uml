@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class HelpRu extends JFrame implements ActionListener {
 
@@ -21,6 +22,11 @@ public class HelpRu extends JFrame implements ActionListener {
     private JEditorPane editorPane;
     private URL helpURL;
     private static HelpRu helpRu;
+    private ArrayList<String> hostsToOpenInBrowser;
+    private static final String GRAPHVIZ_IDENTIFIER = "graph";
+    private static final String WIKIPEDIA_IDENTIFIER = "wikipedia";
+    private static final String PLANTUML_IDENTIFIER = "plantuml";
+    private static final String REFORMAL_IDENTIFIER = "reformal";
 
     public static boolean helpIsNull() {
         return helpRu == null;
@@ -31,6 +37,14 @@ public class HelpRu extends JFrame implements ActionListener {
             helpRu = new HelpRu("Java2UML Помощь");
         }
         return helpRu;
+    }
+
+    public void initArrayOfHostsToOpenInBrowser(){
+        hostsToOpenInBrowser = new ArrayList<>();
+        hostsToOpenInBrowser.add(GRAPHVIZ_IDENTIFIER);
+        hostsToOpenInBrowser.add(PLANTUML_IDENTIFIER);
+        hostsToOpenInBrowser.add(WIKIPEDIA_IDENTIFIER);
+        hostsToOpenInBrowser.add(REFORMAL_IDENTIFIER);
     }
 
     private HelpRu(String _title) {
@@ -51,9 +65,9 @@ public class HelpRu extends JFrame implements ActionListener {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    String currentLink = e.getURL().toString();
                     try {
-                        if (!e.getURL().toString().contains("graph") && !e.getURL().toString().contains("wikipedia") &&
-                                !e.getURL().toString().contains("plantuml") && !e.getURL().toString().contains("reformal")) {
+                        if (!hostsToOpenInBrowser.contains(currentLink)) {
                             editorPane.setPage(e.getURL());
                         } else {
                             try {

@@ -184,7 +184,7 @@ public class UI implements ExceptionListener {
     }
 
 
-    public void settingStateForAllOptions() {
+    public void settingActualStatesForAllOptions() {
 
         classDiagramCheckboxItem.setState(true);
         verticalDirectionCheckboxItem.setState(true);
@@ -624,7 +624,7 @@ public class UI implements ExceptionListener {
         mainFrame.setSize(600, 650);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        mainFrame.setResizable(false);
+        mainFrame.setResizable(false);
         return mainFrame;
     }
 

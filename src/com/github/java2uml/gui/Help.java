@@ -10,6 +10,7 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by mac on 29.12.14.
@@ -20,6 +21,11 @@ public class Help extends JFrame implements ActionListener {
     private JEditorPane editorPane;
     private URL helpURL;
     private static Help help;
+    private ArrayList<String> hostsToOpenInBrowser;
+    private static final String GRAPHVIZ_IDENTIFIER = "graph";
+    private static final String WIKIPEDIA_IDENTIFIER = "wikipedia";
+    private static final String PLANTUML_IDENTIFIER = "plantuml";
+    private static final String REFORMAL_IDENTIFIER = "reformal";
 
     public static boolean helpIsNull() {
         return help == null;
@@ -30,6 +36,14 @@ public class Help extends JFrame implements ActionListener {
             help = new Help("Java2UML Help");
         }
         return help;
+    }
+
+    public void initArrayOfHostsToOpenInBrowser(){
+        hostsToOpenInBrowser = new ArrayList<>();
+        hostsToOpenInBrowser.add(GRAPHVIZ_IDENTIFIER);
+        hostsToOpenInBrowser.add(PLANTUML_IDENTIFIER);
+        hostsToOpenInBrowser.add(WIKIPEDIA_IDENTIFIER);
+        hostsToOpenInBrowser.add(REFORMAL_IDENTIFIER);
     }
 
     private Help(String _title) {
@@ -50,9 +64,9 @@ public class Help extends JFrame implements ActionListener {
             @Override
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    String currentLink = e.getURL().toString();
                     try {
-                        if (!e.getURL().toString().contains("graph") && !e.getURL().toString().contains("wikipedia") &&
-                                !e.getURL().toString().contains("plantuml") && !e.getURL().toString().contains("reformal")) {
+                        if (!hostsToOpenInBrowser.contains(currentLink)) {
                             editorPane.setPage(e.getURL());
                         } else {
                             try {

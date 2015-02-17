@@ -21,8 +21,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
 public class UIEntry {
@@ -113,7 +111,7 @@ public class UIEntry {
 
             }
         });
-        ui.settingStateForAllOptions();
+        ui.settingActualStatesForAllOptions();
 
     }
 
