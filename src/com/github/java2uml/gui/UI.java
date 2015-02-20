@@ -5,6 +5,8 @@ import org.imgscalr.Scalr;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -26,6 +28,11 @@ public class UI implements ExceptionListener {
 
     private JPanel panelForDiagram;
     private JPanel panelForSaveAndOpenDiagram;
+    private JPanel panelForOptions;
+    private JPanel optionsTypeOfParsing;
+    private JPanel optionsDiagramExtension;
+    private JPanel optionsTypeOfDiagram;
+    private JPanel optionsOthers;
     private JButton browse;
     private JButton generatePlantUML;
     private JButton copyToClipboard;
@@ -37,6 +44,8 @@ public class UI implements ExceptionListener {
     private JTabbedPane tabs;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem;
+    private JRadioButton javaFilesOption, classFilesOption, pngExtensionOption, svgExtensionOption, classesDiagramOption, sequenceDiagramOption;
+    private JCheckBox showLollipopsOption, showDiagramOption;
     private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
             sequenceDiagramCheckboxItem, reflectionCheckboxItem, parsingCheckboxItem, showLollipops, showHeader, showAssociation,
             showComposition, showAggregation, russianLangItem, englishLangItem, svgExtensionItem, pngExtensionItem, enableDiagramItem;
@@ -49,7 +58,7 @@ public class UI implements ExceptionListener {
     private String pathOfCurrentDiagram;
 
     private JFileChooser fileChooser, fileSaver;
-    private JLabel labelForDiagram;
+    private JLabel labelForDiagram, inputFilesTypeOptionsLabel, diagramExtensionOptionsLabel, diagramTypeOptionsLabel, othersOptionsLabel;
 
 
     private JScrollPane scrollPaneForDiagram;
@@ -57,6 +66,118 @@ public class UI implements ExceptionListener {
     private JTextField path;
 
     ResourceBundle localeLabels;
+
+    public JPanel createAndComposeOptionsPanel() {
+        inputFilesTypeOptionsLabel = new JLabel(localeLabels.getString("iWantToParseMenuLabel"));
+        diagramExtensionOptionsLabel = new JLabel(localeLabels.getString("diagramExtensionLabel"));
+        diagramTypeOptionsLabel = new JLabel(localeLabels.getString("typeOfDiagramMenuLabel"));
+        othersOptionsLabel = new JLabel(localeLabels.getString("othersLabel"));
+
+        ButtonGroup inputFilesOptionsButtonGroup = new ButtonGroup();
+        javaFilesOption = new JRadioButton(localeLabels.getString("javaFilesMenuLabel"));
+        javaFilesOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                parsingCheckboxItem.setState(javaFilesOption.isSelected());
+            }
+        });
+        classFilesOption = new JRadioButton(localeLabels.getString("classFilesMenuLabel"));
+        classFilesOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                reflectionCheckboxItem.setState(classFilesOption.isSelected());
+            }
+        });
+        inputFilesOptionsButtonGroup.add(javaFilesOption);
+        inputFilesOptionsButtonGroup.add(classFilesOption);
+
+        ButtonGroup diagramExtensionOptionsButtonGroup = new ButtonGroup();
+        pngExtensionOption = new JRadioButton(localeLabels.getString("pngExtensionLabel"));
+        pngExtensionOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                pngExtensionItem.setState(pngExtensionOption.isSelected());
+            }
+        });
+        svgExtensionOption = new JRadioButton(localeLabels.getString("svgExtensionLabel"));
+        svgExtensionOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                svgExtensionItem.setState(svgExtensionOption.isSelected());
+            }
+        });
+        diagramExtensionOptionsButtonGroup.add(pngExtensionOption);
+        diagramExtensionOptionsButtonGroup.add(svgExtensionOption);
+
+        ButtonGroup typeOfDiagramOptionsButtonGroup = new ButtonGroup();
+        classesDiagramOption = new JRadioButton(localeLabels.getString("classDiagramLabel"));
+        classesDiagramOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                classDiagramCheckboxItem.setState(classFilesOption.isSelected());
+            }
+        });
+        sequenceDiagramOption = new JRadioButton(localeLabels.getString("sequenceDiagramLabel"));
+        sequenceDiagramOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                sequenceDiagramCheckboxItem.setState(sequenceDiagramOption.isSelected());
+            }
+        });
+        typeOfDiagramOptionsButtonGroup.add(classesDiagramOption);
+        typeOfDiagramOptionsButtonGroup.add(sequenceDiagramOption);
+
+        showDiagramOption = new JCheckBox(localeLabels.getString("enableDiagramLabel"));
+        showDiagramOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                enableDiagramItem.setState(showDiagramOption.isSelected());
+            }
+        });
+        showLollipopsOption = new JCheckBox(localeLabels.getString("showLollipopMenuLabel"));
+        showLollipopsOption.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                showLollipops.setState(showLollipopsOption.isSelected());
+            }
+        });
+
+        panelForOptions.setLayout(new BoxLayout(panelForOptions, BoxLayout.X_AXIS));
+        panelForOptions.add(optionsTypeOfParsing);
+
+        optionsTypeOfParsing.setLayout(new BoxLayout(optionsTypeOfParsing, BoxLayout.Y_AXIS));
+        optionsTypeOfParsing.add(inputFilesTypeOptionsLabel);
+        optionsTypeOfParsing.add(javaFilesOption);
+        optionsTypeOfParsing.add(classFilesOption);
+
+        panelForOptions.add(new JSeparator(SwingConstants.VERTICAL));
+
+        panelForOptions.add(optionsDiagramExtension);
+        optionsDiagramExtension.setLayout(new BoxLayout(optionsDiagramExtension, BoxLayout.Y_AXIS));
+        optionsDiagramExtension.add(diagramExtensionOptionsLabel);
+        optionsDiagramExtension.add(pngExtensionOption);
+        optionsDiagramExtension.add(svgExtensionOption);
+
+        panelForOptions.add(new JSeparator(SwingConstants.VERTICAL));
+
+        panelForOptions.add(optionsTypeOfDiagram);
+        optionsTypeOfDiagram.setLayout(new BoxLayout(optionsTypeOfDiagram, BoxLayout.Y_AXIS));
+        optionsTypeOfDiagram.add(diagramTypeOptionsLabel);
+        optionsTypeOfDiagram.add(classesDiagramOption);
+        optionsTypeOfDiagram.add(sequenceDiagramOption);
+
+        panelForOptions.add(new JSeparator(SwingConstants.VERTICAL));
+
+        panelForOptions.add(optionsOthers);
+        optionsOthers.setLayout(new BoxLayout(optionsOthers, BoxLayout.Y_AXIS));
+        optionsOthers.add(othersOptionsLabel);
+        optionsOthers.add(showDiagramOption);
+        optionsOthers.add(showLollipopsOption);
+
+        panelForOptions.setBorder(new EmptyBorder(0, 3, 0, 1));
+        return panelForOptions;
+    }
+
 
     public static final String VERTICAL_DIRECTION = "Vertical";
     public static final String HORIZONTAL_DIRECTION = "Horizontal";
@@ -76,17 +197,23 @@ public class UI implements ExceptionListener {
 
     }
 
-    private static class UIHolder {
-        static final UI UI_INSTANCE = new UI();
-    }
+//Простейшая и надежнейшая статическая реализация singletone для экземпляра класса UI
 
     private UI() {
 
     }
 
+    private static class UIHolder {
+        static final UI UI_INSTANCE = new UI();
+    }
+
     public static UI getInstance() {
         return UIHolder.UI_INSTANCE;
     }
+
+    //todo:Добавить комментарии
+    //todo:Геттеры вверх, сеттеры вниз
+
 
     public JCheckBoxMenuItem getEnglishLangItem() {
         return englishLangItem;
@@ -94,6 +221,18 @@ public class UI implements ExceptionListener {
 
     public JCheckBoxMenuItem getRussianLangItem() {
         return russianLangItem;
+    }
+
+    public JButton getCancelLoading() {
+        return cancelLoading;
+    }
+
+    public void setCancelLoading(JButton cancelLoading) {
+        this.cancelLoading = cancelLoading;
+    }
+
+    public JCheckBoxMenuItem getEnableDiagramItem() {
+        return enableDiagramItem;
     }
 
 
@@ -171,6 +310,10 @@ public class UI implements ExceptionListener {
         return generateItem;
     }
 
+    public JLabel getLabelForDiagram() {
+        return labelForDiagram;
+    }
+
     public void setGenerateItem(JMenuItem generateItem) {
         this.generateItem = generateItem;
     }
@@ -203,17 +346,6 @@ public class UI implements ExceptionListener {
 
     }
 
-    public JButton getCancelLoading() {
-        return cancelLoading;
-    }
-
-    public void setCancelLoading(JButton cancelLoading) {
-        this.cancelLoading = cancelLoading;
-    }
-
-    public JCheckBoxMenuItem getEnableDiagramItem() {
-        return enableDiagramItem;
-    }
 
     public void settingLocaleLabels(ResourceBundle localeLabels) {
         file.setText(localeLabels.getString("fileMenuLabel"));
@@ -261,6 +393,8 @@ public class UI implements ExceptionListener {
 
         tabs.setTitleAt(0, localeLabels.getString("plantUMLTabLabel"));
         tabs.setTitleAt(1, localeLabels.getString("diagramTabLabel"));
+
+
     }
 
     private JMenuBar initMenu() {
@@ -450,9 +584,22 @@ public class UI implements ExceptionListener {
     }
 
     public JFrame initUI() {
+        //Инициализируем все элементы GUI, задаем имена из файлов локализации
+        //todo:Выделить создание новых объектов в отдельный метод.
+        //todo:Выделить задание параметров объектам в новый метод.
+        //todo:Выделить компоновку объектов в отдельный метод
+        //todo:Вызов всех трех методов добавить в метод initUI
+
         localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
-        JPanel panelForOptions = new JPanel();
+        mainFrame.setJMenuBar(initMenu());
+
+        panelForOptions = new JPanel();
+        optionsDiagramExtension = new JPanel();
+        optionsTypeOfParsing = new JPanel();
+        optionsTypeOfDiagram = new JPanel();
+        optionsOthers = new JPanel();
+
         JPanel panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         JPanel panelForClearAndCopyToClipboard = new JPanel();
@@ -483,6 +630,7 @@ public class UI implements ExceptionListener {
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java project directory", "."));
         fileSaver = new JFileChooser();
+
 
         generatedCode.setEditable(false);
 
@@ -549,7 +697,7 @@ public class UI implements ExceptionListener {
         panelForPath.setLayout(new GridBagLayout());
         panelForPath.add(browse, new GridBagConstraints(0, 0, 1, 1, 0, 0.5, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         panelForPath.add(path, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-        panelForOptions.setLayout(new BoxLayout(panelForOptions, BoxLayout.X_AXIS));
+
         panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
         panelForProgressBarAndCancel.add(cancelLoading);
         panelForProgressBarAndCancel.add(progressBar);
@@ -561,7 +709,7 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(jLabel);
         panelForPathAndButtons.add(panelForPath);
         panelForPathAndButtons.add(separatorBetweenPathAndButtons);
-        panelForPathAndButtons.add(panelForOptions);
+        panelForPathAndButtons.add(createAndComposeOptionsPanel());
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
@@ -617,9 +765,7 @@ public class UI implements ExceptionListener {
 
             }
         });
-
-        mainFrame.setJMenuBar(initMenu());
-        mainFrame.add(tabs);
+        mainFrame.add(BorderLayout.CENTER, tabs);
         mainFrame.add(BorderLayout.NORTH, panelForPathAndButtons);
         mainFrame.setSize(600, 650);
         mainFrame.setLocationRelativeTo(null);
@@ -644,9 +790,6 @@ public class UI implements ExceptionListener {
         progressBar.setValue(100);
     }
 
-    public JLabel getLabelForDiagram() {
-        return labelForDiagram;
-    }
 
     public void showDiagram(URL resource) {
         try {
@@ -697,5 +840,6 @@ public class UI implements ExceptionListener {
             }
         }
     }
+
 
 }
