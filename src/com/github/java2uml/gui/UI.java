@@ -46,6 +46,7 @@ public class UI implements ExceptionListener {
     private static HelpRu helpRu;
     private JTextArea generatedCode;
     private JProgressBar progressBar;
+    private String pathOfCurrentDiagram;
 
     private JFileChooser fileChooser, fileSaver;
     private JLabel labelForDiagram;
@@ -83,6 +84,10 @@ public class UI implements ExceptionListener {
 
     }
 
+    public static UI getInstance() {
+        return UIHolder.UI_INSTANCE;
+    }
+
     public JCheckBoxMenuItem getEnglishLangItem() {
         return englishLangItem;
     }
@@ -116,11 +121,6 @@ public class UI implements ExceptionListener {
 
     public JFrame getMainFrame() {
         return mainFrame;
-    }
-
-
-    public static UI getInstance() {
-        return UIHolder.UI_INSTANCE;
     }
 
     public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
@@ -173,6 +173,14 @@ public class UI implements ExceptionListener {
 
     public void setGenerateItem(JMenuItem generateItem) {
         this.generateItem = generateItem;
+    }
+
+    public String getPathOfCurrentDiagram() {
+        return pathOfCurrentDiagram;
+    }
+
+    public void setPathOfCurrentDiagram(String fileName) {
+        this.pathOfCurrentDiagram = fileName;
     }
 
 
@@ -305,7 +313,7 @@ public class UI implements ExceptionListener {
         quickHelpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!QuickHelp.quickHelpIsNull()) {
+                if (quickHelp != null) {
                     if (!quickHelp.isVisible()) {
                         quickHelp.setVisible(true);
                     } else {
@@ -584,22 +592,19 @@ public class UI implements ExceptionListener {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-
-                            String diagram = isPng ? "diagram.png" : "diagram.svg";
-
                             if (System.getProperty("os.name").contains("Windows")) {
                                 try {
                                     if (viewerProc != null) {
                                         viewerProc.destroy();
                                         viewerProc = null;
                                     }
-                                    viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + diagram);
+                                    viewerProc = Runtime.getRuntime().exec("java -jar lib/diagram_viewer.jar " + pathOfCurrentDiagram);
                                 } catch (IOException ioe) {
                                     ioe.printStackTrace();
                                 }
                             } else {
                                 try {
-                                    Desktop.getDesktop().open(new File(diagram));
+                                    Desktop.getDesktop().open(new File(pathOfCurrentDiagram));
                                 } catch (IOException e1) {
                                     e1.printStackTrace();
                                 }
@@ -655,11 +660,13 @@ public class UI implements ExceptionListener {
             panelForDiagram.add(panelForSaveAndOpenDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
             tabs.removeTabAt(1);
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
+
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             this.handleExceptionAndShowDialog(throwable);
         }
     }
+
 
     @Override
     public void handleExceptionAndShowDialog(Throwable throwable) {
@@ -678,7 +685,7 @@ public class UI implements ExceptionListener {
     public class ChooseFileActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (new File(path.getText()).exists() && !path.getText().equals("")){
+            if (new File(path.getText()).exists() && !path.getText().equals("")) {
                 fileChooser.setCurrentDirectory(new File(path.getText()));
             }
             getProgressBar().setString("0%");
