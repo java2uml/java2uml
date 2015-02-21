@@ -67,6 +67,9 @@ public class DataExtractor {
                     // разрешенный пакет - добавляем к генерации
                     classes.add(clazz);
                 }
+            } else {
+            	// добавляем без проверки
+            	classes.add(clazz);
             }
         }
         LOG.info("Classes after check..." + classes.size());
