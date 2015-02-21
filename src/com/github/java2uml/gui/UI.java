@@ -1,12 +1,12 @@
 package com.github.java2uml.gui;
 
-import org.imgscalr.Scalr;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Desktop;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -20,6 +20,37 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.imgscalr.Scalr;
+
+import com.github.java2uml.core.Options;
+import com.github.java2uml.core.reflection.UMLClassLoader;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
@@ -50,6 +81,8 @@ public class UI implements ExceptionListener {
 
     private JFileChooser fileChooser, fileSaver;
     private JLabel labelForDiagram;
+
+    private PackageDialog packageDialog;
 
 
     private JScrollPane scrollPaneForDiagram;
@@ -380,6 +413,18 @@ public class UI implements ExceptionListener {
         options.add(diagramGeneratingMethods);
         options.add(whichRelationsAreShown);
 
+        JMenuItem packageDialogMI = new JMenuItem("Дерево пакетов");
+        packageDialogMI.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if (reflectionCheckboxItem.getState() && Options.isClassesLoaded()) {
+                    // классы загружены - выводим дерево
+                    packageDialog.showDialog();
+                }
+            }
+        });
+        options.add(packageDialogMI);
+
         diagramGeneratingMethods.add(parsingCheckboxItem);
         diagramGeneratingMethods.add(reflectionCheckboxItem);
 
@@ -483,6 +528,8 @@ public class UI implements ExceptionListener {
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java project directory", "."));
         fileSaver = new JFileChooser();
+
+        packageDialog = new PackageDialog(mainFrame);
 
         generatedCode.setEditable(false);
 
@@ -692,8 +739,24 @@ public class UI implements ExceptionListener {
             getProgressBar().setValue(0);
             int resultOfChoice = fileChooser.showOpenDialog(mainFrame);
             if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
-                File chosenDirectory = new File(fileChooser.getSelectedFile().getPath());
+                File chosenDirectory = new File(fileChooser.getSelectedFile()
+                        .getPath());
                 path.setText(chosenDirectory.toString());
+                if (reflectionCheckboxItem.getState()) {
+                    // стираем данные по предыдущим классам и пакетам
+                    Options.clearClassesAndPackages();
+
+                    // загрузка классов из выбранного пути
+                    UMLClassLoader ecl = new UMLClassLoader();
+                    try {
+                        Options.setClasses(ecl.loadClasses(path.getText()));
+                        Options.setPath(path.getText());
+                    } catch(IOException ioe) {
+                        ioe.printStackTrace();
+                    } catch(ClassNotFoundException cnfe) {
+                        cnfe.printStackTrace();
+                    }
+                }
             }
         }
     }

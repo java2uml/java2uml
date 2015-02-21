@@ -1,4 +1,8 @@
 package com.github.java2uml.core;
+
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Вспомогательный класс для передачи параметров запуска.
  *
@@ -19,9 +23,16 @@ public final class Options {
     private static boolean showImplementation = true;
 
     private static boolean isVertical = true;
-    
+
     private static boolean showClassInterior = false;
     private static boolean showMethodArgs = true;
+
+    private static Set<Class> classes;
+    private static Set<String> packages;
+    static {
+        classes		= new HashSet<Class>();
+        packages 	= new HashSet<String>();
+    }
 
     private Options() {
     }
@@ -65,6 +76,41 @@ public final class Options {
         Options.path = path;
     }
 
+    public static Set<Class> getClasses() {
+        return classes;
+    }
+
+    public static void setClasses(Set<Class> classes) {
+        Options.classes = classes;
+    }
+
+    public static void clearClassesAndPackages() {
+        if (packages != null) {
+            packages.clear();
+        }
+        if (classes != null) {
+            classes.clear();
+        }
+    }
+
+    public static boolean isClassesLoaded() {
+        if (classes == null) {
+            return false;
+        }
+        if (classes.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    public static Set<String> getPackages() {
+        return packages;
+    }
+
+    public static void setPackages(Set<String> packages) {
+        Options.packages = packages;
+    }
+
     public static String getOutputFile() {
         return outputFile;
     }
@@ -80,7 +126,7 @@ public final class Options {
     public static void setHeader(String header) {
         Options.header = header;
     }
-    
+
     public static int getHeaderSize() {
         return headerSize;
     }

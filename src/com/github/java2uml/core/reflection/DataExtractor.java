@@ -41,30 +41,36 @@ import org.slf4j.LoggerFactory;
 import com.github.java2uml.core.Options;
 
 public class DataExtractor {
-	
-	private static Logger LOG = LoggerFactory.getLogger("LOG");
-	
-	/**
+
+    private static Logger LOG = LoggerFactory.getLogger("LOG");
+
+    /**
      * Извлечение данных из множества классов для построения uml диаграмм в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param classes - ножество загруженный классов
      * @return boolean
      */
     public static String extract(final Set<Class> classesArg) {
-    	Set<Class> classes = new HashSet<Class>();
-    	LOG.info("Classes before check..." + classesArg.size());
-    	for(Class clazz : classesArg) {
-    		try { 
-    			// дейcтвие, чтобы убедиться, что клас не битый
-    			if (clazz.getCanonicalName() != null) {
-    				classes.add(clazz);
-    			}
-    		} catch(Throwable e) {
-    			continue;
-    		}
+        Set<Class> classes = new HashSet<Class>();
+        Set<String> permittedPacksages =  Options.getPackages();
+        LOG.info("Classes before check..." + classesArg.size());
+        for(Class clazz : classesArg) {
+            try {
+                // дейcтвие, чтобы убедиться, что клас не битый
+                clazz.getCanonicalName();
+            } catch(Throwable e) {
+                continue;
+            }
+            // проверка пакета класса
+            if (!permittedPacksages.isEmpty()) {
+                if (permittedPacksages.contains(getPackageName(clazz.getCanonicalName()))) {
+                    // разрешенный пакет - добавляем к генерации
+                    classes.add(clazz);
+                }
+            }
         }
-    	LOG.info("Classes after check..." + classes.size());
-    	
+        LOG.info("Classes after check..." + classes.size());
+
         // текст в формате plantuml - начало сборки
         StringBuilder source = new StringBuilder();
         source.append("@startuml\n");
@@ -73,7 +79,7 @@ public class DataExtractor {
         source.append("skinparam headerFontStyle bold\n");
         source.append("skinparam classAttributeIconSize 0\n");
         source.append("scale 1.0\n");
-        
+
         //source.append("' Split into 2 pages\n");
         //source.append("page 2x1\n");
         //source.append("skinparam backgroundColor Snow\n");
@@ -90,375 +96,375 @@ public class DataExtractor {
         //source.append("skinparam classArrowColor DarkBlue\n");
         //source.append("skinparam classArrowFontSize 24\n");
         //source.append("skinparam classArrowFontStyle bold\n");
-        
+
         // заголовок диаграммы
         String header = Options.getHeader();
         if(header != null) {
-        	source.append("center header\n");
-        	source.append(header);
-        	source.append("\n");
-        	source.append("endheader\n");
+            source.append("center header\n");
+            source.append(header);
+            source.append("\n");
+            source.append("endheader\n");
         }
-        
+
         // список связей между классами
         List<String> links = new ArrayList<String>();
-        
+
         // таблица пакетов для всех входящих классов
         Map<String, String> packages = new TreeMap<>();
         Set<String> classNames = new HashSet<>();
         for (Class clazz : classes) {
-        	packages.put(getPackageName(clazz.getCanonicalName()), "");
-        	classNames.add(clazz.getCanonicalName());
+            packages.put(getPackageName(clazz.getCanonicalName()), "");
+            classNames.add(clazz.getCanonicalName());
         }
-        
+
         // множество связей для бросаемых исключений: исключение <.. класс
         Set<String> throwLinks = new HashSet<String>();
-        
+
         // хэш точек входа: определяем по public static методу с именем main
         Map<String, String> entryPoints = new HashMap<>();
-        
+
         // объявление классов...
         for (Class clazz : classes) {
-        	try {
-        		// анонимные классы и классы, доюавленные компилятором, пока игнорируем
-            	if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
-            		continue;
-            	}
-            	
-            	// проверка, является ли данный класс внутренней структурой
-            	if (!Options.isShowClassInterior()) {
-            		boolean interior = false;
-            		for(Class cls : classes) {
-            			if (isDeclared(cls, clazz)) {
-            				interior = true;
-            				break;
-            			}
-            		}
-            		if (interior) {
-            			continue;
-            		}
-            	}
-            	
-            	// получение информации о классе
-            	String className 	= clazz.getCanonicalName();
+            try {
+                // анонимные классы и классы, доюавленные компилятором, пока игнорируем
+                if (clazz.isAnonymousClass() || clazz.isSynthetic()) {
+                    continue;
+                }
+
+                // проверка, является ли данный класс внутренней структурой
+                if (!Options.isShowClassInterior()) {
+                    boolean interior = false;
+                    for(Class cls : classes) {
+                        if (isDeclared(cls, clazz)) {
+                            interior = true;
+                            break;
+                        }
+                    }
+                    if (interior) {
+                        continue;
+                    }
+                }
+
+                // получение информации о классе
+                String className 	= clazz.getCanonicalName();
                 String classPack	= getPackageName(clazz.getCanonicalName());
-                
+
                 // объявляем класс и его содержимое
                 StringBuilder res = new StringBuilder();
                 res.append(getClassModifiers(classes, clazz));
-                
+
                 // если есть наследуемый класс, укажем
                 Class superCls = clazz.getSuperclass();
                 if (superCls != null && classes.contains(superCls)) {
-                	res.append(String.format(" <? extends %s> ", superCls.getSimpleName()));
+                    res.append(String.format(" <? extends %s> ", superCls.getSimpleName()));
                 }
-                
+
                 // реализуемые интерфейсы, не попавшие во входное множество
                 String classStyle	= getClassStyle(clazz);
                 String classImpl 	= "";
                 if (Options.isShowLollipop()) {
-                	StringBuilder outerInterfaces = new StringBuilder();
+                    StringBuilder outerInterfaces = new StringBuilder();
                     for (Class inter : clazz.getInterfaces()) {
-                    	if (!classes.contains(inter)) {
-                    		// внешний интерфейс - укажем
-                    		outerInterfaces.append(inter.getSimpleName());
-                    		outerInterfaces.append(", ");
-                    	}
+                        if (!classes.contains(inter)) {
+                            // внешний интерфейс - укажем
+                            outerInterfaces.append(inter.getSimpleName());
+                            outerInterfaces.append(", ");
+                        }
                     }
                     if (!outerInterfaces.toString().isEmpty()) {
-                    	classImpl = outerInterfaces.toString();
-                    	classImpl = classImpl.substring(0, classImpl.lastIndexOf(",")); 
-                    } 
+                        classImpl = outerInterfaces.toString();
+                        classImpl = classImpl.substring(0, classImpl.lastIndexOf(","));
+                    }
                 }
                 if (!classStyle.isEmpty() || !classImpl.isEmpty()) {
-                	// добавим стиль и внешние интерфейсы
-                	res.append(" <<");
-                	res.append(classStyle);
-                	res.append(classImpl);
-                	res.append(">> ");
+                    // добавим стиль и внешние интерфейсы
+                    res.append(" <<");
+                    res.append(classStyle);
+                    res.append(classImpl);
+                    res.append(">> ");
                 }
                 res.append(" {\n");
-                
+
                 // буфер статических членов класса
                 StringBuilder staticMembers = new StringBuilder();
-                
+
                 // получение информации о полях
                 try {
-                	Field[] fields = clazz.getDeclaredFields();
+                    Field[] fields = clazz.getDeclaredFields();
                     if(fields.length > 0) {
-                    	res.append(".. Fields  ..\n");
-                    	// сортировка полей по афлавиту
-                    	Arrays.sort(fields, new Comparator<Field>() {
-                    		@Override
-                    		public int compare(Field fld1, Field fld2) {
-                    			return fld1.getName().compareTo(fld2.getName());
-                    		}
-                    	});
-                    	
-                        for (Field field : fields) {
-                        	if (field.isSynthetic()) {
-                            	// выводим только объявленные структуры
-                            	continue;
+                        res.append(".. Fields  ..\n");
+                        // сортировка полей по афлавиту
+                        Arrays.sort(fields, new Comparator<Field>() {
+                            @Override
+                            public int compare(Field fld1, Field fld2) {
+                                return fld1.getName().compareTo(fld2.getName());
                             }
-                        	if (Modifier.isStatic(field.getModifiers())) {
-                        		// статические члены в конец объявления
-                        		staticMembers.append(getMemberModifiers(field.getModifiers()));
-                        		staticMembers.append(field.getName());
-                        		staticMembers.append(" : ");
-                        		staticMembers.append(field.getType().getSimpleName());
-                        		staticMembers.append("\n");
-                        		continue;
-                        	}
-                        	res.append(getMemberModifiers(field.getModifiers()));
-                        	res.append(field.getName());
-                        	res.append(" : ");
-                        	res.append(field.getType().getSimpleName());
-                        	res.append("\n");
+                        });
+
+                        for (Field field : fields) {
+                            if (field.isSynthetic()) {
+                                // выводим только объявленные структуры
+                                continue;
+                            }
+                            if (Modifier.isStatic(field.getModifiers())) {
+                                // статические члены в конец объявления
+                                staticMembers.append(getMemberModifiers(field.getModifiers()));
+                                staticMembers.append(field.getName());
+                                staticMembers.append(" : ");
+                                staticMembers.append(field.getType().getSimpleName());
+                                staticMembers.append("\n");
+                                continue;
+                            }
+                            res.append(getMemberModifiers(field.getModifiers()));
+                            res.append(field.getName());
+                            res.append(" : ");
+                            res.append(field.getType().getSimpleName());
+                            res.append("\n");
                         }
                     }
                 } catch(NoClassDefFoundError e) {
-                	continue;
+                    continue;
                 }
-                
-                
+
+
                 // получение информации методах
                 Method[] methods = clazz.getDeclaredMethods();
                 final boolean showMethodArgs = Options.isShowMethodArgs();
                 if (methods.length > 0) {
-                	res.append(".. Methods ..\n");
-                	// сортировка методов по афлавиту
-                	Arrays.sort(methods, new Comparator<Method>() {
-                		@Override
-                		public int compare(Method m1, Method m2) {
-                			return m1.getName().compareTo(m2.getName());
-                		}
-                	});
+                    res.append(".. Methods ..\n");
+                    // сортировка методов по афлавиту
+                    Arrays.sort(methods, new Comparator<Method>() {
+                        @Override
+                        public int compare(Method m1, Method m2) {
+                            return m1.getName().compareTo(m2.getName());
+                        }
+                    });
                 }
                 for (Method method : methods) {
-                	if (method.isSynthetic()) {
-                		// выводим только объявленные структуры
-                		continue;
-                	}
-                	
-                	if (Modifier.isStatic(method.getModifiers())) {
-                		// статические члены в конец объявления
-                		staticMembers.append(getMemberModifiers(method.getModifiers()));
-                		staticMembers.append(method.getName());
-                		staticMembers.append("()");
-                		staticMembers.append(" : ");
-                		staticMembers.append(method.getReturnType().getSimpleName());
-                		staticMembers.append("\n");
-                		
-                		// определяем точку входа
-                		if (Modifier.isPublic(method.getModifiers()) && method.getName().equals("main")) {
-                			entryPoints.put(clazz.getCanonicalName(), "");
-                		}
-                		continue;
-                	}
-                	res.append(getMemberModifiers(method.getModifiers()));
+                    if (method.isSynthetic()) {
+                        // выводим только объявленные структуры
+                        continue;
+                    }
+
+                    if (Modifier.isStatic(method.getModifiers())) {
+                        // статические члены в конец объявления
+                        staticMembers.append(getMemberModifiers(method.getModifiers()));
+                        staticMembers.append(method.getName());
+                        staticMembers.append("()");
+                        staticMembers.append(" : ");
+                        staticMembers.append(method.getReturnType().getSimpleName());
+                        staticMembers.append("\n");
+
+                        // определяем точку входа
+                        if (Modifier.isPublic(method.getModifiers()) && method.getName().equals("main")) {
+                            entryPoints.put(clazz.getCanonicalName(), "");
+                        }
+                        continue;
+                    }
+                    res.append(getMemberModifiers(method.getModifiers()));
                     res.append(method.getName());
                     res.append("(");
                     // аргументы функций
                     String args = "";
                     if (showMethodArgs) {
-                    	for (Class arg : method.getParameterTypes()) {
-                    		if (!arg.getSimpleName().isEmpty()) {
-                    			args += arg.getSimpleName() + ", "; 
-                    		}
-                    	}
-                    	if (args.contains(",")) {
-                    		args = args.substring(0, args.lastIndexOf(","));
-                    	}
+                        for (Class arg : method.getParameterTypes()) {
+                            if (!arg.getSimpleName().isEmpty()) {
+                                args += arg.getSimpleName() + ", ";
+                            }
+                        }
+                        if (args.contains(",")) {
+                            args = args.substring(0, args.lastIndexOf(","));
+                        }
                     }
                     res.append(args);
                     res.append(")");
                     res.append(" : ");
                     res.append(method.getReturnType().getSimpleName());
                     res.append("\n");
-                    
+
                     // бросает ли метод исключение
                     for (Class exception : method.getExceptionTypes()) {
-                    	if (classes.contains(exception)) {
-                    		// добавляем связь о брошенном исключении
-                    		if (Options.isShowAssociation()) {
-                    			String link = exception.getCanonicalName();
-                        		link += " <.. ";
-                        		link += className;
-                        		link += "\n";
-                        		throwLinks.add(link);
-                    		}
-                    	}
-                    }
-                }
-                
-                // инфорация о статике
-                if (!staticMembers.toString().isEmpty()) {
-                	res.append(".. Static ..\n");
-                	String[] stat = staticMembers.toString().split("\n");
-                	// сортировка статики по афлавиту
-                	Arrays.sort(stat, new Comparator<String>() {
-                		@Override
-                		public int compare(String str1, String str2) {
-                			return str1.compareTo(str2);
-                		}
-                	});
-                	for (String str : stat) {
-                		res.append(str);
-                		res.append("\n");
-                	}
-                }
-                
-                // информация о внутренних структурах
-                if (!Options.isShowClassInterior()) {
-                	// список структур, объявленных внутри класса
-                    List<Class> declaredClasses = new ArrayList<Class>();
-                    declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
-                    // сортировка структур по афлавиту
-                	Collections.sort(declaredClasses, new Comparator<Class>() {
-                		@Override
-                		public int compare(Class cls1, Class cls2) {
-                			return cls1.getSimpleName().compareTo(cls2.getSimpleName());
-                		}
-                	});
-                	if (declaredClasses.size() > 0) {
-                		res.append(".. Interiors ..\n");	
-                        for (Class declared : declaredClasses) {
-                        	String modStr = getMemberModifiers(declared.getModifiers());
-                        	String desc = "class ";
-                        	if (declared.isInterface()) {
-                        		desc = "interface ";
-                        	}
-                        	if (declared.isAnnotation()) {
-                        		desc = "annotation ";
-                        	}
-                        	if (declared.isEnum()) {
-                        		desc = "enum ";
-                        	}
-                        	res.append(modStr);
-                        	res.append(desc);
-                        	res.append(declared.getSimpleName());
-                        	res.append("\n");
+                        if (classes.contains(exception)) {
+                            // добавляем связь о брошенном исключении
+                            if (Options.isShowAssociation()) {
+                                String link = exception.getCanonicalName();
+                                link += " <.. ";
+                                link += className;
+                                link += "\n";
+                                throwLinks.add(link);
+                            }
                         }
                     }
                 }
-                
+
+                // инфорация о статике
+                if (!staticMembers.toString().isEmpty()) {
+                    res.append(".. Static ..\n");
+                    String[] stat = staticMembers.toString().split("\n");
+                    // сортировка статики по афлавиту
+                    Arrays.sort(stat, new Comparator<String>() {
+                        @Override
+                        public int compare(String str1, String str2) {
+                            return str1.compareTo(str2);
+                        }
+                    });
+                    for (String str : stat) {
+                        res.append(str);
+                        res.append("\n");
+                    }
+                }
+
+                // информация о внутренних структурах
+                if (!Options.isShowClassInterior()) {
+                    // список структур, объявленных внутри класса
+                    List<Class> declaredClasses = new ArrayList<Class>();
+                    declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
+                    // сортировка структур по афлавиту
+                    Collections.sort(declaredClasses, new Comparator<Class>() {
+                        @Override
+                        public int compare(Class cls1, Class cls2) {
+                            return cls1.getSimpleName().compareTo(cls2.getSimpleName());
+                        }
+                    });
+                    if (declaredClasses.size() > 0) {
+                        res.append(".. Interiors ..\n");
+                        for (Class declared : declaredClasses) {
+                            String modStr = getMemberModifiers(declared.getModifiers());
+                            String desc = "class ";
+                            if (declared.isInterface()) {
+                                desc = "interface ";
+                            }
+                            if (declared.isAnnotation()) {
+                                desc = "annotation ";
+                            }
+                            if (declared.isEnum()) {
+                                desc = "enum ";
+                            }
+                            res.append(modStr);
+                            res.append(desc);
+                            res.append(declared.getSimpleName());
+                            res.append("\n");
+                        }
+                    }
+                }
+
                 // закрываем класс
                 res.append("}\n");
-                
+
                 // добавляем класс в таблицу пакетов
                 packages.put(classPack, packages.get(classPack) + res.toString());
-        	} catch(Throwable e) {
-        		continue;
-        	}
+            } catch(Throwable e) {
+                continue;
+            }
         }
-        
+
         // вывод объявленных классов с учетом пакетов и их вложенности 
         List<String> packList = new ArrayList<>();
         StringBuilder buffer = new StringBuilder();
         for (Entry<String, String> entry : packages.entrySet()) {
-        	if (entry.getValue().trim().isEmpty()) {
-        		// добавлять нечего - пропускаем
-        		continue;
-        	}
+            if (entry.getValue().trim().isEmpty()) {
+                // добавлять нечего - пропускаем
+                continue;
+            }
 
-        	if (packList.isEmpty()) {
-        		// список пуст - добавим текущий пакет
-        		packList.add(entry.getKey());
-        		buffer.append("package ");
-        		buffer.append(entry.getKey());
-        		buffer.append(" {\n");		
-        	} else {
-        		// индекс - является ли текущий пакет пакетом из списка
-        		int packNdx = -1;
-        		for (int i=0; i < packList.size(); ++i) {
-        			if (entry.getKey().contains(packList.get(i))) {
-        				packNdx = i;
-        			}
-        		}
-        		if (packNdx > -1) {
-        			// пакет вложен - буферизуем пакеты, в которые не входит текущий
-        			for (int i=packList.size()-1; i >= packNdx; --i) {
-        				if (i==packNdx) {
-        					// первый пакет не учитываем
-        					continue;
-        				}
-        				String pack = packList.get(i);
-                		buffer.append(packages.get(pack));
-                		buffer.append("\n");
-                		buffer.append("}\n");
-        			}
-        			
-        			// удаляем буфиризированные пакеты
-        			List<String> rest = new ArrayList<>();
-        			rest.addAll(packList.subList(0, packNdx+1));
-        			packList.clear();
-        			for (String pack : rest) {
-        				packList.add(pack);
-        			}
-        			
-        			// добавляем текущий пакет
-        			packList.add(entry.getKey());
-        			buffer.append("package ");
-            		buffer.append(entry.getKey());
-            		buffer.append(" {\n");
-        		} else {
-        			// пакет не вложен - буферезуем весь список
-        			for (int i=packList.size()-1; i >= 0; --i) {
-        				String pack = packList.get(i);
-                		buffer.append(packages.get(pack));
-                		buffer.append("\n");
-                		buffer.append("}\n");
-        			}
-        			
-        			// очищаем список
-        			packList.clear();
-        			
-        			// добавляем новый пакет и буферезуем его
-        			packList.add(entry.getKey());
-        			buffer.append("package ");
-            		buffer.append(entry.getKey());
-            		buffer.append(" {\n");
-        		}
-        	}
+            if (packList.isEmpty()) {
+                // список пуст - добавим текущий пакет
+                packList.add(entry.getKey());
+                buffer.append("package ");
+                buffer.append(entry.getKey());
+                buffer.append(" {\n");
+            } else {
+                // индекс - является ли текущий пакет пакетом из списка
+                int packNdx = -1;
+                for (int i=0; i < packList.size(); ++i) {
+                    if (entry.getKey().contains(packList.get(i))) {
+                        packNdx = i;
+                    }
+                }
+                if (packNdx > -1) {
+                    // пакет вложен - буферизуем пакеты, в которые не входит текущий
+                    for (int i=packList.size()-1; i >= packNdx; --i) {
+                        if (i==packNdx) {
+                            // первый пакет не учитываем
+                            continue;
+                        }
+                        String pack = packList.get(i);
+                        buffer.append(packages.get(pack));
+                        buffer.append("\n");
+                        buffer.append("}\n");
+                    }
+
+                    // удаляем буфиризированные пакеты
+                    List<String> rest = new ArrayList<>();
+                    rest.addAll(packList.subList(0, packNdx+1));
+                    packList.clear();
+                    for (String pack : rest) {
+                        packList.add(pack);
+                    }
+
+                    // добавляем текущий пакет
+                    packList.add(entry.getKey());
+                    buffer.append("package ");
+                    buffer.append(entry.getKey());
+                    buffer.append(" {\n");
+                } else {
+                    // пакет не вложен - буферезуем весь список
+                    for (int i=packList.size()-1; i >= 0; --i) {
+                        String pack = packList.get(i);
+                        buffer.append(packages.get(pack));
+                        buffer.append("\n");
+                        buffer.append("}\n");
+                    }
+
+                    // очищаем список
+                    packList.clear();
+
+                    // добавляем новый пакет и буферезуем его
+                    packList.add(entry.getKey());
+                    buffer.append("package ");
+                    buffer.append(entry.getKey());
+                    buffer.append(" {\n");
+                }
+            }
         }
-        
+
         if (!packList.isEmpty()) {
-        	// добавим в буфер последние пакеты
-        	for (int i=packList.size()-1; i >= 0; --i) {
-				String pack = packList.get(i);
-        		buffer.append(packages.get(pack));
-        		buffer.append("\n");
-        		buffer.append("}\n");
-			}
+            // добавим в буфер последние пакеты
+            for (int i=packList.size()-1; i >= 0; --i) {
+                String pack = packList.get(i);
+                buffer.append(packages.get(pack));
+                buffer.append("\n");
+                buffer.append("}\n");
+            }
         }
-        
+
         // очищаем список пакетов
-		packList.clear();
-		
-		// добавляем содерфимое буфера в сборщик
-		source.append(buffer.toString());
-		        
+        packList.clear();
+
+        // добавляем содерфимое буфера в сборщик
+        source.append(buffer.toString());
+
         // определение межклассовых связей
         for (Class clazz : classes) {
-        	try {
-        		if (clazz.getSimpleName().isEmpty()) {
-                	continue;
+            try {
+                if (clazz.getSimpleName().isEmpty()) {
+                    continue;
                 }
-            	        	
-            	//имя класса
-            	String className = clazz.getCanonicalName();
-            	
-            	// получение супер класса и реализованных интерфейсов
+
+                //имя класса
+                String className = clazz.getCanonicalName();
+
+                // получение супер класса и реализованных интерфейсов
                 Class superClass = clazz.getSuperclass();
                 Class[] interfaces = clazz.getInterfaces();
-                
+
                 // множество структур, объявленных внутри класса
                 Set<Class> declaredClasses = new HashSet<Class>();
                 declaredClasses.addAll(Arrays.asList(clazz.getDeclaredClasses()));
-                
+
                 // пакет текущего класса
                 String classPack = getPackageName(clazz.getCanonicalName());
-                
+
                 // объявление связей...
                 if (classes.contains(superClass)) {
                     // супер класс доступен во множестве - добавим связь
@@ -469,258 +475,258 @@ public class DataExtractor {
                     link.append("\n");
                     links.add(link.toString());
                 }
-                
+
                 if (Options.isShowImplementation()) {
-                	for (Class interfc : interfaces) {
+                    for (Class interfc : interfaces) {
                         if (classes.contains(interfc)) {
                             // интерфейс доступен во множестве - добавим связь
-                        	StringBuilder link = new StringBuilder();
-                        	link.append(interfc.getCanonicalName());
-                        	link.append(" <|.. ");
-                        	link.append(className);
-                        	link.append("\n");
-                        	links.add(link.toString());
-                        } 
+                            StringBuilder link = new StringBuilder();
+                            link.append(interfc.getCanonicalName());
+                            link.append(" <|.. ");
+                            link.append(className);
+                            link.append("\n");
+                            links.add(link.toString());
+                        }
                     }
                 }
-                
+
                 // получение внешних классов, являющихся полями clazz, объявленных вне clazz
                 Field[] fieldClasses = clazz.getDeclaredFields();
                 for (Field fieldClass : fieldClasses) {
-                	if (fieldClass.getType() instanceof Object) {
+                    if (fieldClass.getType() instanceof Object) {
                         if (classes.contains(fieldClass.getType())) {
-                        	if (className.equals(fieldClass.getType().getCanonicalName())) {
-                        		// связь на самого себя не учитываем
-                        		continue;
-                        	}
-                        	if (fieldClass.getType().isEnum()) {
-                        		continue;
-                        	}
-                        	if ( isDeclared(fieldClass.getType(), clazz) ) {
-                        		// clazz объявлен внутри fieldClass - связь не учитываем
-                        		continue;
-                        	}
-                            // поле есть внешний класс - добавляем связь агрегирование
-                        	if (Options.isShowAggregation()) {
-                        		StringBuilder link = new StringBuilder();
-                            	link.append(className);
-                            	link.append(" o-- ");
-                            	link.append("\"1..1\" ");
-                            	link.append(fieldClass.getType().getCanonicalName());
-                            	link.append("\n");
-                            	links.add(link.toString());
+                            if (className.equals(fieldClass.getType().getCanonicalName())) {
+                                // связь на самого себя не учитываем
                                 continue;
-                        	}
+                            }
+                            if (fieldClass.getType().isEnum()) {
+                                continue;
+                            }
+                            if ( isDeclared(fieldClass.getType(), clazz) ) {
+                                // clazz объявлен внутри fieldClass - связь не учитываем
+                                continue;
+                            }
+                            // поле есть внешний класс - добавляем связь агрегирование
+                            if (Options.isShowAggregation()) {
+                                StringBuilder link = new StringBuilder();
+                                link.append(className);
+                                link.append(" o-- ");
+                                link.append("\"1..1\" ");
+                                link.append(fieldClass.getType().getCanonicalName());
+                                link.append("\n");
+                                links.add(link.toString());
+                                continue;
+                            }
                         }
-                        
+
                         // проверка поля на массив и коллекцию
-                    	if (fieldClass.getType().isArray()) {
-                			// для массивов связь композиция
-                			String arrayClassName = getArrayName(fieldClass.getType().getCanonicalName());
-                			if (classNames.contains(arrayClassName) && !arrayClassName.equals(className)) {
-                				// есть вхождение - устанавливаем связь
-                				if (Options.isShowComposition()) {
-                					StringBuilder link = new StringBuilder();
-                                	link.append(className);
-                                	link.append(" *-- ");
-                                	link.append("\"0..*\" ");
-                                	link.append(getArrayName(fieldClass.getType().getCanonicalName()));
-                                	link.append("\n");
-                                	links.add(link.toString());
-                            	}
-                			}
-                			// идем дальше
-                			continue;
-                		}
-                		if (isCollection(fieldClass.getType())) {
-                			// поле является коллекцией - проверим тип параметра            			
-                			Type genericFieldType = fieldClass.getGenericType();
-                			if(genericFieldType instanceof ParameterizedType){
-                				// определили параметризированный тип
-                			    ParameterizedType aType = (ParameterizedType) genericFieldType;
-                			    Type[] fieldArgTypes = aType.getActualTypeArguments();
-                			    for(Type fieldArgType : fieldArgTypes) {
-                			    	String argType = getActualClass(classNames, fieldArgType.toString());
-                			    	if (argType != null && Options.isShowComposition() && !argType.equals(className)) {
-                			    		// есть вхождение - устанавливаем связь
-                    					StringBuilder link = new StringBuilder();
-                                    	link.append(className);
-                                    	link.append(" *-- ");
-                                    	link.append("\"0..*\" ");
-                                    	link.append(argType);
-                                    	link.append("\n");
-                                    	links.add(link.toString());
-                			    	}
-                			    }
-                			}
-                			continue;
-                		}
+                        if (fieldClass.getType().isArray()) {
+                            // для массивов связь композиция
+                            String arrayClassName = getArrayName(fieldClass.getType().getCanonicalName());
+                            if (classNames.contains(arrayClassName) && !arrayClassName.equals(className)) {
+                                // есть вхождение - устанавливаем связь
+                                if (Options.isShowComposition()) {
+                                    StringBuilder link = new StringBuilder();
+                                    link.append(className);
+                                    link.append(" *-- ");
+                                    link.append("\"0..*\" ");
+                                    link.append(getArrayName(fieldClass.getType().getCanonicalName()));
+                                    link.append("\n");
+                                    links.add(link.toString());
+                                }
+                            }
+                            // идем дальше
+                            continue;
+                        }
+                        if (isCollection(fieldClass.getType())) {
+                            // поле является коллекцией - проверим тип параметра
+                            Type genericFieldType = fieldClass.getGenericType();
+                            if(genericFieldType instanceof ParameterizedType){
+                                // определили параметризированный тип
+                                ParameterizedType aType = (ParameterizedType) genericFieldType;
+                                Type[] fieldArgTypes = aType.getActualTypeArguments();
+                                for(Type fieldArgType : fieldArgTypes) {
+                                    String argType = getActualClass(classNames, fieldArgType.toString());
+                                    if (argType != null && Options.isShowComposition() && !argType.equals(className)) {
+                                        // есть вхождение - устанавливаем связь
+                                        StringBuilder link = new StringBuilder();
+                                        link.append(className);
+                                        link.append(" *-- ");
+                                        link.append("\"0..*\" ");
+                                        link.append(argType);
+                                        link.append("\n");
+                                        links.add(link.toString());
+                                    }
+                                }
+                            }
+                            continue;
+                        }
                     }
-                	
+
                 }
-                
+
                 // получение внутренних классов, объявленных внутри clazz
                 if (Options.isShowClassInterior()) {
-                	for ( Class declaredClass : declaredClasses ) {
-                    	if (classes.contains(declaredClass)) {
-                    		// связь через ассоциацию
-                    		if (Options.isShowAssociation()) {
-                    			StringBuilder link = new StringBuilder();
-                            	link.append(className);
-                            	link.append(" +--> ");
-                            	link.append(declaredClass.getCanonicalName());
-                            	link.append("\n");
-                            	links.add(link.toString());
-                    		}
-                    	}
+                    for ( Class declaredClass : declaredClasses ) {
+                        if (classes.contains(declaredClass)) {
+                            // связь через ассоциацию
+                            if (Options.isShowAssociation()) {
+                                StringBuilder link = new StringBuilder();
+                                link.append(className);
+                                link.append(" +--> ");
+                                link.append(declaredClass.getCanonicalName());
+                                link.append("\n");
+                                links.add(link.toString());
+                            }
+                        }
                     }
                 }
-        	} catch(NoClassDefFoundError e) {
-        		continue;
-        	}
+            } catch(NoClassDefFoundError e) {
+                continue;
+            }
         }
-        
+
         // обработка полученных связей - 2 этапа..
         List<String> genLinks = new ArrayList<>();  // список с новыми связями
         List<String> oldLinks = new ArrayList<>();  // список старых связей, подлежащих удалению
-        
+
         // этап 1: группировка связей
         for (int i=0; i < links.size(); ++i) {
-        	int matches = 1;
-        	if (oldLinks.contains(links.get(i))) {
-        		continue;
-        	}
-        	String linkType = null;
-        	if (links.get(i).contains("o--") && links.get(i).contains("\"1..1\"")) {
-        		linkType = "o--";
-        	} else if (links.get(i).contains("*--") && links.get(i).contains("\"0..*\"")) {
-        		linkType = "*--";
-        	}
-        	
-        	if (linkType != null) {
-        		// начинаем группировку связей
-        		for (int j=0; j < links.size(); ++j) {
-            		if (i==j) {
-            			continue;
-            		}
-            		if (links.get(i).equals(links.get(j))) {
-            			matches++;
-            		}
-            	}
-        		if (matches > 1) {
-            		String link;
-            		String params[] = links.get(i).split("\\s");
-            		if (params.length >= 4) {
-            			// убеждаемся, что пар-ры правильно извлечены
-            			link = params[0].trim() + " " + linkType + " ";
-            			
-            			// мощность отношений
-            			String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
-            			String cmpMult = "\"0..*(" + matches + ")\" " + params[3].trim() + "\n";
-            			
-            			link += (linkType.equals("o--")) ? agrMult : cmpMult;   
-            	        genLinks.add(link);
-            	        oldLinks.add(links.get(i));
-            		}
-            	}
-        	}
+            int matches = 1;
+            if (oldLinks.contains(links.get(i))) {
+                continue;
+            }
+            String linkType = null;
+            if (links.get(i).contains("o--") && links.get(i).contains("\"1..1\"")) {
+                linkType = "o--";
+            } else if (links.get(i).contains("*--") && links.get(i).contains("\"0..*\"")) {
+                linkType = "*--";
+            }
+
+            if (linkType != null) {
+                // начинаем группировку связей
+                for (int j=0; j < links.size(); ++j) {
+                    if (i==j) {
+                        continue;
+                    }
+                    if (links.get(i).equals(links.get(j))) {
+                        matches++;
+                    }
+                }
+                if (matches > 1) {
+                    String link;
+                    String params[] = links.get(i).split("\\s");
+                    if (params.length >= 4) {
+                        // убеждаемся, что пар-ры правильно извлечены
+                        link = params[0].trim() + " " + linkType + " ";
+
+                        // мощность отношений
+                        String agrMult = "\"" + matches + ".." + matches + "\" " + params[3].trim() + "\n";
+                        String cmpMult = "\"0..*(" + matches + ")\" " + params[3].trim() + "\n";
+
+                        link += (linkType.equals("o--")) ? agrMult : cmpMult;
+                        genLinks.add(link);
+                        oldLinks.add(links.get(i));
+                    }
+                }
+            }
         }
-        
+
         // удаление откорректированных связей
         for (String link : oldLinks) {
-        	while(links.contains(link)) {
-        		links.remove(link);
-        	}
+            while(links.contains(link)) {
+                links.remove(link);
+            }
         }
         // добавление сгруппированных связей
         links.addAll(genLinks);
-        
-        
+
+
         // этап 2: создание двусторонних связей
         genLinks.clear();
         oldLinks.clear();
         for (int i=0; i < links.size(); ++i) {
-        	// извлечение имен классов в связи
-        	String[] params  = links.get(i).split("\\s");
-        	String cls1Left	 	= null;
-        	String cls1Right 	= null;
-        	String leftTypeLink = null; 
-        	if (params.length > 2) {
-        		cls1Left 		= params[0];
-        		cls1Right 		= params[params.length-1]; 
-        		leftTypeLink 	= params[1];
-        	}
-        	if (cls1Left == null || cls1Right == null || leftTypeLink == null) {
-        		continue;
-        	}
-        	if (!leftTypeLink.contains("o") && !leftTypeLink.contains("*")) {
-        		// двуторонняя связь допускается только для агрегации и композиции
-        		continue;
-        	}
-        	
-        	for (int j=0; j < links.size(); ++j) {
-            	// ищем зеркально отображеннные связи
-        		if (i==j || oldLinks.contains(links.get(j)) || !isSimlexLink(links.get(j))) {
-        			// связь задействована или не подходит - выходим
-        			continue;
-        		}
-        		String[] params2 = links.get(j).split("\\s");
-        		String cls2Left  	 = null;
-            	String cls2Right 	 = null;
-            	String rightTypeLink = null; 
-            	if (params2.length > 2) {
-            		cls2Left 		= params2[0];
-            		cls2Right 		= params2[params2.length-1]; 
-            		rightTypeLink 	= params2[1];
-            	}
-            	if (cls2Left == null || cls2Right == null || rightTypeLink == null) {
-            		continue;
-            	}
-            	if (!rightTypeLink.contains("o") && !rightTypeLink.contains("*")) {
-            		// двуторонняя связь допускается только для агрегации и композиции
-            		continue;
-            	}
-        		if (cls1Left.equals(cls2Right) && cls1Right.equals(cls2Left)) {
-        			// нашли зеркальную связь - можно создать двустороннюю связь
-        			String link = createDuplexLink(cls1Left, links.get(i), cls2Left, links.get(j));
-        			genLinks.add(link);
-        			oldLinks.add(links.get(i));
-        			oldLinks.add(links.get(j));	
-        		}
+            // извлечение имен классов в связи
+            String[] params  = links.get(i).split("\\s");
+            String cls1Left	 	= null;
+            String cls1Right 	= null;
+            String leftTypeLink = null;
+            if (params.length > 2) {
+                cls1Left 		= params[0];
+                cls1Right 		= params[params.length-1];
+                leftTypeLink 	= params[1];
+            }
+            if (cls1Left == null || cls1Right == null || leftTypeLink == null) {
+                continue;
+            }
+            if (!leftTypeLink.contains("o") && !leftTypeLink.contains("*")) {
+                // двуторонняя связь допускается только для агрегации и композиции
+                continue;
+            }
+
+            for (int j=0; j < links.size(); ++j) {
+                // ищем зеркально отображеннные связи
+                if (i==j || oldLinks.contains(links.get(j)) || !isSimlexLink(links.get(j))) {
+                    // связь задействована или не подходит - выходим
+                    continue;
+                }
+                String[] params2 = links.get(j).split("\\s");
+                String cls2Left  	 = null;
+                String cls2Right 	 = null;
+                String rightTypeLink = null;
+                if (params2.length > 2) {
+                    cls2Left 		= params2[0];
+                    cls2Right 		= params2[params2.length-1];
+                    rightTypeLink 	= params2[1];
+                }
+                if (cls2Left == null || cls2Right == null || rightTypeLink == null) {
+                    continue;
+                }
+                if (!rightTypeLink.contains("o") && !rightTypeLink.contains("*")) {
+                    // двуторонняя связь допускается только для агрегации и композиции
+                    continue;
+                }
+                if (cls1Left.equals(cls2Right) && cls1Right.equals(cls2Left)) {
+                    // нашли зеркальную связь - можно создать двустороннюю связь
+                    String link = createDuplexLink(cls1Left, links.get(i), cls2Left, links.get(j));
+                    genLinks.add(link);
+                    oldLinks.add(links.get(i));
+                    oldLinks.add(links.get(j));
+                }
             }
         }
         // удаление откорректированных связей
         for (String link : oldLinks) {
-        	while(links.contains(link)) {
-        		links.remove(link);
-        	}
+            while(links.contains(link)) {
+                links.remove(link);
+            }
         }
         // добавление сгруппированных связей
         links.addAll(genLinks);
-        
+
         // вывод связей
         for (String link : links) {
-        	if (link.contains("$")) {
-        		// связи с $ пока игнорируем
-        		continue;
-        	}
-        	source.append(link);
+            if (link.contains("$")) {
+                // связи с $ пока игнорируем
+                continue;
+            }
+            source.append(link);
         }
         for (String link : throwLinks) {
-        	if (link.contains("$")) {
-        		// связи с $ пока игнорируем
-        		continue;
-        	}
-        	source.append(link);
+            if (link.contains("$")) {
+                // связи с $ пока игнорируем
+                continue;
+            }
+            source.append(link);
         }
-                
+
         // конец сборки
         source.append("@enduml\n");
-        
+
         // сохраняем в файл
         return source.toString();
     }
-    
+
     /**
      * Проверка, является ли указанный тип коллекцией
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -728,13 +734,13 @@ public class DataExtractor {
      * @return boolean
      */
     private static boolean isCollection(final Class<?> clazz) {
-    	if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
-    		// проверка на коллекцию и мап
-    		return true;
-    	}
-    	return false;
+        if (Collection.class.isAssignableFrom(clazz) || Map.class.isAssignableFrom(clazz)) {
+            // проверка на коллекцию и мап
+            return true;
+        }
+        return false;
     }
-    
+
     /**
      * Создание связи 
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -744,12 +750,12 @@ public class DataExtractor {
      * @return String
      */
     private static String createLink(final String link, final String nameLeft, final String nameRight) {
-    	if (link == null || nameLeft == null || nameRight == null) {
-    		return "";
-    	}
-    	return nameLeft + " " + link + " " + nameRight + "\n";
+        if (link == null || nameLeft == null || nameRight == null) {
+            return "";
+        }
+        return nameLeft + " " + link + " " + nameRight + "\n";
     }
-    
+
     /**
      * Получение класса из списка имен классов через строку
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -758,17 +764,17 @@ public class DataExtractor {
      * @return Srting - строка с CanonicalName найденного класса
      */
     private static String getActualClass(final Set<String> clsNames, final String str) {
-    	if (str == null) {
-    		return null;
-    	}
-    	for (String clsNm : clsNames) {
-    		if (clsNm != null && str.contains(clsNm)) {
-    			return clsNm;
-    		}
-    	}
-    	return null;
+        if (str == null) {
+            return null;
+        }
+        for (String clsNm : clsNames) {
+            if (clsNm != null && str.contains(clsNm)) {
+                return clsNm;
+            }
+        }
+        return null;
     }
-    
+
     /**
      * Построение двухсторонней связи из двух односторонних
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -778,35 +784,35 @@ public class DataExtractor {
      * @param secondLink - 2-ая связь
      * @return String - код двусторонней связи или пустую строку
      */
-    private static String createDuplexLink(final String clsLeft, final String firstLink, 
-    		final String clsRight, final String secondLink) {
-    	String[] params1 = firstLink.split("\\s");
-    	String[] params2 = secondLink.split("\\s");
-		if (params1.length < 3 || params2.length < 3) {
-			// не хватает данных - выходим
-			return "";
-		}
-		// текущая связь
-		String leftLinkType 	= params1[1];
-		String rightLinkType 	= params2[1];
-		String rightMult	= (params1[2].contains("\"")) ? params1[2] : "";
-		String leftMult 	= (params2[2].contains("\"")) ? params2[2] : "";
-		
-		// убираем линию из связи
-		String[] conn = {"..", "--"};
-		for (String c : conn) {
-			if (leftLinkType.contains(c)) {
-				leftLinkType = leftLinkType.substring(0, leftLinkType.indexOf(c));
-			}
-			if (rightLinkType.contains(c)) {
-				rightLinkType = rightLinkType.substring(0, rightLinkType.indexOf(c));
-			}
-		}
-		// добавим в связь	
-		String link = clsLeft + " " + leftMult + " " + leftLinkType + ".." + rightLinkType + " " + rightMult + " " + clsRight + "\n";
-		return link;
+    private static String createDuplexLink(final String clsLeft, final String firstLink,
+                                           final String clsRight, final String secondLink) {
+        String[] params1 = firstLink.split("\\s");
+        String[] params2 = secondLink.split("\\s");
+        if (params1.length < 3 || params2.length < 3) {
+            // не хватает данных - выходим
+            return "";
+        }
+        // текущая связь
+        String leftLinkType 	= params1[1];
+        String rightLinkType 	= params2[1];
+        String rightMult	= (params1[2].contains("\"")) ? params1[2] : "";
+        String leftMult 	= (params2[2].contains("\"")) ? params2[2] : "";
+
+        // убираем линию из связи
+        String[] conn = {"..", "--"};
+        for (String c : conn) {
+            if (leftLinkType.contains(c)) {
+                leftLinkType = leftLinkType.substring(0, leftLinkType.indexOf(c));
+            }
+            if (rightLinkType.contains(c)) {
+                rightLinkType = rightLinkType.substring(0, rightLinkType.indexOf(c));
+            }
+        }
+        // добавим в связь
+        String link = clsLeft + " " + leftMult + " " + leftLinkType + ".." + rightLinkType + " " + rightMult + " " + clsRight + "\n";
+        return link;
     }
-    
+
     /**
      * Проврека, является ли связь односоронней
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -814,13 +820,13 @@ public class DataExtractor {
      * @return
      */
     private static boolean isSimlexLink(final String link) {
-    	if (link == null) {
-    		return false;
-    	}
-    	String[] params = link.split("\\s");
-    	return true;
+        if (link == null) {
+            return false;
+        }
+        String[] params = link.split("\\s");
+        return true;
     }
-    
+
     /**
      * Генерация диаграммы классов
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -828,38 +834,38 @@ public class DataExtractor {
      * @param outPath 	- путь с именем выхондого файла
      * @param type 		- тип выходного файла: png|svg
      */
-    public static void generateFromSrting(final String source, final String outPath, final String type) 
-    		throws FileNotFoundException, IOException {
-    	try(OutputStream out = new FileOutputStream(new File(outPath));
-    			ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+    public static void generateFromSrting(final String source, final String outPath, final String type)
+            throws FileNotFoundException, IOException {
+        try(OutputStream out = new FileOutputStream(new File(outPath));
+            ByteArrayOutputStream os = new ByteArrayOutputStream();) {
             // проверка параметров
-    		if (source == null || outPath == null || type == null) {
-    			throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
-    		}
-    		
+            if (source == null || outPath == null || type == null) {
+                throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
+            }
+
             // генерация диаграммы
-    		SourceStringReader reader = new SourceStringReader(source);
-    		if (type.equalsIgnoreCase("svg")) {
-    				// генерация диаграммы и сохранение в файл classes.svg
-                    String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
-                    save(new String(os.toByteArray()), "classes.svg");
-                    
-    		} else if (type.equalsIgnoreCase("png")) {
-    			// генерация png диаграммы
-    			File file = new File(outPath);
+            SourceStringReader reader = new SourceStringReader(source);
+            if (type.equalsIgnoreCase("svg")) {
+                // генерация диаграммы и сохранение в файл classes.svg
+                String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
+                save(new String(os.toByteArray()), "classes.svg");
+
+            } else if (type.equalsIgnoreCase("png")) {
+                // генерация png диаграммы
+                File file = new File(outPath);
                 if (!file.exists()) {
                     file.createNewFile();
                 }
                 OutputStream png = new FileOutputStream(file);
-                String desc = reader.generateImage(png);	
-    		}
+                String desc = reader.generateImage(png);
+            }
         } catch (FileNotFoundException e) {
             throw e;
         } catch (IOException e) {
             throw e;
         }
     }
-    
+
     /**
      * Генерация диаграммы классов из файла в формате .plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -868,44 +874,44 @@ public class DataExtractor {
      * @param type - тип выходного файла: png|svg
      * @return void
      */
-    public static void generateFromFile(final String srcPath, final String outPath, final String type) 
-    		throws FileNotFoundException, IOException {
-    	try (BufferedReader srcReader = new BufferedReader(new FileReader(srcPath));
-    			ByteArrayOutputStream os = new ByteArrayOutputStream();) {
-    		// проверка параметров
-    		if (srcPath == null || outPath == null || type == null) {
-    			throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
-    		}
-    		// генерация диаграммы
-    		if (type.equalsIgnoreCase("svg")) {
-    			// извлечение исходников
-        		String line = null;
-        		StringBuilder source = new StringBuilder();
-        		while((line = srcReader.readLine()) != null) {
-        			source.append(line);
-        			source.append("\n"); // // важно! добавить перенос строки
-        		}
-    			// генерация диаграммы и сохранение в файл classes.svg
-        		SourceStringReader reader = new SourceStringReader(source.toString());
+    public static void generateFromFile(final String srcPath, final String outPath, final String type)
+            throws FileNotFoundException, IOException {
+        try (BufferedReader srcReader = new BufferedReader(new FileReader(srcPath));
+             ByteArrayOutputStream os = new ByteArrayOutputStream();) {
+            // проверка параметров
+            if (srcPath == null || outPath == null || type == null) {
+                throw new IllegalArgumentException("DataExtractor.generateFromSrting(): Wrong method arguments!");
+            }
+            // генерация диаграммы
+            if (type.equalsIgnoreCase("svg")) {
+                // извлечение исходников
+                String line = null;
+                StringBuilder source = new StringBuilder();
+                while((line = srcReader.readLine()) != null) {
+                    source.append(line);
+                    source.append("\n"); // // важно! добавить перенос строки
+                }
+                // генерация диаграммы и сохранение в файл classes.svg
+                SourceStringReader reader = new SourceStringReader(source.toString());
                 String desc = reader.generateImage(os, new FileFormatOption(FileFormat.SVG));
                 save(new String(os.toByteArray()), outPath);
-                    
-    		} else if (type.equalsIgnoreCase("png")) {
-    			// генерация png диаграммы
-    			SourceFileReader srcFileReader = new SourceFileReader(new File(srcPath));
-    			List<GeneratedImage> list = srcFileReader.getGeneratedImages();
-    			for (GeneratedImage img : list) {
-    				File png = img.getPngFile();
-    				png.createNewFile();
-    			}
-    		}
+
+            } else if (type.equalsIgnoreCase("png")) {
+                // генерация png диаграммы
+                SourceFileReader srcFileReader = new SourceFileReader(new File(srcPath));
+                List<GeneratedImage> list = srcFileReader.getGeneratedImages();
+                for (GeneratedImage img : list) {
+                    File png = img.getPngFile();
+                    png.createNewFile();
+                }
+            }
         } catch (FileNotFoundException e) {
             throw e;
         } catch (IOException e) {
             throw e;
         }
     }
-    
+
     /**
      * Сохранение сгенерированного кода в формате plantuml
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -914,16 +920,16 @@ public class DataExtractor {
      * @return boolean
      */
     public static boolean save(final String source, final String path) {
-    	try(Writer writer = new BufferedWriter(new OutputStreamWriter(
-    			new FileOutputStream(path), "UTF-8"))) {
-    		writer.write(source);
-    		return true;
-    	} catch(IOException e) {
-    		e.printStackTrace();
-    		return false;
-    	}
+        try(Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(path), "UTF-8"))) {
+            writer.write(source);
+            return true;
+        } catch(IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
-        
+
     /**
      * Получение строки с именем пакета (обрезаем из canonicalName строку с именем класса)
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -931,31 +937,31 @@ public class DataExtractor {
      * @return
      */
     private static String getPackageName(final String className) {
-    	if (className == null) {
-    		return "default_pack";
-    	}
-    	int classNdx = className.lastIndexOf(".");
-    	if (classNdx > -1) {
-    		return className.substring(0, classNdx);
-    	}
-    	return "default_pack";
+        if (className == null) {
+            return "default_pack";
+        }
+        int classNdx = className.lastIndexOf(".");
+        if (classNdx > -1) {
+            return className.substring(0, classNdx);
+        }
+        return "default_pack";
     }
-    
+
     /**
      * Получучение строки с именем типа для массива
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param arrayName - полное имя класса массива
      */
     private static String getArrayName(final String arrayName) {
-    	if (arrayName == null) {
-    		return "";
-    	}
-    	if (arrayName.contains("[")) {
-    		return arrayName.substring(0, arrayName.indexOf("[")); 
-    	}
-    	return arrayName;
+        if (arrayName == null) {
+            return "";
+        }
+        if (arrayName.contains("[")) {
+            return arrayName.substring(0, arrayName.indexOf("["));
+        }
+        return arrayName;
     }
-    
+
     /**
      * Проверка объявления класса child в теле класса parent
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -964,21 +970,21 @@ public class DataExtractor {
      * @return
      */
     private static boolean isDeclared(final Class parent, final Class child) {
-    	if (parent == null || child == null ) {
-    		return false;
-    	}
-    	try {
-    		Set<Class> classes = new HashSet<Class>();
-        	classes.addAll(Arrays.asList(parent.getDeclaredClasses()));
-        	if (classes.contains(child)) {
-        		return true;
-        	}
-    	} catch(NoClassDefFoundError e) {
-    		return false;
-    	}
-    	return false;
+        if (parent == null || child == null ) {
+            return false;
+        }
+        try {
+            Set<Class> classes = new HashSet<Class>();
+            classes.addAll(Arrays.asList(parent.getDeclaredClasses()));
+            if (classes.contains(child)) {
+                return true;
+            }
+        } catch(NoClassDefFoundError e) {
+            return false;
+        }
+        return false;
     }
-            
+
     /**
      * Получение модификаторов членов класса
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -1014,10 +1020,10 @@ public class DataExtractor {
      * @return String
      */
     private static String getClassModifiers(final Set<Class> classes, final Class clazz) {
-    	String unknown 	= getPackageName(clazz.getCanonicalName()) + ".Unknown";
-    	String known	= getPackageName(clazz.getCanonicalName()) + "." + clazz.getSimpleName();
-    	String className 	= (clazz.getSimpleName().isEmpty()) ? unknown : known;
-    	className = clazz.getCanonicalName();
+        String unknown 	= getPackageName(clazz.getCanonicalName()) + ".Unknown";
+        String known	= getPackageName(clazz.getCanonicalName()) + "." + clazz.getSimpleName();
+        String className 	= (clazz.getSimpleName().isEmpty()) ? unknown : known;
+        className = clazz.getCanonicalName();
         String modStr 		= "class " + className;
         if (Modifier.isAbstract(clazz.getModifiers())) {
             modStr = "abstract class " + className + " ";
@@ -1026,27 +1032,27 @@ public class DataExtractor {
             modStr = "interface " + className + " ";
         }
         if (clazz.isEnum()) {
-        	modStr = "enum " + className + " ";
+            modStr = "enum " + className + " ";
         }
         return modStr;
     }
-    
+
     /**
      * Добавление стиля в описание класса
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
      * @param clazz
      */
     private static String getClassStyle(final Class clazz) {
-    	String style = "";
-    	if (clazz == null) {
-    		return "";
-    	}
-    	if (clazz.getSimpleName().toLowerCase().contains("exception")) {
-    		style = " (E,yellow) ";
-    	}
-    	return style;
+        String style = "";
+        if (clazz == null) {
+            return "";
+        }
+        if (clazz.getSimpleName().toLowerCase().contains("exception")) {
+            style = " (E,yellow) ";
+        }
+        return style;
     }
-    
+
     /**
      * Получение цвета пакета в зависимости от уровня вложенности
      * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
@@ -1054,16 +1060,16 @@ public class DataExtractor {
      * @return String
      */
     public static String getPackageColor(final int level) {
-    	if (level <= 0) {
-    		// по-умолчанию возвращаем белый
-    		return Integer.toHexString(0xffffff);
-    	}
-    	int color = 0xffffff;
-    	for(int i=1; i < level%11; ++i) {
-    		// с каждым уровнем делаем чуть темнее
-    		color -= 0x121212;
-    	}
-    	//return Integer.toHexString(color);
-    	return Integer.toHexString(0xffffff);
+        if (level <= 0) {
+            // по-умолчанию возвращаем белый
+            return Integer.toHexString(0xffffff);
+        }
+        int color = 0xffffff;
+        for(int i=1; i < level%11; ++i) {
+            // с каждым уровнем делаем чуть темнее
+            color -= 0x121212;
+        }
+        //return Integer.toHexString(color);
+        return Integer.toHexString(0xffffff);
     }
 }
