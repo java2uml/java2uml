@@ -419,7 +419,10 @@ public class UI implements ExceptionListener {
             public void actionPerformed(ActionEvent ae) {
                 if (reflectionCheckboxItem.getState() && Options.isClassesLoaded()) {
                     // классы загружены - выводим дерево
-                    packageDialog.showDialog();
+                	packageDialog.showDialog();
+                } else if (parsingCheckboxItem.getState()) {
+                	// вывод дерева без загрузки классов
+                	packageDialog.showDialog();
                 }
             }
         });
@@ -756,7 +759,11 @@ public class UI implements ExceptionListener {
                     } catch(ClassNotFoundException cnfe) {
                         cnfe.printStackTrace();
                     }
+                } else if (parsingCheckboxItem.getState()) {
+                	Options.clearClassesAndPackages();
+                	Options.setPath(path.getText());
                 }
+                
             }
         }
     }
