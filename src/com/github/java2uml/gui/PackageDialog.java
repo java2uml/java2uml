@@ -11,11 +11,12 @@ package com.github.java2uml.gui;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -29,7 +30,6 @@ import java.util.jar.JarFile;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -51,11 +51,12 @@ public class PackageDialog {
 private static Logger LOG = LoggerFactory.getLogger("LOG: ");
 
 private static JDialog dialog;
-private static final ImageIcon treeBtnImg = new ImageIcon("res/tree-view-light.png");
-private JButton openTreeBtn;
+//private static final ImageIcon treeBtnImg = new ImageIcon("res/tree-view-light.png");
+//private JButton openTreeBtn;
 private JFrame context;
 private String path = Options.getPath();
 private PackageListPnl packageListPnl;
+private static volatile boolean isLoaded = false;
 
 public PackageDialog(final JFrame context) {
 	this.context = context;
@@ -63,41 +64,57 @@ public PackageDialog(final JFrame context) {
     //setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     //setVisible(true);
     //setLayout(new FlowLayout());
-    openTreeBtn = new JButton(new ImageIcon(treeBtnImg.getImage().getScaledInstance(20, 16, Image.SCALE_SMOOTH)));
-    openTreeBtn.setSize(20,  20);
-    openTreeBtn.setFocusPainted(false);
-    openTreeBtn.setContentAreaFilled(false);
-    openTreeBtn.addActionListener(new ActionListener() 
-    {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            showDialog();
-        }
-    });
+//    openTreeBtn = new JButton(new ImageIcon(treeBtnImg.getImage().getScaledInstance(20, 16, Image.SCALE_SMOOTH)));
+//    openTreeBtn.setSize(20,  20);
+//    openTreeBtn.setFocusPainted(false);
+//    openTreeBtn.setContentAreaFilled(false);
+//    openTreeBtn.addActionListener(new ActionListener() 
+//    {
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            showDialog();
+//        }
+//    });
     //add(openTreeBtn);
 }
 
-public JButton getOpenTreeButton() {
-	return this.openTreeBtn;
-}
-
-public void setEnabled(final boolean val) {
-	this.openTreeBtn.setEnabled(val);
-}
+//public JButton getOpenTreeButton() {
+//	return this.openTreeBtn;
+//}
+//
+//public void setEnabled(final boolean val) {
+//	this.openTreeBtn.setEnabled(val);
+//}
 
 public void updatePath() {
 	this.path = Options.getPath();
 }
 
-public void showDialog() {
+public static boolean isLoaded() {
+	return isLoaded;
+}
+
+public void initDialog() {
     dialog = new JDialog(context, Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setTitle("Выбор пакетов для генерации");
     
     packageListPnl = new PackageListPnl();
     dialog.add(packageListPnl);
+    dialog.addWindowListener(new WindowAdapter() {
+        @Override
+        public void windowClosed(WindowEvent e) {
+            dialog.setVisible(false);
+        }
+    });
     
     dialog.setBounds(550, 250, 400, 600);
-    dialog.setVisible(true);
+    dialog.setVisible(false);
+}
+
+public void showDialog() {
+	if (isLoaded && dialog != null) {
+		dialog.setVisible(true);
+	}
 }
 
 //-------------------------------------------------------------------------------------
@@ -121,8 +138,15 @@ public void showDialog() {
 	
 			LOG.info("Create list model...");
 			
-			// создаем модель для списка
-		    listModel = createPackageListModel();
+			// модель для списка создаем в отдельном потоке
+		    listModel = new DefaultListModel();
+		    Thread thread = new Thread(new Runnable() {
+		    	@Override
+		    	public void run() {
+		    		createPackageListModel();
+		    	}
+		    });
+		    thread.start();
 		    
 		    // создаем список пакетов
 		    packageList = new JList(listModel);    
@@ -174,7 +198,11 @@ public void showDialog() {
 					
 					for (Object obj : packsList) {
 						if (obj instanceof String) {
-							packs.add((String)obj);
+							String val = (String)obj; 
+							if (val.equals(ROOT_PACKAGE)) {
+								val = "";
+							}
+							packs.add(val);
 						}
 					}
 					
@@ -256,72 +284,74 @@ public void showDialog() {
 		 * Создание модели списка
 		 * @author Balyschev Alexey - alexbalu-alpha7@mail.ru
 		 */
-		private DefaultListModel createPackageListModel() {
-			DefaultListModel listModel = new DefaultListModel();
+		private void createPackageListModel() {
 			String path = Options.getPath();
 			if (path == null || path.isEmpty()) {
-				return listModel;
+				isLoaded = false;
+				return;
 			}
-			try {
-				if (path.matches(".+\\.jar$")) {
-					JarFile jarfile = new JarFile(new File(path));
-					Enumeration<JarEntry> enu = jarfile.entries();
-					while (enu.hasMoreElements()) {
-						JarEntry je = enu.nextElement();
-						File fl = new File(path, je.getName());
-						if (je.isDirectory()) {
-							continue;
+			synchronized(listModel) {
+				try {
+					if (path.matches(".+\\.jar$")) {
+						JarFile jarfile = new JarFile(new File(path));
+						Enumeration<JarEntry> enu = jarfile.entries();
+						while (enu.hasMoreElements()) {
+							JarEntry je = enu.nextElement();
+							File fl = new File(path, je.getName());
+							if (je.isDirectory()) {
+								continue;
+							}
+							if (je.getName().matches(".+\\.class$")) {
+								// заносим пакет класа в модель
+								String packName = extractPackName(je.getName());
+								if (packName.trim().equals("")) {
+									packName = ROOT_PACKAGE;
+								}
+								if (!listModel.contains(packName)) {
+									listModel.addElement(packName);
+								}
+							}                    
 						}
-						if (je.getName().matches(".+\\.class$")) {
-							// заносим пакет класа в модель
-							String packName = extractPackName(je.getName());
-							LOG.info("Package - " + packName);
-							if (packName.trim().equals("")) {
-								packName = ROOT_PACKAGE;
+						if (listModel.contains(ROOT_PACKAGE)) {
+							listModel.set(0, ROOT_PACKAGE);
+						}
+						isLoaded = true;
+						return;
+					}
+					
+					// строим модель из содержимого директории
+					File src = new File(path);
+					if (src.isDirectory()) {
+						// фильтр: допускается только байт код
+						FileFilter filter = new FileFilter() {
+							public boolean accept(File file) {
+								return file.getName().matches(".+\\.class$");
 							}
-							if (!listModel.contains(packName)) {
-								listModel.addElement(packName);
+						};
+						for (File subPack : src.listFiles()) {
+							if (!subPack.exists()) {
+								continue;
 							}
-						}                    
+							if (subPack.isFile() && subPack.getName().matches(".+\\.class$")) {
+								// извлекаем корневой пакет из класса
+								if (!listModel.contains(ROOT_PACKAGE)) {
+									listModel.addElement(ROOT_PACKAGE);
+								}
+							}
+							if (subPack.isDirectory()) {
+								// уходим вглубь пакета
+								addPackage(listModel, subPack, "");
+							}
+						}
 					}
 					if (listModel.contains(ROOT_PACKAGE)) {
 						listModel.set(0, ROOT_PACKAGE);
 					}
-					return listModel;
+					isLoaded = true;
+				} catch(IOException e) {
+					isLoaded = false;
+					e.printStackTrace();
 				}
-				
-				// строим модель из содержимого директории
-				File src = new File(path);
-				if (src.isDirectory()) {
-					// фильтр: допускается только байт код
-					FileFilter filter = new FileFilter() {
-						public boolean accept(File file) {
-							return file.getName().matches(".+\\.class$");
-						}
-					};
-					for (File subPack : src.listFiles()) {
-						if (!subPack.exists()) {
-							continue;
-						}
-						if (subPack.isFile() && subPack.getName().matches(".+\\.class$")) {
-							// извлекаем корневой пакет из класса
-							if (!listModel.contains(ROOT_PACKAGE)) {
-								listModel.addElement(ROOT_PACKAGE);
-							}
-						}
-						if (subPack.isDirectory()) {
-							// уходим вглубь пакета
-							addPackage(listModel, subPack, "");
-						}
-					}
-				}
-				if (listModel.contains(ROOT_PACKAGE)) {
-					listModel.set(0, ROOT_PACKAGE);
-				}
-				return listModel;
-			} catch(IOException e) {
-				e.printStackTrace();
-				return listModel;
 			}
 		}
 		

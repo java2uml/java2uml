@@ -754,6 +754,7 @@ public class UI implements ExceptionListener {
                     try {
                         Options.setClasses(ecl.loadClasses(path.getText()));
                         Options.setPath(path.getText());
+                        packageDialog.initDialog();
                     } catch(IOException ioe) {
                         ioe.printStackTrace();
                     } catch(ClassNotFoundException cnfe) {
