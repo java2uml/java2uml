@@ -48,7 +48,7 @@ import com.github.java2uml.core.Options;
 
 public class PackageDialog {
 	
-private static Logger LOG = LoggerFactory.getLogger("LOG - ");
+private static Logger LOG = LoggerFactory.getLogger("LOG: ");
 
 private static JDialog dialog;
 private static final ImageIcon treeBtnImg = new ImageIcon("res/tree-view-light.png");
@@ -275,6 +275,7 @@ public void showDialog() {
 						if (je.getName().matches(".+\\.class$")) {
 							// заносим пакет класа в модель
 							String packName = extractPackName(je.getName());
+							LOG.info("Package - " + packName);
 							if (packName.trim().equals("")) {
 								packName = ROOT_PACKAGE;
 							}
@@ -335,8 +336,7 @@ public void showDialog() {
 				return "";
 			}
 			String pack = path.substring(0, ndx);
-			pack.replaceAll("/", ".");
-			return pack;
+			return pack.replaceAll("/", ".");
 		}
 		
 		/**
