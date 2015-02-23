@@ -55,7 +55,7 @@ public class Reflection {
 			//
 			// ui.setProgressBarComplete();
 			//
-			// ui.showDiagram();
+			// ui.showDiagramInReducedSize();
 		}
 	}
 

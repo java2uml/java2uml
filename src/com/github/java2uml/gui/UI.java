@@ -25,7 +25,7 @@ import java.util.ResourceBundle;
 
 public class UI implements ExceptionListener {
     private JFrame mainFrame;
-
+    private JMenuBar menu;
     private JPanel panelForDiagram;
     private JPanel panelForSaveAndOpenDiagram;
     private JPanel panelForOptions;
@@ -38,6 +38,11 @@ public class UI implements ExceptionListener {
     private JPanel panelForProgressBarAndCancel;
     private JPanel panelForPathAndButtons;
     private JPanel panelForPath;
+    private ButtonGroup parsingMethod;
+    private ButtonGroup directionGroup;
+    private ButtonGroup typeOfDiagramGroup;
+    private ButtonGroup languageGroup;
+    private ButtonGroup diagramExtensionGroup;
     private JButton browse;
     private JButton generatePlantUML;
     private JButton copyToClipboard;
@@ -48,6 +53,7 @@ public class UI implements ExceptionListener {
     private JButton openOnPlantUMLServer;
     private JSeparator separatorBetweenPathAndButtons;
     private JSeparator separatorBetweenButtonsAndProgressBar;
+    private JScrollPane scrollPane;
     private JTabbedPane tabs;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
     private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem;
@@ -63,39 +69,18 @@ public class UI implements ExceptionListener {
     private JTextArea generatedCode;
     private JProgressBar progressBar;
     private String pathOfCurrentDiagram;
-
     private JFileChooser fileChooser, fileSaver;
     private JLabel labelForDiagram, inputFilesTypeOptionsLabel, diagramExtensionOptionsLabel, diagramTypeOptionsLabel, othersOptionsLabel;
-
-
     private JScrollPane scrollPaneForDiagram;
-
     private JTextField path;
-
     ResourceBundle localeLabels;
 
-    public static final String VERTICAL_DIRECTION = "Vertical";
-    public static final String HORIZONTAL_DIRECTION = "Horizontal";
-    public static final String CLASS_DIAGRAM = "Class Dia";
-    public static final String SEQUENCE_DIAGRAM = "Sequence Dia";
-
-    public JProgressBar getProgressBar() {
-        return progressBar;
-    }
-
-    public ResourceBundle getLocaleLabels() {
-        if (russianLangItem.getState()) {
-            return ResourceBundle.getBundle("GUILabels", new Locale("ru"));
-        } else if (englishLangItem.getState()) {
-            return ResourceBundle.getBundle("GUILabels", new Locale(""));
-        } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
-
-    }
+    // процесс просмоторщика диаграмм
+    private Process viewerProc = null;
 
 //Простейшая и надежнейшая статическая реализация singletone для экземпляра класса UI
 
     private UI() {
-
     }
 
     private static class UIHolder {
@@ -106,7 +91,21 @@ public class UI implements ExceptionListener {
         return UIHolder.UI_INSTANCE;
     }
 
+    //В зависимости от выбранного языка, или географического положения пользователя, возвращает ResourceBundle со строками
+    //соответствующего языка
+    public ResourceBundle getLocaleLabels() {
+        if (russianLangItem.getState()) {
+            return ResourceBundle.getBundle("GUILabels", new Locale("ru"));
+        } else if (englishLangItem.getState()) {
+            return ResourceBundle.getBundle("GUILabels", new Locale(""));
+        } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+    }
 
+    public void initLocaleBundle() {
+        localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+    }
+
+    /**Создает и располагает панель с опциями вверху окна*/
     public JPanel createAndComposeOptionsPanel() {
         inputFilesTypeOptionsLabel = new JLabel(localeLabels.getString("iWantToParseMenuLabel"));
         diagramExtensionOptionsLabel = new JLabel(localeLabels.getString("diagramExtensionLabel"));
@@ -222,6 +221,7 @@ public class UI implements ExceptionListener {
         return panelForOptions;
     }
 
+    /**Устанавливает для всех опций состояния "по умолчанию" */
     public void settingActualStatesForAllOptions() {
 
         classDiagramCheckboxItem.setState(true);
@@ -241,7 +241,7 @@ public class UI implements ExceptionListener {
 
     }
 
-
+    /**Срабатывает когда пользователь переключает язык - меняет надписи для всех элементов ГУИ, которые поддаются локализации */
     public void settingLocaleLabels(ResourceBundle localeLabels) {
         file.setText(localeLabels.getString("fileMenuLabel"));
         help.setText(localeLabels.getString("helpMenuLabel"));
@@ -305,9 +305,9 @@ public class UI implements ExceptionListener {
 
     }
 
-    private JMenuBar createAndComposeMenu() {
-        JMenuBar menu = new JMenuBar();
-
+    /**Инициализирует объекты меню и устанавливает им надписи из ResourceBundle соответствующие дефолтному языку */
+    protected void createMenuObjects() {
+        menu = new JMenuBar();
         file = new JMenu(localeLabels.getString("fileMenuLabel"));
         help = new JMenu(localeLabels.getString("helpMenuLabel"));
         typeOfDiagramMenu = new JMenu(localeLabels.getString("typeOfDiagramMenuLabel"));
@@ -317,8 +317,37 @@ public class UI implements ExceptionListener {
         diagramGeneratingMethods = new JMenu(localeLabels.getString("iWantToParseMenuLabel"));
         whichRelationsAreShown = new JMenu(localeLabels.getString("relationsMenuLabel"));
         diagramExtension = new JMenu(localeLabels.getString("diagramExtensionLabel"));
-
         pngExtensionItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("pngExtensionLabel"));
+        svgExtensionItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("svgExtensionLabel"));
+        enableDiagramItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("enableDiagramLabel"));
+        englishLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("englishLanguage"));
+        russianLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("russianLanguage"));
+        showAssociation = new StayOpenCheckBoxMenuItem(localeLabels.getString("associationMenuLabel"));
+        showAssociation.setState(true);
+        showAggregation = new StayOpenCheckBoxMenuItem(localeLabels.getString("aggregationMenuLabel"));
+        showComposition = new StayOpenCheckBoxMenuItem(localeLabels.getString("compositionMenuLabel"));
+        showHeader = new StayOpenCheckBoxMenuItem(localeLabels.getString("chooseHeaderMenuLabel"));
+        showLollipops = new StayOpenCheckBoxMenuItem(localeLabels.getString("showLollipopMenuLabel"));
+        helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
+        quickHelpItem = new JMenuItem(localeLabels.getString("quickHelp"));
+        exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
+        aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
+        generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
+        chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
+        parsingMethod = new ButtonGroup();
+        directionGroup = new ButtonGroup();
+        typeOfDiagramGroup = new ButtonGroup();
+        languageGroup = new ButtonGroup();
+        diagramExtensionGroup = new ButtonGroup();
+        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
+        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
+        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionHorizontalLabel"));
+        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionVerticalLabel"));
+        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classDiagramLabel"));
+        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("sequenceDiagramLabel"));
+    }
+
+    protected void addActionListenersToMenu() {
         pngExtensionItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -326,7 +355,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-        svgExtensionItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("svgExtensionLabel"));
         svgExtensionItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -334,7 +362,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-        enableDiagramItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("enableDiagramLabel"));
         enableDiagramItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -342,17 +369,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-        englishLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("englishLanguage"));
-        russianLangItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("russianLanguage"));
-
-        showAssociation = new StayOpenCheckBoxMenuItem(localeLabels.getString("associationMenuLabel"));
-        showAssociation.setState(true);
-        showAggregation = new StayOpenCheckBoxMenuItem(localeLabels.getString("aggregationMenuLabel"));
-        showComposition = new StayOpenCheckBoxMenuItem(localeLabels.getString("compositionMenuLabel"));
-
-        showHeader = new StayOpenCheckBoxMenuItem(localeLabels.getString("chooseHeaderMenuLabel"));
-
-        showLollipops = new StayOpenCheckBoxMenuItem(localeLabels.getString("showLollipopMenuLabel"));
         showLollipops.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -360,19 +376,7 @@ public class UI implements ExceptionListener {
             }
         });
 
-        helpItem = new JMenuItem(localeLabels.getString("helpMenuLabel"));
-        quickHelpItem = new JMenuItem(localeLabels.getString("quickHelp"));
-        exitItem = new JMenuItem(localeLabels.getString("exitMenuLabel"));
-        aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
-        generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
-        chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
-        ButtonGroup parsingMethod = new ButtonGroup();
-        ButtonGroup directionGroup = new ButtonGroup();
-        ButtonGroup typeOfDiagramGroup = new ButtonGroup();
-        ButtonGroup languageGroup = new ButtonGroup();
-        ButtonGroup diagramExtensionGroup = new ButtonGroup();
 
-        reflectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classFilesMenuLabel"));
         reflectionCheckboxItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -380,7 +384,7 @@ public class UI implements ExceptionListener {
             }
         });
 
-        parsingCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("javaFilesMenuLabel"));
+
         parsingCheckboxItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -388,11 +392,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-        parsingMethod.add(reflectionCheckboxItem);
-        parsingMethod.add(parsingCheckboxItem);
-
-        languageGroup.add(englishLangItem);
-        languageGroup.add(russianLangItem);
 
         quickHelpItem.addActionListener(new ActionListener() {
             @Override
@@ -423,14 +422,6 @@ public class UI implements ExceptionListener {
                 }
             }
         });
-
-        horizontalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionHorizontalLabel"));
-        verticalDirectionCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("directionVerticalLabel"));
-
-        directionGroup.add(horizontalDirectionCheckboxItem);
-        directionGroup.add(verticalDirectionCheckboxItem);
-
-        classDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("classDiagramLabel"));
         classDiagramCheckboxItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -438,17 +429,13 @@ public class UI implements ExceptionListener {
             }
         });
 
-        sequenceDiagramCheckboxItem = new StayOpenCheckBoxMenuItem(localeLabels.getString("sequenceDiagramLabel"));
+
         sequenceDiagramCheckboxItem.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 sequenceDiagramOption.setSelected(sequenceDiagramCheckboxItem.isSelected());
             }
         });
-
-        typeOfDiagramGroup.add(classDiagramCheckboxItem);
-        typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
-
         chooseItem.addActionListener(new ChooseFileActionListener());
         exitItem.addActionListener(new ActionListener() {
             @Override
@@ -456,6 +443,60 @@ public class UI implements ExceptionListener {
                 System.exit(0);
             }
         });
+        englishLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("")));
+            }
+        });
+
+        russianLangItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("ru")));
+            }
+        });
+
+        helpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (englishLangItem.getState()) {
+                    if (!Help.helpIsNull()) {
+                        if (!helpWindow.isVisible()) {
+                            helpWindow.setVisible(true);
+                        } else {
+                            helpWindow.toFront();
+                            helpWindow.repaint();
+                        }
+                    } else helpWindow = Help.getInstance();
+                } else {
+                    if (!HelpRu.helpIsNull()) {
+                        if (!helpRu.isVisible()) {
+                            helpRu.setVisible(true);
+                        } else {
+                            helpRu.toFront();
+                            helpRu.repaint();
+                        }
+                    } else helpRu = HelpRu.getInstance();
+                }
+            }
+        });
+    }
+
+    /**Расставляет менюшки внутрь друг друга и в правильном порядке */
+    protected void composeMenu() {
+        parsingMethod.add(reflectionCheckboxItem);
+        parsingMethod.add(parsingCheckboxItem);
+
+        languageGroup.add(englishLangItem);
+        languageGroup.add(russianLangItem);
+
+        directionGroup.add(horizontalDirectionCheckboxItem);
+        directionGroup.add(verticalDirectionCheckboxItem);
+
+        typeOfDiagramGroup.add(classDiagramCheckboxItem);
+        typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
+
         file.add(chooseItem);
         file.add(generateItem);
         file.add(exitItem);
@@ -501,60 +542,16 @@ public class UI implements ExceptionListener {
         menu.add(file);
         menu.add(options);
         menu.add(help);
-
-        englishLangItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("")));
-            }
-        });
-
-        russianLangItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                settingLocaleLabels(ResourceBundle.getBundle("GUILabels", new Locale("ru")));
-            }
-        });
-
-        helpItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (englishLangItem.getState()) {
-                    if (!Help.helpIsNull()) {
-                        if (!helpWindow.isVisible()) {
-                            helpWindow.setVisible(true);
-                        } else {
-                            helpWindow.toFront();
-                            helpWindow.repaint();
-                        }
-                    } else helpWindow = Help.getInstance();
-                } else {
-                    if (!HelpRu.helpIsNull()) {
-                        if (!helpRu.isVisible()) {
-                            helpRu.setVisible(true);
-                        } else {
-                            helpRu.toFront();
-                            helpRu.repaint();
-                        }
-                    } else helpRu = HelpRu.getInstance();
-                }
-            }
-        });
-        return menu;
     }
 
-    public JButton getOpenOnPlantUMLServer() {
-        return openOnPlantUMLServer;
-    }
-
-    private void createAllUIObjects(){
+    /**Инициализирует все объекты во фрейме (кроме меню), и присваивает им локализованные надписи */
+    protected void createAllUIObjects() {
         mainFrame = new JFrame(localeLabels.getString("titleLabel"));
         panelForOptions = new JPanel();
         optionsDiagramExtension = new JPanel();
         optionsTypeOfParsing = new JPanel();
         optionsTypeOfDiagram = new JPanel();
         optionsOthers = new JPanel();
-
         panelForGeneratedCode = new JPanel();
         panelForDiagram = new JPanel();
         panelForClearAndCopyToClipboard = new JPanel();
@@ -585,9 +582,11 @@ public class UI implements ExceptionListener {
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java archive (.jar)", "jar"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Java project directory", "."));
         fileSaver = new JFileChooser();
+        scrollPane = new JScrollPane(generatedCode);
     }
 
-    private void addActionListenersToButtons(){
+    /**Устанавливает ActionListener-ы для всех кнопок во врейме */
+    protected void addActionListenersToButtons() {
         saveDiagram.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -674,16 +673,8 @@ public class UI implements ExceptionListener {
         });
     }
 
-    public JFrame initUI() {
-        //Инициализируем все элементы GUI, задаем имена из файлов локализации
-        //todo:Выделить задание параметров объектам в новый метод.
-        //todo:Выделить компоновку объектов в отдельный метод
-        //todo:Вызов всех трех методов добавить в метод initUI
-        localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
-        createAllUIObjects();
-        addActionListenersToButtons();
-
-        mainFrame.setJMenuBar(createAndComposeMenu());
+    protected void settingParametersToUIObjects() {
+        mainFrame.setJMenuBar(menu);
         generatedCode.setEditable(false);
         progressBar.setStringPainted(true);
         progressBar.setMinimum(0);
@@ -693,17 +684,26 @@ public class UI implements ExceptionListener {
         tabs.addTab(localeLabels.getString("plantUMLTabLabel"), panelForGeneratedCode);
         tabs.addTab(localeLabels.getString("diagramTabLabel"), panelForDiagram);
         panelForDiagram.setLayout(new GridBagLayout());
+        panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         panelForPath.setLayout(new GridBagLayout());
+        panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
+        panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
+        generatedCode.setLineWrap(true);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        panelForGeneratedCode.setLayout(new GridBagLayout());
+        panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
+        panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
+        panelForSaveAndOpenDiagram.setLayout(new BoxLayout(panelForSaveAndOpenDiagram, BoxLayout.X_AXIS));
+    }
+
+    /**Располагает все объекты во фрейме */
+    protected JFrame composeObjectsInFrame() {
         panelForPath.add(browse, new GridBagConstraints(0, 0, 1, 1, 0, 0.5, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         panelForPath.add(path, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-
-        panelForProgressBarAndCancel.setLayout(new BoxLayout(panelForProgressBarAndCancel, BoxLayout.X_AXIS));
         panelForProgressBarAndCancel.add(cancelLoading);
         panelForProgressBarAndCancel.add(progressBar);
         panelForProgressBarAndCancel.add(generatePlantUML);
-        panelForPathAndButtons.setLayout(new BoxLayout(panelForPathAndButtons, BoxLayout.Y_AXIS));
-        panelForPathAndButtons.setBorder(new EmptyBorder(3, 1, 3, 1));
         Image image = Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("logo.png"));
         JLabel jLabel = new JLabel(new ImageIcon(image));
         panelForPathAndButtons.add(jLabel);
@@ -713,38 +713,26 @@ public class UI implements ExceptionListener {
         panelForPathAndButtons.add(separatorBetweenButtonsAndProgressBar);
         panelForPathAndButtons.add(panelForProgressBarAndCancel);
 
-        JScrollPane scrollPane = new JScrollPane(generatedCode);
-
-        generatedCode.setLineWrap(true);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        panelForGeneratedCode.setLayout(new GridBagLayout());
         panelForGeneratedCode.add(openOnPlantUMLServer, new GridBagConstraints(0, 0, 1, 1, 1, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
         panelForGeneratedCode.add(scrollPane, new GridBagConstraints(0, 1, 1, 3, 1, 5, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
 
-        panelForClearAndCopyToClipboard.setLayout(new BoxLayout(panelForClearAndCopyToClipboard, BoxLayout.X_AXIS));
         panelForClearAndCopyToClipboard.add(clearCode);
         panelForClearAndCopyToClipboard.add(copyToClipboard);
         panelForGeneratedCode.add(panelForClearAndCopyToClipboard, new GridBagConstraints(0, 5, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        panelForGeneratedCode.setBorder(new EmptyBorder(0, 5, 5, 5));
 
-        panelForSaveAndOpenDiagram.setLayout(new BoxLayout(panelForSaveAndOpenDiagram, BoxLayout.X_AXIS));
         panelForSaveAndOpenDiagram.add(saveDiagram);
         panelForSaveAndOpenDiagram.add(openDiagram);
 
-
         mainFrame.add(BorderLayout.CENTER, tabs);
         mainFrame.add(BorderLayout.NORTH, panelForPathAndButtons);
+
         mainFrame.setSize(600, 650);
         mainFrame.setLocationRelativeTo(null);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainFrame.setResizable(false);
+
         return mainFrame;
     }
-
-    // процесс просмоторщика диаграмм
-    private Process viewerProc = null;
-
 
     public int validateProgressBarTo(int progress) {
         int value = progress * 20;
@@ -758,8 +746,8 @@ public class UI implements ExceptionListener {
         progressBar.setValue(100);
     }
 
-
-    public void showDiagram(URL resource) {
+    /**Отображает уменьшенную копию диаграммы в окне предпросмотра*/
+    public void showDiagramInReducedSize(URL resource) {
         try {
             BufferedImage diagram = ImageIO.read(resource);
             diagram = Scalr.resize(diagram, 500);
@@ -777,7 +765,6 @@ public class UI implements ExceptionListener {
             this.handleExceptionAndShowDialog(throwable);
         }
     }
-
 
     @Override
     public void handleExceptionAndShowDialog(Throwable throwable) {
@@ -809,10 +796,6 @@ public class UI implements ExceptionListener {
         }
     }
 
-    //todo:Добавить комментарии
-    //todo:Геттеры вверх, сеттеры вниз
-
-
     public JCheckBoxMenuItem getEnglishLangItem() {
         return englishLangItem;
     }
@@ -825,14 +808,9 @@ public class UI implements ExceptionListener {
         return cancelLoading;
     }
 
-    public void setCancelLoading(JButton cancelLoading) {
-        this.cancelLoading = cancelLoading;
-    }
-
     public JCheckBoxMenuItem getEnableDiagramItem() {
         return enableDiagramItem;
     }
-
 
     public JCheckBoxMenuItem getPngExtensionItem() {
         return pngExtensionItem;
@@ -841,7 +819,6 @@ public class UI implements ExceptionListener {
     public JCheckBoxMenuItem getSvgExtensionItem() {
         return svgExtensionItem;
     }
-
 
     public JTextArea getGeneratedCode() {
         return generatedCode;
@@ -912,12 +889,24 @@ public class UI implements ExceptionListener {
         return labelForDiagram;
     }
 
-    public void setGenerateItem(JMenuItem generateItem) {
-        this.generateItem = generateItem;
+    public JProgressBar getProgressBar() {
+        return progressBar;
     }
 
     public String getPathOfCurrentDiagram() {
         return pathOfCurrentDiagram;
+    }
+
+    public JButton getOpenOnPlantUMLServer() {
+        return openOnPlantUMLServer;
+    }
+
+    public void setCancelLoading(JButton cancelLoading) {
+        this.cancelLoading = cancelLoading;
+    }
+
+    public void setGenerateItem(JMenuItem generateItem) {
+        this.generateItem = generateItem;
     }
 
     public void setPathOfCurrentDiagram(String fileName) {
