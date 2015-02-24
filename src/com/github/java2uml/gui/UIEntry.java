@@ -21,8 +21,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
 
 public class UIEntry {
@@ -67,18 +65,32 @@ public class UIEntry {
 
 
     public void initUI() {
+        GenerateActionListener generateActionListener = new GenerateActionListener();
+        ui = UI.getInstance();
+        exceptionListener = ui;
+
         if (System.getProperty("os.name").equals("Mac OS X")) {
             settingDockIcon();
         }
 
-        GenerateActionListener generateActionListener = new GenerateActionListener();
-        ui = UI.getInstance();
-        exceptionListener = ui;
-        ui.initUI().setVisible(true);
-
         if (System.getProperty("os.name").contains("Windows")) {
             ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
         }
+        ui.initLocaleBundle();
+
+        ui.createAllUIObjects();
+
+        ui.createMenuObjects();
+
+        ui.addActionListenersToMenu();
+
+        ui.addActionListenersToButtons();
+
+        ui.composeMenu();
+
+        ui.settingParametersToUIObjects();
+
+        ui.composeObjectsInFrame().setVisible(true);
 
         ui.getCancelLoading().addActionListener(new ActionListener() {
             @Override
@@ -113,7 +125,7 @@ public class UIEntry {
 
             }
         });
-        ui.settingStateForAllOptions();
+        ui.settingActualStatesForAllOptions();
 
     }
 
@@ -315,15 +327,15 @@ public class UIEntry {
                             file = file.getParentFile();
                             System.out.println(file);
                         }
-                        ui.showDiagram(new File(file.toString() + FileSystems.getDefault().getSeparator() + "diagram.png").toURI().toURL());
+                        ui.showDiagramInReducedSize(new File(file.toString() + FileSystems.getDefault().getSeparator() + "diagram.png").toURI().toURL());
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
                     }
                 } else {
                     if (ui.getEnglishLangItem().getState())
-                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
+                        ui.showDiagramInReducedSize(getClass().getClassLoader().getResource("doesnt_support_svg_en.png"));
                     else
-                        ui.showDiagram(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
+                        ui.showDiagramInReducedSize(getClass().getClassLoader().getResource("doesnt_support_svg_ru.png"));
                 }
             }
         }
