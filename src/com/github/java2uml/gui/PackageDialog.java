@@ -56,6 +56,7 @@ private static JDialog dialog;
 private JFrame context;
 private String path = Options.getPath();
 private PackageListPnl packageListPnl;
+private static UI ui = UI.getInstance();
 private static volatile boolean isLoaded = false;
 
 public PackageDialog(final JFrame context) {
@@ -96,7 +97,7 @@ public static boolean isLoaded() {
 
 public void initDialog() {
     dialog = new JDialog(context, Dialog.ModalityType.APPLICATION_MODAL);
-    dialog.setTitle("Выбор пакетов для генерации");
+    dialog.setTitle(ui.getLocaleLabels().getString("selectPackagesLabel"));
     
     packageListPnl = new PackageListPnl();
     dialog.add(packageListPnl);
@@ -129,6 +130,7 @@ public void showDialog() {
 		private JCheckBox allCbx;
 		private JLabel tipMultLbl;
 		private JLabel tipOnceLbl;
+		private static UI ui = UI.getInstance();
 		
 		
 		public static final String ROOT_PACKAGE = ">";
@@ -157,7 +159,7 @@ public void showDialog() {
 			JScrollPane treeView = new JScrollPane(packageList);
 			
 			// элементы управления
-			allCbx = new JCheckBox("Все пакеты");
+			allCbx = new JCheckBox(ui.getLocaleLabels().getString("allPackagesLabel"));
 			allCbx.addItemListener(new ItemListener(){
 				@Override
 				public void itemStateChanged(ItemEvent e) {
@@ -169,17 +171,17 @@ public void showDialog() {
 					}
 				}
 			});
-			tipMultLbl = new JLabel("<html><p><b>Shift + ЛКМ</b></p></html>", SwingConstants.CENTER);
+			tipMultLbl = new JLabel("<html><p><b>Shift + " + ui.getLocaleLabels().getString("lmbLabel") + "</b></p></html>", SwingConstants.CENTER);
 			tipMultLbl.setToolTipText("Выбор нескольких пакетов");
-			tipOnceLbl = new JLabel("<html><p><b>Ctrl + ЛКМ</b></p></html>", SwingConstants.CENTER);
-			tipOnceLbl.setToolTipText("Выбор отдельных пакетов");
+			tipOnceLbl = new JLabel("<html><p><b>Ctrl + " + ui.getLocaleLabels().getString("lmbLabel") + "</b></p></html>", SwingConstants.CENTER);
+			tipOnceLbl.setToolTipText(ui.getLocaleLabels().getString("particularPackagesSelection"));
 			
 			// размеры дерева
 			Dimension preferedSize = new Dimension(300, 600);
 			this.setPreferredSize(preferedSize);
 	
 			// кнопки выбора
-			cnclBtn = new JButton("Cancel");
+			cnclBtn = new JButton(ui.getLocaleLabels().getString("cancelLabel"));
 			cnclBtn.addActionListener(new ActionListener() 
 		    {
 		        @Override

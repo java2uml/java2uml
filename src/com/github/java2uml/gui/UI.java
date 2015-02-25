@@ -96,7 +96,7 @@ public class UI implements ExceptionListener {
     private JScrollPane scrollPane;
     private JTabbedPane tabs;
     private JMenu file, help, typeOfDiagramMenu, options, direction, diagramGeneratingMethods, whichRelationsAreShown, languageMenu, diagramExtension;
-    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem;
+    private JMenuItem helpItem, exitItem, aboutItem, generateItem, chooseItem, quickHelpItem, packageDialogMI;
     private JRadioButton javaFilesOption, classFilesOption, pngExtensionOption, svgExtensionOption, classesDiagramOption, sequenceDiagramOption;
     private JCheckBox showLollipopsOption, showDiagramOption;
     private JCheckBoxMenuItem horizontalDirectionCheckboxItem, verticalDirectionCheckboxItem, classDiagramCheckboxItem,
@@ -317,7 +317,7 @@ public class UI implements ExceptionListener {
         pngExtensionItem.setText(localeLabels.getString("pngExtensionLabel"));
         svgExtensionItem.setText(localeLabels.getString("svgExtensionLabel"));
         enableDiagramItem.setText(localeLabels.getString("enableDiagramLabel"));
-
+        packageDialogMI.setText(localeLabels.getString("packageTreeMenuLabel"));
         inputFilesTypeOptionsLabel.setText(localeLabels.getString("iWantToParseMenuLabel"));
         diagramExtensionOptionsLabel.setText(localeLabels.getString("diagramExtensionLabel"));
         diagramTypeOptionsLabel.setText(localeLabels.getString("typeOfDiagramMenuLabel"));
@@ -376,6 +376,7 @@ public class UI implements ExceptionListener {
         aboutItem = new JMenuItem(localeLabels.getString("aboutMenuLabel"));
         generateItem = new JMenuItem(localeLabels.getString("generateLabel"));
         chooseItem = new JMenuItem(localeLabels.getString("chooseDirLabel"));
+        packageDialogMI = new JMenuItem(localeLabels.getString("packageTreeMenuLabel"));
         parsingMethod = new ButtonGroup();
         directionGroup = new ButtonGroup();
         typeOfDiagramGroup = new ButtonGroup();
@@ -431,6 +432,19 @@ public class UI implements ExceptionListener {
             @Override
             public void stateChanged(ChangeEvent e) {
                 javaFilesOption.setSelected(parsingCheckboxItem.isSelected());
+            }
+        });
+
+        packageDialogMI.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                if (reflectionCheckboxItem.getState() && Options.isClassesLoaded()) {
+                    // классы загружены - выводим дерево
+                    packageDialog.showDialog();
+                } else if (parsingCheckboxItem.getState()) {
+                    // вывод дерева без загрузки классов
+                    packageDialog.showDialog();
+                }
             }
         });
 
@@ -527,6 +541,10 @@ public class UI implements ExceptionListener {
 
     /**Расставляет менюшки внутрь друг друга и в правильном порядке */
     protected void composeMenu() {
+        file.add(chooseItem);
+        file.add(generateItem);
+        file.add(exitItem);
+
         parsingMethod.add(reflectionCheckboxItem);
         parsingMethod.add(parsingCheckboxItem);
 
@@ -538,10 +556,6 @@ public class UI implements ExceptionListener {
 
         typeOfDiagramGroup.add(classDiagramCheckboxItem);
         typeOfDiagramGroup.add(sequenceDiagramCheckboxItem);
-
-        file.add(chooseItem);
-        file.add(generateItem);
-        file.add(exitItem);
 
         whichRelationsAreShown.add(showAggregation);
         whichRelationsAreShown.add(showAssociation);
@@ -556,25 +570,12 @@ public class UI implements ExceptionListener {
         diagramExtensionGroup.add(pngExtensionItem);
         diagramExtensionGroup.add(svgExtensionItem);
 
+
+        options.add(diagramGeneratingMethods);
+        options.add(diagramExtension);
         options.add(languageMenu);
         options.add(direction);
-        options.add(diagramGeneratingMethods);
         options.add(whichRelationsAreShown);
-
-        JMenuItem packageDialogMI = new JMenuItem("Дерево пакетов");
-        packageDialogMI.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent ae) {
-                if (reflectionCheckboxItem.getState() && Options.isClassesLoaded()) {
-                    // классы загружены - выводим дерево
-                	packageDialog.showDialog();
-                } else if (parsingCheckboxItem.getState()) {
-                	// вывод дерева без загрузки классов
-                	packageDialog.showDialog();
-                }
-            }
-        });
-        options.add(packageDialogMI);
 
         diagramGeneratingMethods.add(parsingCheckboxItem);
         diagramGeneratingMethods.add(reflectionCheckboxItem);
@@ -587,7 +588,7 @@ public class UI implements ExceptionListener {
         typeOfDiagramMenu.add(classDiagramCheckboxItem);
         typeOfDiagramMenu.add(sequenceDiagramCheckboxItem);
 
-        options.add(diagramExtension);
+        options.add(packageDialogMI);
         options.add(showHeader);
         options.add(showLollipops);
         options.add(enableDiagramItem);
