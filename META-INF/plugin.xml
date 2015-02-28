@@ -6,12 +6,18 @@
 
 
   <description><![CDATA[
-     a user-friendly automatic<br> builder of beautiful classes UML <br> diagrams based on Java source code.<br><br>
+     <!--<img src="../com/github/java2uml/plugin/idea/icon/logo.png" alt="Java2UML">-->
+     <img src="http://2.bp.blogspot.com/-J0Jda7a9lsk/VNihGKtTH6I/AAAAAAAAAck/A29-H-rQk3A/s1600/logo5_long_700w_300dpi.png" alt="Java2UML"
+     width="275" height="100">
+     <br>
+     A user-friendly automatic<br> builder of beautiful classes UML <br> diagrams based on Java source code.<br><br>
     ]]></description>
 
   <change-notes><![CDATA[
-      0.1 first version (uses Java2UML core v. 0.4a)<br>
-      <em></em>
+      <p>0.1</p>
+      <ul>
+          <li>Initial release of the TestJava2UMLPlugin <br>(uses Java2UML core v. 0.4a)</li>
+      </ul>
     ]]>
   </change-notes>
 
@@ -53,6 +59,12 @@
               class="com.github.java2uml.plugin.idea.actions.GenerateAction" text="Generate diagram for chosen files"/>
       <action id="Java2UML.FileChoose" description="Choose file for generating diagram"  icon="/actions/menu-open.png"
               class="com.github.java2uml.plugin.idea.actions.FileChooseAction" text="Choose file for generating diagram"/>
+        <action id="Java2UML.openOnPlantUMLServer" description="open diagram on PlantUML server"  icon="/com/github/java2uml/plugin/idea/icon/webModule.png"
+                class="com.github.java2uml.plugin.idea.actions.openOnPlantUMLServerAction" text="open diagram on PlantUML server"/>
+        <action id="Java2UML.SaveAs" description="Save diagram as"  icon="/actions/menu-saveall.png"
+              class="com.github.java2uml.plugin.idea.actions.SaveAsAction" text="Save image as"/>
+        <action id="Java2UML.OpenDiagramInViewer" description="Open diagram in Viewer"  icon="/actions/preview.png"
+                class="com.github.java2uml.plugin.idea.actions.OpenDiagramInViewerAction" text="Open diagram in Viewer"/>
       <separator/>
         <action id="Java2UML.Copy" description="Copy PlantUML code" class="com.github.java2uml.plugin.idea.actions.CopyAction"
                 icon="/actions/copy.png" text="Copy PlantUML code"/>

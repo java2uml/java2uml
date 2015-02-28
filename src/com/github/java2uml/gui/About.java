@@ -1,5 +1,6 @@
 package com.github.java2uml.gui;
 
+import com.github.java2uml.plugin.idea.PluginSettings;
 import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
@@ -9,6 +10,8 @@ import javax.swing.plaf.BorderUIResource;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * Created by mac on 01.01.15.
@@ -16,15 +19,26 @@ import java.io.IOException;
 public class About extends JFrame {
     JLabel logo, version, about, copyright;
     JPanel mainAboutPanel;
+    ResourceBundle localeLabels;
 
     public About(String title) {
         super(title);
         version = new JLabel("<html><b>Java2UML v.0.4a</b></html>");
         logo = null;
-        copyright = new JLabel(UIPlugin.getInstance().getLocaleLabels().getString("copyrightLabel"));
         mainAboutPanel = new JPanel();
-        about = new JLabel(UIPlugin.getInstance().getLocaleLabels().getString("aboutLabel"));
         mainAboutPanel.setLayout(new GridBagLayout());
+//        if (UI.getInstance() != null){
+//            copyright = new JLabel(UI.getInstance().getLocaleLabels().getString("copyrightLabel"));
+//            about = new JLabel(UI.getInstance().getLocaleLabels().getString("aboutLabel"));
+//        } else{
+            if (PluginSettings.getSettings().get("language") == PluginSettings.RUSSIAN) {
+                localeLabels = ResourceBundle.getBundle("GUILabels", new Locale("ru"));
+            } else if (PluginSettings.getSettings().get("language") == PluginSettings.ENGLISH) {
+                localeLabels = ResourceBundle.getBundle("GUILabels", new Locale(""));
+            } else localeLabels = ResourceBundle.getBundle("GUILabels", Locale.getDefault());
+            copyright = new JLabel(localeLabels.getString("copyrightLabel"));
+            about = new JLabel(localeLabels.getString("aboutLabel"));
+//        }
 
         TitledBorder titledBorder = new TitledBorder("<html><b>Java2UML v.0.4a</b></html>");
         titledBorder.setTitleJustification(TitledBorder.CENTER);

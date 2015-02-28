@@ -51,6 +51,11 @@ public class UIPluginEntry extends JPanel implements Disposable {
     String[] args;
     String plantUMLCode;
     SwingWorkerForBackgroundGenerating swingWorker;
+
+    public static ExceptionListener getExceptionListener() {
+        return exceptionListener;
+    }
+
     static ExceptionListener exceptionListener;
 
     public UIPluginEntry(Project project, ToolWindow toolWindow) {
@@ -62,30 +67,6 @@ public class UIPluginEntry extends JPanel implements Disposable {
 //        this.toolWindow.getComponent().addAncestorListener(java2umlAncestorListener);
     }
 
-    public void generateActionFromOutside(){
-        new GenerateActionListener().actionPerformed(null);
-    }
-
-    private String[] gettingParametersFromSettings() {
-        args = new String[9];
-        for (int i = 0; i < args.length; i++) {
-            args[i] = "";
-        }
-        ui.validateProgressBarTo(1);
-        args[0] = "java";
-        args[1] = ui.getPath().getText().toString();
-        args[2] = "";
-        args[3] = "classes_diagram";
-        args[4] = "vertical";
-        //args[5] = !ui.getShowComposition().getState() ? "nocomposition" : "";
-        //args[6] = !ui.getShowAggregation().getState() ? "noaggregation" : "";
-        //args[7] = !ui.getShowAssociation().getState() ? "noassociation" : "";
-        //args[8] = !ui.getShowLollipops().getState() ? "nolollipop" : "";
-
-        for (String str : args) System.out.println(str);
-
-        return args;
-    }
 
     private void initUI() {
         // creating actions toolbar instead JMenu
@@ -94,22 +75,22 @@ public class UIPluginEntry extends JPanel implements Disposable {
         actionToolbar.setTargetComponent(this);
         add(actionToolbar.getComponent(), BorderLayout.PAGE_START);
         // creating main panel content
-        GenerateActionListener generateActionListener = new GenerateActionListener();
+        //GenerateActionListener generateActionListener = new GenerateActionListener();
         ui = UIPlugin.getInstance();
         exceptionListener = ui;
         ui.initUI().setVisible(true);
         add(ui.getMainFrame());
     }
 
-    private String generatePlantUMLAndLoadToTextArea(String outputPath) {
-        plantUMLCode = null;
-        try {
-            plantUMLCode = FileUtils.readFile(new File(outputPath));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return plantUMLCode;
-    }
+//    private String generatePlantUMLAndLoadToTextArea(String outputPath) {
+//        plantUMLCode = null;
+//        try {
+//            plantUMLCode = FileUtils.readFile(new File(outputPath));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return plantUMLCode;
+//    }
 
     public void generateDiagram(String source, String fileName) {
         try {
@@ -134,116 +115,116 @@ public class UIPluginEntry extends JPanel implements Disposable {
 
     }
 
-    public class GenerateActionListener implements ActionListener {
+//    public class GenerateActionListener implements ActionListener {
+//
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            try {
+//                ui.getLabelForDiagram().setIcon(null);
+//                ui.getProgressBar().setValue(0);
+//                ui.getProgressBar().setString("0%");
+////                ui.getGeneratePlantUML().setEnabled(false);
+////                ui.getOpenOnPlantUMLServer().setEnabled(false);
+//
+//                Main.main(gettingParametersFromSettings());
+//
+//                swingWorker = new SwingWorkerForBackgroundGenerating();
+//                swingWorker.execute();
+//
+//            } catch (Throwable e1) {
+//                e1.printStackTrace();
+//                exceptionListener.handleExceptionAndShowDialog(e1);
+//            }
+//        }
+//    }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            try {
-                ui.getLabelForDiagram().setIcon(null);
-                ui.getProgressBar().setValue(0);
-                ui.getProgressBar().setString("0%");
-//                ui.getGeneratePlantUML().setEnabled(false);
-//                ui.getOpenOnPlantUMLServer().setEnabled(false);
+//    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
+//        private final String dpng = "diagram.png";
+//        private final String dsvg = "diagram.svg";
+//
+//        private String path;
+//        private boolean isEnableDiagramItem;
+//        private boolean isPngExtensionItem;
+//
+//        public SwingWorkerForBackgroundGenerating() {
+//            isEnableDiagramItem = true;
+//            isPngExtensionItem = true;
+//            path = isPngExtensionItem ? dpng : dsvg;
+//        }
+//
+//        @Override
+//        protected String doInBackground() throws Exception {
+//
+////            deletePreviousVersionsOfDiagrams();
+//            setProgress(2);
+//            publish("loadingFilesLabel");
+//            if (isCancelled()) return null;
+//
+//            setProgress(3);
+//            publish("codeGenerationLabel");
+//            plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
+//            publish("showCodeString");
+//
+//            if (isCancelled()) return null;
+//
+//            if (isEnableDiagramItem) {
+//                setProgress(4);
+//                publish("loadingDiagramLabel");
+//                generateDiagram(plantUMLCode, path);
+//            }
+//
+//            if (isCancelled()) return null;
+//            setProgress(5);
+//            publish("completeLabel");
+//
+//            return "";
+//        }
+//
+//        @Override
+//        protected void process(List<String> chunks) {
+////            super.process(chunks);
+//            for (String chunk : chunks) {
+//                if (chunk.equals("showCodeString")) {
+//                    ui.getGeneratedCode().setText(plantUMLCode);
+//                } else {
+//                    ui.getProgressBar().setString(ui.localeLabels.getString(chunk));
+//                }
+//            }
+//            ui.validateProgressBarTo(getProgress());
+//        }
+//
+//        @Override
+//        protected void done() {
+//            if (isCancelled()) {
+//                ui.getProgressBar().setString("0%");
+//                ui.getProgressBar().setValue(0);
+////                ui.getGeneratePlantUML().setEnabled(true);
+//            }
+////            ui.getOpenOnPlantUMLServer().setEnabled(true);
+//            ui.setProgressBarComplete();
+////            ui.getGeneratePlantUML().setEnabled(true);
+//
+//                    try {
+//                        ui.showDiagram(new File("diagram.png").toURI().toURL());
+//                    } catch (MalformedURLException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//        }
+//    }
 
-                Main.main(gettingParametersFromSettings());
-
-                swingWorker = new SwingWorkerForBackgroundGenerating();
-                swingWorker.execute();
-
-            } catch (Throwable e1) {
-                e1.printStackTrace();
-                exceptionListener.handleExceptionAndShowDialog(e1);
-            }
-        }
-    }
-
-    public class SwingWorkerForBackgroundGenerating extends SwingWorker<String, String> {
-        private final String dpng = "diagram.png";
-        private final String dsvg = "diagram.svg";
-
-        private String path;
-        private boolean isEnableDiagramItem;
-        private boolean isPngExtensionItem;
-
-        public SwingWorkerForBackgroundGenerating() {
-            isEnableDiagramItem = true;
-            isPngExtensionItem = true;
-            path = isPngExtensionItem ? dpng : dsvg;
-        }
-
-        @Override
-        protected String doInBackground() throws Exception {
-
-//            deletePreviousVersionsOfDiagrams();
-            setProgress(2);
-            publish("loadingFilesLabel");
-            if (isCancelled()) return null;
-
-            setProgress(3);
-            publish("codeGenerationLabel");
-            plantUMLCode = generatePlantUMLAndLoadToTextArea(Options.getOutputFile());
-            publish("showCodeString");
-
-            if (isCancelled()) return null;
-
-            if (isEnableDiagramItem) {
-                setProgress(4);
-                publish("loadingDiagramLabel");
-                generateDiagram(plantUMLCode, path);
-            }
-
-            if (isCancelled()) return null;
-            setProgress(5);
-            publish("completeLabel");
-
-            return "";
-        }
-
-        @Override
-        protected void process(List<String> chunks) {
-//            super.process(chunks);
-            for (String chunk : chunks) {
-                if (chunk.equals("showCodeString")) {
-                    ui.getGeneratedCode().setText(plantUMLCode);
-                } else {
-                    ui.getProgressBar().setString(ui.getLocaleLabels().getString(chunk));
-                }
-            }
-            ui.validateProgressBarTo(getProgress());
-        }
-
-        @Override
-        protected void done() {
-            if (isCancelled()) {
-                ui.getProgressBar().setString("0%");
-                ui.getProgressBar().setValue(0);
-//                ui.getGeneratePlantUML().setEnabled(true);
-            }
-//            ui.getOpenOnPlantUMLServer().setEnabled(true);
-            ui.setProgressBarComplete();
-//            ui.getGeneratePlantUML().setEnabled(true);
-
-                    try {
-                        ui.showDiagram(new File("diagram.png").toURI().toURL());
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                    }
-
-        }
-    }
-
-    private void sendRequestAndShowSvg(String source) {
-
-        Transcoder t = TranscoderUtil.getDefaultTranscoder();
-        String url = null;
-        try {
-            url = t.encode(source);
-            url = "http://www.plantuml.com/plantuml/svg/" + url;
-            Desktop.getDesktop().browse(new URL(url).toURI());
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void sendRequestAndShowSvg(String source) {
+//
+//        Transcoder t = TranscoderUtil.getDefaultTranscoder();
+//        String url = null;
+//        try {
+//            url = t.encode(source);
+//            url = "http://www.plantuml.com/plantuml/svg/" + url;
+//            Desktop.getDesktop().browse(new URL(url).toURI());
+//        } catch (IOException | URISyntaxException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public boolean deletePreviousVersionsOfDiagrams(){
         boolean success = false;

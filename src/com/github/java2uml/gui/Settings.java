@@ -140,7 +140,7 @@ public class Settings extends JFrame{
                                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Основные", mainSettingsPanel);
+        jTabbedPane1.addTab(localeLabels.getString("generalSettingsTabLabel"), mainSettingsPanel);
 
         diagramSettingsPanel.setPreferredSize(new java.awt.Dimension(324, 300));
 
@@ -278,7 +278,7 @@ public class Settings extends JFrame{
                                 .addContainerGap(37, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Диаграмма", diagramSettingsPanel);
+        jTabbedPane1.addTab(localeLabels.getString("diagramSettingsTabLabel"), diagramSettingsPanel);
         jTabbedPane1.getAccessibleContext().setAccessibleName("Основные");
         add(jTabbedPane1);
     }
@@ -371,6 +371,8 @@ public class Settings extends JFrame{
     }
 
     public void settingLocaleLabels(ResourceBundle local) {
+        jTabbedPane1.setTitleAt(0, local.getString("generalSettingsTabLabel"));
+        jTabbedPane1.setTitleAt(1, local.getString("diagramSettingsTabLabel"));
         languageLabel.setText(local.getString("languageMenu"));
         languageComboBox.setModel(new DefaultComboBoxModel(new String[]{local.getString("englishLanguage"),
                 local.getString("russianLanguage")}));

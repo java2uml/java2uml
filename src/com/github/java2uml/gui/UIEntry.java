@@ -21,6 +21,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 
 public class UIEntry {
     static UI ui;
@@ -28,6 +31,8 @@ public class UIEntry {
     String plantUMLCode;
     SwingWorkerForBackgroundGenerating swingWorker;
     static ExceptionListener exceptionListener;
+    private static Preferences config;
+    private static final int ITERATOR_OF_EXECUTIONS = 1;
 
 
     private String[] gettingParametersFromUI() {
@@ -71,7 +76,7 @@ public class UIEntry {
         exceptionListener = ui;
         ui.initUI().setVisible(true);
 
-        if (System.getProperty("os.name").contains("Windows")){
+        if (System.getProperty("os.name").contains("Windows")) {
             ui.getMainFrame().setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getClassLoader().getResource("about_logo.png")));
         }
 
@@ -112,22 +117,43 @@ public class UIEntry {
 
     }
 
+    public InputStream getConfigFileInputStream() throws FileNotFoundException {
+        return ClassLoader.class.getResourceAsStream("config.properties");
+    }
+
+    public FileOutputStream getConfigFileOutputStream() throws FileNotFoundException {
+        return new FileOutputStream(getClass().getClassLoader().getResource("config.properties").getFile());
+    }
+
     public static void main(String[] args) {
+        config = Preferences.userRoot().node("firstRun");
+        config.putInt("amountOfExecutions", config.getInt("amountOfExecutions", 0) + ITERATOR_OF_EXECUTIONS);
+
         final UIEntry uiEntry = new UIEntry();
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
                     uiEntry.initUI();
-
                 }
             });
         } catch (Throwable e) {
             e.printStackTrace();
             exceptionListener.handleExceptionAndShowDialog(e);
-
         }
 
+        if (config.getInt("amountOfExecutions", 0) <= 1) {
+            config.putInt("amountOfExecutions", config.getInt("amountOfExectuions", 1) + ITERATOR_OF_EXECUTIONS);
+            String[] options = new String[]{ui.getLocaleLabels().getString("noLabel"), ui.getLocaleLabels().getString("yesLabel")};
+            int showOrNot = JOptionPane.showOptionDialog(ui.getMainFrame(), ui.getLocaleLabels().getString("wantToShowQuickHelp"), "Java2UML", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, null);
+            switch (showOrNot) {
+                case 0:
+                    break;
+                case 1:
+                    QuickHelp.getInstance().setVisible(true);
+                    break;
+            }
+        }
     }
 
     private String generatePlantUMLAndLoadToTextArea(String outputPath) {
@@ -142,9 +168,11 @@ public class UIEntry {
 
     public void generateDiagram(String source, String fileName) {
         try {
+            ui.setPathOfCurrentDiagram(fileName);
+
             File path = new File(fileName);
 
-            if (!path.exists()){
+            if (!path.exists()) {
                 path.createNewFile();
             }
 
@@ -220,7 +248,7 @@ public class UIEntry {
             isPngExtensionItem = ui.getPngExtensionItem().getState();
 
             File currentDir = new File(ui.getPath().getText());
-            if (currentDir.isFile()){
+            if (currentDir.isFile()) {
                 path = isPngExtensionItem ? currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dpng : currentDir.getParentFile() + FileSystems.getDefault().getSeparator() + dsvg;
             } else {
                 path = isPngExtensionItem ? currentDir + FileSystems.getDefault().getSeparator() + dpng : currentDir + FileSystems.getDefault().getSeparator() + dsvg;
@@ -299,6 +327,7 @@ public class UIEntry {
                 }
             }
         }
+
     }
 
     public void settingDockIcon() {
@@ -333,7 +362,7 @@ public class UIEntry {
         }
     }
 
-    public boolean deletePreviousVersionsOfDiagrams(){
+    public boolean deletePreviousVersionsOfDiagrams() {
         boolean success = false;
 
         if (new File("diagram.svg").exists()) {

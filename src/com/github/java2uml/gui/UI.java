@@ -73,7 +73,6 @@ public class UI implements ExceptionListener {
         } else if (englishLangItem.getState()) {
             return ResourceBundle.getBundle("GUILabels", new Locale(""));
         } else return ResourceBundle.getBundle("GUILabels", Locale.getDefault());
-
     }
 
     private static class UIHolder {
@@ -82,6 +81,10 @@ public class UI implements ExceptionListener {
 
     private UI() {
 
+    }
+
+    public static UI getInstance() {
+        return UIHolder.UI_INSTANCE;
     }
 
     public JCheckBoxMenuItem getEnglishLangItem() {
@@ -117,11 +120,6 @@ public class UI implements ExceptionListener {
 
     public JFrame getMainFrame() {
         return mainFrame;
-    }
-
-
-    public static UI getInstance() {
-        return UIHolder.UI_INSTANCE;
     }
 
     public JCheckBoxMenuItem getHorizontalDirectionCheckboxItem() {
@@ -174,6 +172,14 @@ public class UI implements ExceptionListener {
 
     public void setGenerateItem(JMenuItem generateItem) {
         this.generateItem = generateItem;
+    }
+
+    public String getPathOfCurrentDiagram() {
+        return pathOfCurrentDiagram;
+    }
+
+    public void setPathOfCurrentDiagram(String fileName) {
+        this.pathOfCurrentDiagram = fileName;
     }
 
 
@@ -306,7 +312,7 @@ public class UI implements ExceptionListener {
         quickHelpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!QuickHelp.quickHelpIsNull()) {
+                if (quickHelp != null) {
                     if (!quickHelp.isVisible()) {
                         quickHelp.setVisible(true);
                     } else {
@@ -653,7 +659,7 @@ public class UI implements ExceptionListener {
             panelForDiagram.add(panelForSaveAndOpenDiagram, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
             tabs.removeTabAt(1);
             tabs.addTab(getLocaleLabels().getString("diagramTabLabel"), panelForDiagram);
-            pathOfCurrentDiagram = resource.getPath();
+
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             this.handleExceptionAndShowDialog(throwable);
@@ -678,7 +684,7 @@ public class UI implements ExceptionListener {
     public class ChooseFileActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (new File(path.getText()).exists() && !path.getText().equals("")){
+            if (new File(path.getText()).exists() && !path.getText().equals("")) {
                 fileChooser.setCurrentDirectory(new File(path.getText()));
             }
             getProgressBar().setString("0%");
