@@ -1,13 +1,28 @@
 package com.github.java2uml.core.reflection;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * http://forum.vingrad.ru/articles/topic-157979.html
@@ -16,6 +31,8 @@ import java.util.zip.ZipEntry;
  */
 public class UMLClassLoader extends ClassLoader {
 
+	private static Logger LOG = LoggerFactory.getLogger(UMLClassLoader.class);
+	
     private Hashtable<String, Class> cache;
 
     private ArrayList<String> paths;
@@ -252,6 +269,7 @@ public class UMLClassLoader extends ClassLoader {
                         System.out.println("ClassPath - " + classPath);
                         try {
                         	Class cls = cl.loadClass(classPath);
+                        	cls.getCanonicalName();
                         	classes.add(cls);
                         } catch(Throwable e) {
                         	System.out.print("Can't load class " + classPath);
@@ -265,9 +283,10 @@ public class UMLClassLoader extends ClassLoader {
                 	for (String classPath : unloaded) {
                 		try {
                 			Class cls = cl.loadClass(classPath);
+                			cls.getCanonicalName();
                         	classes.add(cls);
                 		} catch(Throwable e) {
-                			System.out.print("Can't load class after " + classPath);
+                			System.out.print("Can't load class repeated " + classPath);
                 			continue;
                 		}
                 	}
@@ -341,7 +360,6 @@ public class UMLClassLoader extends ClassLoader {
                 }
             }
         }
-
         return classes;
     }
 

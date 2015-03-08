@@ -1,7 +1,5 @@
 package com.github.java2uml.gui;
 
-import javax.swing.*;
-
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.GridBagConstraints;
@@ -9,19 +7,12 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
-import org.imgscalr.Scalr;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +22,18 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.prefs.Preferences;
 
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,23 +43,31 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.imgscalr.Scalr;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.java2uml.core.Options;
 import com.github.java2uml.core.reflection.UMLClassLoader;
 
 public class UI implements ExceptionListener {
+	private static Logger LOG = LoggerFactory.getLogger(UI.class);
+	
     private JFrame mainFrame;
     private JMenuBar menu;
     private JPanel panelForDiagram;
@@ -114,7 +118,11 @@ public class UI implements ExceptionListener {
     private PackageDialog packageDialog;
     private JLabel labelForDiagram, inputFilesTypeOptionsLabel, diagramExtensionOptionsLabel, diagramTypeOptionsLabel, othersOptionsLabel;
     private JScrollPane scrollPaneForDiagram;
-    private JTextField path;
+    private JComboBox pathCb;
+    private JButton clearPathBtn;
+    private static final int PATHCB_ITEM_CNT = 5;
+    private static final String PREF_PATHCB_DATA = "pathcb_data";
+    private Preferences pref;
     ResourceBundle localeLabels;
 
     // процесс просмоторщика диаграмм
@@ -448,7 +456,6 @@ public class UI implements ExceptionListener {
             }
         });
 
-
         quickHelpItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -625,7 +632,19 @@ public class UI implements ExceptionListener {
         openDiagram = new JButton(localeLabels.getString("openDiagramLabel"));
         copyToClipboard = new JButton(localeLabels.getString("copyToClipboardLabel"));
         generatedCode = new JTextArea();
-        path = new JTextField();
+        clearPathBtn = new JButton("X");
+        clearPathBtn.setToolTipText("Очитить список");
+        pathCb = new JComboBox();
+        pathCb.setEditable(false);
+        pref = Preferences.userNodeForPackage(UI.class); 
+        String prefModel = pref.get(PREF_PATHCB_DATA, "");
+        System.out.println("Preference: " + prefModel);
+        if (!prefModel.isEmpty()) {
+        	pathCb.setModel(new DefaultComboBoxModel(prefModel.split(";")));
+        }
+        pathCb.setSelectedIndex(-1);
+        
+        
         panelForPath = new JPanel();
         panelForPathAndButtons = new JPanel();
         progressBar = new JProgressBar();
@@ -657,7 +676,7 @@ public class UI implements ExceptionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (enableDiagramItem.getState()) {
-                    fileSaver.setCurrentDirectory(new File(path.getText()));
+                    fileSaver.setCurrentDirectory(new File((String)pathCb.getSelectedItem()));
                     if (pngExtensionItem.getState()) {
                         fileSaver.setSelectedFile(new File("diagram.png"));
                         fileSaver.setFileFilter(new FileNameExtensionFilter("PNG image", "png"));
@@ -737,6 +756,29 @@ public class UI implements ExceptionListener {
 
             }
         });
+        pathCb.addItemListener(new ItemListener(){
+            @Override
+            public void itemStateChanged(ItemEvent event) {
+        		if (pathCb.getModel().getSize() < 1 || event.getStateChange() != ItemEvent.SELECTED) return;       		
+        		String selected = (String)pathCb.getSelectedItem();
+        		File src = new File(selected);
+        		if (src.exists()) {
+        			// источник существует - начинаем загрузку классов
+        			loadChoosedFile(src);
+        		}
+            }       
+        });
+        clearPathBtn.addActionListener(new ActionListener() {
+        	@Override
+        	public void actionPerformed(ActionEvent ae) {
+        		LOG.info("clear pathCb...");
+        		pathCb.removeAllItems();
+        		DefaultComboBoxModel model = (DefaultComboBoxModel)pathCb.getModel();
+        		model.removeAllElements();
+        		savePref(model);
+        	}
+        });
+        
     }
 
     protected void settingParametersToUIObjects() {
@@ -766,7 +808,12 @@ public class UI implements ExceptionListener {
     /**Располагает все объекты во фрейме */
     protected JFrame composeObjectsInFrame() {
         panelForPath.add(browse, new GridBagConstraints(0, 0, 1, 1, 0, 0.5, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-        panelForPath.add(path, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+        JPanel pathPnl = new JPanel();
+        pathPnl.setLayout(new BoxLayout(pathPnl, BoxLayout.X_AXIS));
+        pathPnl.add(pathCb);
+        pathPnl.add(clearPathBtn);
+        panelForPath.add(pathPnl, new GridBagConstraints(1, 0, 5, 1, 30, 0.5, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+        
         panelForProgressBarAndCancel.add(cancelLoading);
         panelForProgressBarAndCancel.add(progressBar);
         panelForProgressBarAndCancel.add(generatePlantUML);
@@ -849,8 +896,10 @@ public class UI implements ExceptionListener {
     public class ChooseFileActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (new File(path.getText()).exists() && !path.getText().equals("")) {
-                fileChooser.setCurrentDirectory(new File(path.getText()));
+        	String path = (String)pathCb.getSelectedItem();
+        	if (path == null) path = "";
+            if (new File(path).exists() && !path.equals("")) {
+                fileChooser.setCurrentDirectory(new File(path));
             }
             getProgressBar().setString("0%");
             getProgressBar().setValue(0);
@@ -858,29 +907,67 @@ public class UI implements ExceptionListener {
             if (resultOfChoice == JFileChooser.APPROVE_OPTION) {
                 File chosenDirectory = new File(fileChooser.getSelectedFile()
                         .getPath());
-                path.setText(chosenDirectory.toString());
-                if (reflectionCheckboxItem.getState()) {
-                    // стираем данные по предыдущим классам и пакетам
-                    Options.clearClassesAndPackages();
-
-                    // загрузка классов из выбранного пути
-                    UMLClassLoader ecl = new UMLClassLoader();
-                    try {
-                        Options.setClasses(ecl.loadClasses(path.getText()));
-                        Options.setPath(path.getText());
-                        packageDialog.initDialog();
-                    } catch(IOException ioe) {
-                        ioe.printStackTrace();
-                    } catch(ClassNotFoundException cnfe) {
-                        cnfe.printStackTrace();
-                    }
-                } else if (parsingCheckboxItem.getState()) {
-                	Options.clearClassesAndPackages();
-                	Options.setPath(path.getText());
-                }
-                
+                // добавляем в список новый путь
+                setChoosedFile(chosenDirectory.toString());
             }
         }
+    }
+    
+    /**
+     * Добавление в список выбранных файлов нового элемента
+     */
+    private void setChoosedFile(String srcPath) {
+    	DefaultComboBoxModel model = (DefaultComboBoxModel)pathCb.getModel();
+    	int ndx = model.getIndexOf(srcPath);
+    	if (ndx > -1) {
+    		pathCb.removeItem(srcPath);
+    		model.removeElement(srcPath);
+    	}
+    	pathCb.addItem(srcPath);
+    	if (pathCb.getModel().getSize() > PATHCB_ITEM_CNT) {
+    		pathCb.remove(0);
+    	}
+    	pathCb.setSelectedItem(srcPath);
+    	savePref(model);
+    }
+    
+    /**
+     * Сохранение настройки с указанием директорий из списка
+     */
+    private void savePref(DefaultComboBoxModel model) {
+    	String prefStr = "";
+    	for (int ndx=0; ndx < model.getSize(); ++ndx) {
+    		prefStr += (String)model.getElementAt(ndx) + (ndx == (model.getSize()-1) ? "" : ";");
+    	}
+    	pref.put(PREF_PATHCB_DATA, prefStr);
+    }
+    
+    /**
+     * Загрузка выбранного файла
+     * @param src
+     */
+    private void loadChoosedFile(File src) {
+    	// стираем данные по предыдущим классам и пакетам
+    	String srcStr = src.toString();
+    	Options.clearClassesAndPackages();
+        Options.setPath(srcStr);
+        try {
+        	if (reflectionCheckboxItem.getState()) {
+                // загрузка классов и пакетов для jar или .class
+                Options.setClasses(new UMLClassLoader().loadClasses(srcStr));
+                Options.setPackages(Options.DOT_CLASS);
+            } else if (parsingCheckboxItem.getState()) {	
+            	// загрузка пакетов для .java
+            	Options.setPackages(Options.DOT_JAVA);
+            }
+        	packageDialog.initDialog();
+	    } catch(IOException ioe) {
+	    	this.handleExceptionAndShowDialog(ioe);
+	    } catch(ClassNotFoundException cnfe) {
+	    	this.handleExceptionAndShowDialog(cnfe);
+	    } catch(Throwable th) {
+	    	this.handleExceptionAndShowDialog(th);
+	    }
     }
 
     public JCheckBoxMenuItem getEnglishLangItem() {
@@ -912,7 +999,7 @@ public class UI implements ExceptionListener {
     }
 
     public JTextField getPath() {
-        return path;
+        return new JTextField((String)pathCb.getSelectedItem());
     }
 
     public JButton getGeneratePlantUML() {
